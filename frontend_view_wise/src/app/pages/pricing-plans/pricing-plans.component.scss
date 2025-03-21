@@ -1,0 +1,298 @@
+//// Variables pour les couleurs et les espacements
+//$primary-color: #1976d2; // Couleur primaire (bleu Material)
+//$secondary-color: #f5f5f5; // Couleur de fond secondaire
+//$border-radius: 8px;
+//$box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+//
+//.pricing-container {
+//  display: flex;
+//  justify-content: space-around;
+//  padding: 20px;
+//  background-color: $secondary-color;
+//
+//  .pricing-plan {
+//    border: 1px solid #ccc;
+//    border-radius: $border-radius;
+//    padding: 20px;
+//    width: 22%;
+//    text-align: center;
+//    box-shadow: $box-shadow;
+//    background-color: white;
+//
+//    h2 {
+//      margin-bottom: 10px;
+//      color: $primary-color;
+//    }
+//
+//    ul {
+//      list-style-type: none;
+//      padding: 0;
+//
+//      li {
+//        margin: 10px 0;
+//        color: #333;
+//      }
+//    }
+//
+//    button {
+//      margin-top: 20px;
+//      background-color: $primary-color;
+//      color: white;
+//      border: none;
+//      padding: 10px 20px;
+//      border-radius: $border-radius;
+//      cursor: pointer;
+//      transition: background-color 0.3s ease;
+//
+//      &:hover {
+//        background-color: darken($primary-color, 10%);
+//      }
+//    }
+//  }
+//}
+
+
+// Définition des variables
+$primary-color: #7F00FF;
+$secondary-color: #3B566E;
+$background-color: #f6f6f6;
+$text-color: #6F8BA4;
+$light-color: #CCDCEA;
+$highlight-color: #FFC0EB;
+$gradient-bg: linear-gradient(135deg, #580FE0 0%, #EACCFF 100%);
+$btn-radius: 5px;
+
+
+
+
+
+.site-heading h2 {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.site-heading h2 span {
+  color: $primary-color;
+}
+
+.site-heading h4 {
+  display: inline-block;
+  padding-bottom: 20px;
+  position: relative;
+  text-transform: capitalize;
+  z-index: 1;
+}
+
+.site-heading h4::before {
+  background: $primary-color none repeat scroll 0 0;
+  bottom: 0;
+  content: "";
+  height: 2px;
+  left: 50%;
+  margin-left: -25px;
+  position: absolute;
+  width: 50px;
+}
+
+.site-heading h4 span {
+  color: $primary-color;
+}
+
+.site-heading {
+  margin-bottom: 30px;
+  overflow: hidden;
+  margin-top: -5px;
+}
+
+
+
+ul, li {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.center-heading {
+  text-align: center;
+
+  .section-title {
+    font-weight: 400;
+    font-size: 28px;
+    color: $secondary-color;
+    letter-spacing: 1.75px;
+    line-height: 38px;
+    margin-bottom: 20px;
+  }
+
+  &.colored .section-title {
+    color: #ffffff;
+  }
+}
+
+.center-text {
+  text-align: center;
+  font-weight: 400;
+  font-size: 16px;
+  color: $text-color;
+  line-height: 28px;
+  letter-spacing: 1px;
+  margin-bottom: 50px;
+
+  &.colored {
+    color: $highlight-color;
+  }
+
+  p {
+    margin-bottom: 30px;
+  }
+}
+
+.pricing-item {
+  background: #FFFFFF;
+  box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.13);
+  border-radius: $btn-radius;
+  margin: 20px 0 30px 0;
+
+  &.active {
+    .pricing-header {
+      position: relative;
+
+      .pricing-title {
+        color: #fff;
+      }
+    }
+
+    .pricing-body {
+      .price-wrapper {
+        background-image: $gradient-bg;
+
+        .currency, .price, .period {
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  .pricing-header {
+    text-align: center;
+    display: block;
+    position: relative;
+    padding-bottom: 10px;
+
+    .pricing-title {
+      font-weight: 400;
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: #fff;
+      position: absolute;
+      width: 180px;
+      height: 40px;
+      line-height: 40px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      top: -20px;
+      border-radius: $btn-radius;
+      background-image: $gradient-bg;
+    }
+  }
+
+  .pricing-body {
+    margin-bottom: 40px;
+
+    .price-wrapper {
+      text-align: center;
+      margin: 40px 0 30px 0;
+      padding-top: 10px;
+      background: $background-color;
+
+      .currency {
+        height: 47px;
+        font-weight: 600;
+        font-size: 20px;
+        color: $primary-color;
+        position: relative;
+        top: -15px;
+      }
+
+      .price {
+        font-weight: 700;
+        font-size: 34px;
+        color: $primary-color;
+        letter-spacing: 2.12px;
+      }
+
+      .period {
+        font-weight: 700;
+        font-size: 14px;
+        color: $primary-color;
+        letter-spacing: 0.88px;
+      }
+    }
+
+    .list {
+
+      li {
+        text-align: left;
+        margin-bottom: 12px;
+        font-weight: 400;
+        font-size: 14px;
+        color: $light-color;
+        letter-spacing: 0.88px;
+        text-decoration: line-through;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-left: 20px;
+        &.active {
+          color: $secondary-color;
+          text-decoration: none;
+
+          &::before {
+            content: "✔";
+            font-size: 16px;
+            font-weight: bold;
+            color: $primary-color;
+          }
+        }
+        }
+
+    }
+  }
+
+  .pricing-footer {
+    text-align: center;
+
+    .btn-primary-line {
+      width: 160px;
+      margin: auto;
+      display: inline-block;
+      height: 44px;
+      line-height: 45px;
+      text-align: center;
+      border-radius: $btn-radius;
+      border: 1px solid $primary-color;
+      font-weight: 700;
+      font-size: 14px;
+      color: $primary-color;
+      transition: all 0.3s ease;
+      outline: none !important;
+      cursor: pointer;
+      text-decoration: none !important;
+      position: relative;
+      margin-bottom: 40px;
+
+      &:hover {
+        background: $primary-color;
+        color: #fff;
+      }
+
+      &.pricing-footer {
+        height: 36px;
+        line-height: 36px;
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+# Python files and folders
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+venv/
+env/
+*.env
+
+# Configuration settings and sensitive files
+*.env                   # Environment variable files
+config/settings/*.pyc   # Compiled Python files
+db.sqlite3              # SQLite database (avoid using SQLite in production)
+
+# Django specific
+/staticfiles/           # Folder for collected static files (STATIC_ROOT)
+/media/                 # User-uploaded files (MEDIA_ROOT)
+/logs/                  # Directory for log files
+*.log                   # Log files
+*.pot                   # Translation template files
+*.mo                    # Compiled translation files
+
+# Django migrations
+**/migrations/**        # Ignore all migrations directories
+!**/migrations/__init__.py  # But keep __init__.py files to recognize as packages
+
+# Static files, Media, and Logs content but keep folders
+staticfiles/*
+!staticfiles/.keep
+media/*
+!media/.keep
+logs/*
+!logs/.keep
+
+# JetBrains IDEs (like PyCharm)
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Other IDEs and editors
+*.swp                   # Vim swap files
+*.sublime-workspace
+*.sublime-project
+
+# Docker
+docker-compose.override.yml
+docker-compose.local.yml
+__docker_build/         # Docker build cache
+*.pid                   # Docker process ID files
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# OS-generated files
+.DS_Store               # macOS
+Thumbs.db               # Windows
+desktop.ini             # Windows

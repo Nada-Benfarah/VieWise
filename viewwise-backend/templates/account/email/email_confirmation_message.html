@@ -1,0 +1,17 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% blocktrans %}Confirm Your Email{% endblocktrans %}</title>
+</head>
+<body>
+    <h2>{% blocktrans %}Welcome to ViewWise!{% endblocktrans %}</h2>
+    <p>{% blocktrans %}Please confirm your email by clicking the button below:{% endblocktrans %}</p>
+    <a href="{{ activate_url }}" 
+       style="background-color: blue; color: white; padding: 10px; text-decoration: none;">
+        {% blocktrans %}Confirm Email{% endblocktrans %}
+    </a>
+    <p>{% blocktrans %}If you did not register for this account, ignore this email.{% endblocktrans %}</p>
+</body>
+</html>

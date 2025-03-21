@@ -1,0 +1,143 @@
+// ============================
+//     Button css start
+// ============================
+.btn-primary {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #4a196a;
+  --bs-btn-border-color: #4a196a;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #80579a;
+  --bs-btn-hover-border-color: #80579a;
+  --bs-btn-focus-shadow-rgb: 57, 139, 255;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #602f81;
+  --bs-btn-active-border-color: #602f81;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-bg: #4a196a;
+  --bs-btn-disabled-border-color: #4a196a;
+}
+
+
+
+.btn {
+  font-size: 14px;
+
+  i {
+    font-size: 18px;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &[class*='btn-link-'],
+  &[class*='btn-light-'] {
+    box-shadow: none;
+  }
+
+  &[class*='btn-outline-']:not(:hover) {
+    box-shadow: none;
+  }
+
+  &.btn-shadow {
+    box-shadow: 0 6px 7px -1px rgba(80, 86, 175, 0.3);
+  }
+
+  &.btn-sm {
+    i {
+      font-size: 14px;
+    }
+  }
+}
+@each $color, $value in $theme-colors {
+  .btn-light-#{$color} {
+    background: shift-color($value, $soft-bg-level);
+    color: $value;
+    border-color: shift-color($value, $soft-bg-level);
+    .material-icons-two-tone {
+      background-color: $value;
+    }
+
+    &:hover {
+      background: $value;
+      color: #fff;
+      border-color: $value;
+      .material-icons-two-tone {
+        background-color: #fff;
+      }
+    }
+
+    &.focus,
+    &:focus {
+      background: $value;
+      color: #fff;
+      border-color: $value;
+      .material-icons-two-tone {
+        background-color: #fff;
+      }
+    }
+
+    &:not(:disabled):not(.disabled).active,
+    &:not(:disabled):not(.disabled):active,
+    .show > &.dropdown-toggle {
+      background: $value;
+      color: #fff;
+      border-color: $value;
+      .material-icons-two-tone {
+        background-color: #fff;
+      }
+    }
+  }
+
+  .btn-check:active,
+  .btn-check:checked {
+    + .btn-light-#{$color} {
+      background: $value;
+      color: #fff;
+      border-color: $value;
+      .material-icons-two-tone {
+        background-color: #fff;
+      }
+    }
+  }
+
+  .btn-link-#{$color} {
+    background: transparent;
+    color: $value;
+    border-color: transparent;
+    .material-icons-two-tone {
+      background-color: $value;
+    }
+    &:hover {
+      background: shift-color($value, $soft-bg-level);
+      color: $value;
+      border-color: shift-color($value, $soft-bg-level);
+    }
+
+    &.focus,
+    &:focus {
+      background: shift-color($value, $soft-bg-level);
+      color: $value;
+      border-color: shift-color($value, $soft-bg-level);
+    }
+
+    &:not(:disabled):not(.disabled).active,
+    &:not(:disabled):not(.disabled):active,
+    .show > &.dropdown-toggle {
+      background: shift-color($value, $soft-bg-level);
+      color: $value;
+      border-color: shift-color($value, $soft-bg-level);
+    }
+  }
+
+  .btn-check:active,
+  .btn-check:checked {
+    + .btn-link-#{$color} {
+      background: shift-color($value, $soft-bg-level);
+      color: $value;
+      border-color: shift-color($value, $soft-bg-level);
+    }
+  }
+}
