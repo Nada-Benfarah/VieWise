@@ -1,70 +1,31 @@
-
-
 <div class="chat-container">
   <aside class="sidebar">
-    <button class="new-chat">+ Nouvelle discussion</button>
+    <button class="new-chat">
+      <i class="fas fa-plus"></i> Nouvelle discussion
+    </button>
     <ul class="chat-list">
       <li class="navitem" *ngFor="let item of chatItems">
-        <i antIcon [type]="item.icon" theme="outline"></i> {{ item.label }}
+        <i class="fas fa-comments icon-spacing"></i> {{ item.label }}
       </li>
     </ul>
   </aside>
+
   <main class="chat-main">
     <header class="chat-header">
-      <h1><i antIcon type="robot" theme="outline"></i> Nouvelle discussion</h1>
+      <h1>
+        <i class="fas fa-robot"></i> Nouvelle discussion
+      </h1>
     </header>
+
     <section class="chat-messages">
-      <p>Hello! How can I assist you today?t...</p>
+      <p>Hello! How can I assist you today?</p>
     </section>
+
     <footer class="chat-footer">
       <input type="text" placeholder="Écrivez un message...">
-      <button><i antIcon type="send" theme="outline"></i></button>
+      <button>
+        <i class="fas fa-paper-plane"></i>
+      </button>
     </footer>
   </main>
 </div>
-
-
-<!--<div class="chat-container">-->
-<!--  <div class="chat outgoing">-->
-<!--    <div class="chat-content">-->
-<!--      <div class="chat-details">-->
-<!--        <img src="https://i.ibb.co/tcgjS29/user.jpg" alt="Utilisateur">-->
-<!--        <p>Message de l'utilisateur</p>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--  <div class="chat incoming">-->
-<!--    <div class="chat-content">-->
-<!--      <div class="chat-details">-->
-<!--        <img src="https://i.ibb.co/0VDMm2X/chatbot.jpg" alt="ChatBot">-->
-<!--        <p>Réponse du ChatBot</p>-->
-<!--      </div>-->
-<!--      <span class="material-symbols-rounded">content_copy</span>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--  <div class="chat incoming">-->
-<!--    <div class="chat-content">-->
-<!--      <div class="chat-details">-->
-<!--        <img src="https://i.ibb.co/tcgjS29/user.jpg" alt="Utilisateur">-->
-<!--        <div class="loading-dots-animation">-->
-<!--          <div class="loading-dot" style="&#45;&#45;delay:0.2s;"></div>-->
-<!--          <div class="loading-dot" style="&#45;&#45;delay:0.3s;"></div>-->
-<!--          <div class="loading-dot" style="&#45;&#45;delay:0.4s;"></div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <span class="material-symbols-rounded" onclick="Responsecopy(this)">content_copy</span>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->
-<!--<div class="user-input-container">-->
-<!--  <div class="user-input-content">-->
-<!--    <div class="user-input-textarea">-->
-<!--      <textarea id="chat-input" placeholder="Entrez votre message ici" required></textarea>-->
-<!--      <span id="send-btn" class="material-symbols-rounded">send</span>-->
-<!--    </div>-->
-<!--    <div class="typing-controls">-->
-<!--      <span id="theme-btn" class="material-symbols-rounded">light_mode</span>-->
-<!--      <span id="delete-btn" class="material-symbols-rounded">delete</span>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->
