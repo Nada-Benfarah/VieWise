@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+// chatgpt-page.component.ts
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,59 +9,94 @@ import { IconDirective } from '@ant-design/icons-angular';
 
 @Component({
   selector: 'app-chatgpt-page',
-  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, IconDirective],
+  standalone: true,
+  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule],
   templateUrl: './chatgpt-page.component.html',
   styleUrl: './chatgpt-page.component.scss'
 })
 export class ChatgptPageComponent {
+  @Input() icon!: string;
+  @Input() questions: string[] = [];
+
+  menuOpen: boolean = false;
+  showChatNames: boolean = true;
+
   chatItems = [
     { icon: 'message', label: 'Conversation 1' },
     { icon: 'message', label: 'Conversation 2' },
     { icon: 'message', label: 'Conversation 3' }
   ];
 
-  // Liste des messages de la conversation actuelle
-  messages: { sender: string; text: string }[] = [{ sender: 'bot', text: 'Hello! How can I assist you today?' }];
-
-  // Nouveau message saisi par l'utilisateur
-  newMessage: string = '';
-
-  // Historique des conversations
-  history: { title: string; date: string; messages: { sender: string; text: string }[] }[] = [
-    {
-      title: 'Conversation 1',
-      date: '2023-10-01',
-      messages: [
-        { sender: 'user', text: 'Hi!' },
-        { sender: 'bot', text: 'Hello! How can I help you?' }
-      ]
-    },
-    {
-      title: 'Conversation 2',
-      date: '2023-10-02',
-      messages: [
-        { sender: 'user', text: 'What is Angular?' },
-        { sender: 'bot', text: 'Angular is a platform for building web applications.' }
-      ]
-    }
+  suggestionCards = [
+    { title: 'Exemple', icon: 'fas fa-robot', questions: ['Que puis-je faire ?', 'Comment ça fonctionne ?'] }
   ];
 
-  // Méthode pour envoyer un message
+  chatHistory = [
+    { name: 'Conversation 1', editable: false, session: { showSuggestions: true, showQuestions: true }, messages: [] },
+    { name: 'Conversation 2', editable: false, session: { showSuggestions: true, showQuestions: true }, messages: [] }
+  ];
+
+  selectedChat = this.chatHistory[0];
+  selectedQuestions: string[] = [];
+  newMessage: string = '';
+  userAvatar: string = 'Moi';
+
+  getArrowDirection() {
+    return this.showChatNames ? 'arrow-up' : 'arrow-down';
+  }
+
+  toggleChatNames() {
+    this.showChatNames = !this.showChatNames;
+  }
+
+  selectChat(chat: any) {
+    this.selectedChat = chat;
+  }
+
+  isSelected(chat: any) {
+    return this.selectedChat === chat;
+  }
+
+  toggleChatNameEditing(chat: any) {
+    chat.editable = !chat.editable;
+  }
+
+  updateChatName(chat: any, value: string) {
+    chat.name = value;
+    chat.editable = false;
+  }
+
+  deleteChat(chat: any) {
+    const index = this.chatHistory.indexOf(chat);
+    if (index > -1) this.chatHistory.splice(index, 1);
+  }
+
+  startNewChat() {
+    const newChat = {
+      name: 'Nouvelle conversation',
+      editable: true,
+      session: { showSuggestions: true, showQuestions: true },
+      messages: []
+    };
+    this.chatHistory.unshift(newChat);
+    this.selectedChat = newChat;
+  }
+
+  copyToChatInput(question: string) {
+    this.newMessage = question;
+  }
+
   sendMessage() {
     if (this.newMessage.trim()) {
-      // Ajouter le message de l'utilisateur
-      this.messages.push({ sender: 'user', text: this.newMessage });
+      this.selectedChat.messages.push({ user: true, text: this.newMessage });
       this.newMessage = '';
-
-      // Simuler une réponse du bot
       setTimeout(() => {
-        this.messages.push({ sender: 'bot', text: 'Thank you for your message!' });
+        this.selectedChat.messages.push({ user: false, text: 'Merci pour votre message !' });
       }, 1000);
     }
   }
 
-  // Méthode pour charger une conversation depuis l'historique
-  loadConversation(conversation: { title: string; date: string; messages: { sender: string; text: string }[] }) {
-    this.messages = conversation.messages;
+  selectCard(card: any) {
+    this.selectedQuestions = card.questions;
   }
 }

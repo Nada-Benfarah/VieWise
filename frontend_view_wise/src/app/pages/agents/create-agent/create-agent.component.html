@@ -1,141 +1,136 @@
-<!--<div class="create-agent-container">-->
-<!--  &lt;!&ndash; En-tête de la page &ndash;&gt;-->
-<!--  <div class="create-agent-header">-->
-<!--    <h1>Créer un nouvel agent</h1>-->
-<!--  </div>-->
 
-<!--  &lt;!&ndash; Formulaire de création d'agent &ndash;&gt;-->
-<!--  <form class="create-agent-form">-->
-<!--    &lt;!&ndash; Section Nom &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <mat-form-field appearance="outline">-->
-<!--        <mat-label>Nom de l'agent</mat-label>-->
-<!--        <input matInput [(ngModel)]="agent.name" name="name" required>-->
-<!--      </mat-form-field>-->
-<!--    </div>-->
+<main class="main-container">
+  <section class="left-panel">
 
-<!--    &lt;!&ndash; Section Description &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <mat-form-field appearance="outline">-->
-<!--        <mat-label>Description</mat-label>-->
-<!--        <textarea matInput [(ngModel)]="agent.description" name="description" required></textarea>-->
-<!--      </mat-form-field>-->
-<!--    </div>-->
+    <form class="form">
+      <div class="form-group">
+        <label for="agent-name">Nom</label>
+        <input id="agent-name" type="text" class="input" placeholder="Name your agent" />
+      </div>
 
-<!--    &lt;!&ndash; Section Fournisseur IA &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <mat-form-field appearance="outline">-->
-<!--        <mat-label>Fournisseur IA</mat-label>-->
-<!--        <mat-select [(ngModel)]="agent.provider" name="provider" required>-->
-<!--          <mat-option value="anthropic">Anthropic</mat-option>-->
-<!--          <mat-option value="openai">OpenAI</mat-option>-->
-<!--        </mat-select>-->
-<!--      </mat-form-field>-->
-<!--    </div>-->
+      <div class="form-group">
+        <label for="agent-description">Description</label>
+        <input id="agent-description" type="text" class="input" placeholder="Add a short description about what this Agent does" />
+      </div>
 
-<!--    &lt;!&ndash; Section Modèle IA &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <mat-form-field appearance="outline">-->
-<!--        <mat-label>Modèle IA</mat-label>-->
-<!--        <mat-select [(ngModel)]="agent.model" name="model" required>-->
-<!--          <mat-option value="claude-3.5">Claude 3.5 Sonnet</mat-option>-->
-<!--          <mat-option value="gpt-4">GPT-4</mat-option>-->
-<!--        </mat-select>-->
-<!--      </mat-form-field>-->
-<!--    </div>-->
+      <div class="form-group">
+        <label for="provider">Fournisseur IA</label>
+        <select id="provider" class="select">
+          <option value="" disabled selected>Choisissez un fournisseur</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="cohere">Cohere</option>
+          <option value="mistral">Mistral</option>
+        </select>
+      </div>
 
-<!--    &lt;!&ndash; Section Instructions &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <mat-form-field appearance="outline">-->
-<!--        <mat-label>Instructions</mat-label>-->
-<!--        <textarea matInput [(ngModel)]="agent.instructions" name="instructions" required></textarea>-->
-<!--      </mat-form-field>-->
-<!--    </div>-->
+      <div class="form-group">
+        <label for="model">Modèle IA</label>
+        <select id="model" class="select">
+          <option value="" disabled selected>Choisissez un modèle</option>
+          <option value="gpt-4">GPT-4</option>
+          <option value="claude-2">Claude 2</option>
+          <option value="command-r">Command-R+</option>
+          <option value="mixtral">Mixtral 8x7B</option>
+        </select>
+      </div>
 
-<!--    &lt;!&ndash; Section Déclencheurs de conversation &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <mat-form-field appearance="outline">-->
-<!--        <mat-label>Déclencheurs de conversation</mat-label>-->
-<!--        <textarea matInput [(ngModel)]="agent.conversationStarters" name="conversationStarters" required></textarea>-->
-<!--      </mat-form-field>-->
-<!--    </div>-->
+      <div class="form-group">
+        <label for="instructions">Instructions</label>
+        <textarea id="instructions" class="textarea" readonly>
+You are an AI that answers questions over a knowledge base.
 
-<!--    &lt;!&ndash; Section Connaissance &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <h2>Connaissance</h2>-->
-<!--      <div class="file-list">-->
-<!--        <div class="file-item">-->
-<!--          <span>eng2.docx</span>-->
-<!--          <span>16 MB</span>-->
-<!--        </div>-->
-<!--        <div class="file-item">-->
-<!--          <span>ENGLISH_CORR.docx</span>-->
-<!--          <span>2 MB</span>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <button mat-raised-button color="primary">Téléverser des documents</button>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Section Outils &ndash;&gt;-->
-<!--    <div class="form-section">-->
-<!--      <h2>Outils</h2>-->
-<!--      <div class="tools-section">-->
-<!--        <span>0/5 Activés</span>-->
-<!--        <button mat-raised-button color="primary">+ Ajouter un outil</button>-->
-<!--      </div>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Boutons d'action &ndash;&gt;-->
-<!--    <div class="form-actions">-->
-<!--      <button mat-raised-button color="primary" type="submit">Créer l'agent</button>-->
-<!--      <button mat-raised-button color="warn" type="button" (click)="cancel()">Annuler</button>-->
-<!--    </div>-->
-<!--  </form>-->
-<!--</div>-->
+- On each message you will receive context from the knowledge base and an user message.
+- Be brief and polite.
+- Be conversational and friendly.
+        </textarea>
+      </div>
 
 
+      <div class="form-group">
+        <label>Démarreurs de conversation</label>
 
-
-<div class="container">
-  <!-- Title section -->
-  <div class="title">Créer un nouvel agent</div>
-  <div class="content">
-    <!-- Registration form -->
-    <form action="#">
-      <div class="user-details">
-        <!-- Input pour Nom de l'agent -->
-        <div class="input-box">
-          <span class="details">Nom de l'agent</span>
-          <input [(ngModel)]="agent.name" type="text" placeholder="Enter the name of agent" required>
-        </div>
-        <!-- Input pour Description -->
-        <div class="input-box">
-          <span class="details">Description</span>
-          <input [(ngModel)]="agent.description" type="text" placeholder="Enter the description" required>
-        </div>
-
-        <!-- Input pour Instruction (lecture seule) -->
-        <div class="input-box full-width">
-          <span class="details">Instructions</span>
-          <textarea disabled>
-Vous êtes une IA qui répond aux questions sur une base de connaissances.
-- Chaque message contient un contexte et une question utilisateur.
-- Soyez bref et poli.
-- Adoptez un ton conversationnel et amical.
-          </textarea>
+        <div *ngFor="let starter of conversationStarters; let i = index" class="conversation-starter">
+          <input
+            type="text"
+            class="input"
+            placeholder="Ajouter une phrase d’exemple"
+            [(ngModel)]="conversationStarters[i]"
+            name="starter-{{ i }}"
+            (input)="handleInputChange(i)"
+          />
+          <button
+            type="button"
+            class="btn-remove"
+            [disabled]="!starter || starter.trim() === ''"
+            (click)="removeStarter(i)"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
-      <!-- Section Upload des fichiers (Ne pas imbriquer un deuxième <form>) -->
-      <label class="form__container" id="upload-container">Choisissez ou glissez-déposez des fichiers
-        <input class="form__file" id="upload-files" type="file" multiple>
-      </label>
-      <div id="files-list-container"></div>
 
-      <!-- Bouton de soumission -->
-      <div class="button">
-        <input type="submit" value="Créer l'agent">
+
+
+
+
+
+
+
+    </form>
+  </section>
+
+  <div class="separator"></div>
+
+  <section class="right-panel">
+    <form class="form">
+      <div class="upload-area" (click)="triggerFileInput()">
+        <p><strong>{{ fileNames.length > 0 ? fileNames.join(', ') : 'Aucun fichier sélectionné' }}</strong></p>
+        <p class="upload-label">
+          Téléversez vos fichiers<br />
+          <span class="hint">Glissez ou cliquez pour ajouter des fichiers</span>
+        </p>
+        <p class="or-separator">OU</p>
+
+        <div class="upload-button-container">
+          <button class="btn-secondary" type="button">
+            Créer et importer via une connexion
+          </button>
+          <p class="file-types">.doc, .docx, .pdf, .txt, .rtf, .odt, .xls, .xlsx, .csv, .tsv, .ods</p>
+        </div>
+        <!-- input caché -->
+        <input
+          type="file"
+          #fileInput
+          multiple
+          hidden
+          (change)="onFilesSelected($event)"
+        />
+      </div>
+
+
+      <div class="form-group tools-section">
+        <div class="tools-header">
+          <div class="tools-info">
+            <h4 class="tools-title">Outils</h4>
+            <span class="tools-count">0 / 5 activés</span>
+            <p class="tools-desc">Ajoutez des outils pour enrichir le fonctionnement de votre modèle IA.</p>
+          </div>
+          <button class="btn-add-tool">
+            <span class="plus-icon">+</span> Ajouter un outil
+          </button>
+        </div>
+
+
+<!--        <div class="tools-upgrade">-->
+<!--          <label for="upgrade-btn">Passer à Workflow</label>-->
+<!--          <button id="upgrade-btn" class="btn-upgrade">Créer l'agent</button>-->
+<!--        </div>-->
+                  <div class="button">
+                    <input type="submit" value="Créer l'agent">
+                  </div>
       </div>
     </form>
-  </div>
-</div>
+  </section>
+</main>
