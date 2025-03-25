@@ -7,6 +7,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('accounts.urls')),
     path('auth/', include('allauth.account.urls')),
+    path('api/agents/', include('agents.urls')),
+    path('api/workflows/', include('workflows.urls')),
+    path('api/companies/', include('companies.urls')),
+    path('api/users/', include('users.urls')),
+    path('api/subscriptions/', include('subscriptions.urls')),
+
+
+
 
 ]
 
