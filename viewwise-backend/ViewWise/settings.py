@@ -40,6 +40,15 @@ INSTALLED_APPS = [
 
     # 📌 Custom user application
     'accounts',
+    'agents',
+    'workflows',
+    'companies',
+    'users',
+    'subscriptions',
+
+
+
+
 ]
 
 # 📌 Middleware
@@ -103,7 +112,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+#         'rest_framework.permissions.IsAuthenticated',
+          'rest_framework.permissions.AllowAny',  # juste pour les tests
     ),
 }
 
