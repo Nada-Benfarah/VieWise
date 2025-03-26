@@ -12,18 +12,23 @@ from ..models import CustomUser
 # ✅ Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration with advanced validation."""
-    email = serializers.EmailField(
-        required=True,
-        validators=[
-            UniqueValidator(queryset=CustomUser.objects.all(), message="An account already exists with this email.")]
-    )
-    phone_number = serializers.CharField(required=False, allow_blank=True)
+#     email = serializers.EmailField(
+#         required=True,
+#         validators=[
+#             UniqueValidator(queryset=CustomUser.objects.all(), message="An account already exists with this email.")]
+#     )
+#     phone_number = serializers.CharField(required=False, allow_blank=True)
+#     password = serializers.CharField(write_only=True, required=True, min_length=8)
+#     password2 = serializers.CharField(write_only=True, required=True, min_length=8, label="Confirm Password")
+
+    username = serializers.CharField(write_only=True)  # on le mappe sur first_name
     password = serializers.CharField(write_only=True, required=True, min_length=8)
-    password2 = serializers.CharField(write_only=True, required=True, min_length=8, label="Confirm Password")
 
     class Meta:
         model = CustomUser
-        fields = ["email", "phone_number", "first_name", "last_name", "password", "password2"]
+#         fields = ["email", "phone_number", "first_name", "last_name", "password", "password2"]
+        fields = ["username", "email", "password"]  # ✅ Ajoute bien 'username' ici
+
 
     def validate_email(self, value):
         """Ensure email is always stored in lowercase and stripped of spaces."""
@@ -56,14 +61,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        """Ensure passwords match."""
-        if data["password"] != data["password2"]:
-            raise serializers.ValidationError({"password2": "Passwords do not match."})
         return data
 
     def create(self, validated_data):
-        validated_data.pop("password2")  # Remove redundant password2 field
-        return CustomUser.objects.create_user(**validated_data)
+        first_name = validated_data.pop("username")
+        email = validated_data["email"]
+        password = validated_data["password"]
+
+        return CustomUser.objects.create_user(
+            email=email,
+            first_name=first_name,
+            last_name="",
+            password=password
+        )
 
 
 # ✅ JWT Token Serializer

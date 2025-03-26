@@ -43,8 +43,10 @@ INSTALLED_APPS = [
     'agents',
     'workflows',
     'companies',
-    'users',
     'subscriptions',
+    'monitoring',
+    'marketplace',
+    'invitations'
 
 
 
@@ -84,11 +86,16 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 # 📌 Social Login Providers Configuration
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'OAUTH_PKCE_ENABLED': True,
-    },
+   'google': {
+         'SCOPE': ['profile', 'email'],
+         'AUTH_PARAMS': {'access_type': 'online'},
+         'OAUTH_PKCE_ENABLED': True,
+         'APP': {
+             'client_id': config('SOCIAL_AUTH_GOOGLE_CLIENT_ID'),
+             'secret': config('SOCIAL_AUTH_GOOGLE_SECRET'),
+             'key': ''
+         }
+     },
     'facebook': {
         'METHOD': 'oauth2',
         'SCOPE': ['email', 'public_profile'],
@@ -150,16 +157,16 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000  # ✅ Enables HTTP Strict Transport Security (HSTS)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = not DEBUG  # ✅ Redirects everything to HTTPS if in production
+SECURE_SSL_REDIRECT = False  # ✅ Redirects everything to HTTPS if in production
 
-# 📌 CSRF & CORS security settings
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    cast=lambda v: [url.strip() for url in v.split(',') if url.startswith(('http://', 'https://'))]
-)
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    cast=lambda v: [url.strip() for url in v.split(',') if url.startswith(('http://', 'https://'))]
+    cast=lambda v: [url.strip() for url in v.split(',') if url.startswith('http')]
+)
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    cast=lambda v: [url.strip() for url in v.split(',') if url.startswith('http')]
 )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -179,9 +186,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = 30
-DEFAULT_FROM_EMAIL = "noreply@viewwise.com"
-SERVER_EMAIL = "noreply@viewwise.com"
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+DEFAULT_FROM_EMAIL = "sofiene.bouguerra.1996@gmail.com"
+SERVER_EMAIL = "sofiene.bouguerra.1996@gmail.com"
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 
 # 📌 Development email settings (use console backend if in debug mode)
 if DEBUG:

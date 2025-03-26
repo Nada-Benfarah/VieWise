@@ -46,27 +46,14 @@ class Permission(models.Model):
         return f"{self.name} ({self.code})"
 
 
-
-
-
-
-
-
-# ✅ Logs et rapports
-class Log(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
-    action = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+class SuperAdministrator(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='admin_profile')
+    can_manage_settings = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.user} - {self.action[:30]}"
+        return f"Super Admin - {self.user.email}"
 
 
-class Report(models.Model):
-    name = models.CharField(max_length=255)
-    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
-    generated_at = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
 
-    def __str__(self):
-        return self.name
+
+
