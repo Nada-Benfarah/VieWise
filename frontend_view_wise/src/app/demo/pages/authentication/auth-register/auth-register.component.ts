@@ -3,12 +3,12 @@
 // Angular import
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-auth-register',
-  imports: [RouterModule, ReactiveFormsModule],
+  imports: [RouterModule, ReactiveFormsModule ],
   templateUrl: './auth-register.component.html',
   styleUrl: './auth-register.component.scss'
 })
@@ -27,7 +27,7 @@ export class AuthRegisterComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,private router: Router,
   ) {}
 
   ngOnInit() {
@@ -36,6 +36,7 @@ export class AuthRegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
     });
+
   }
 
   signUp() {
@@ -46,19 +47,19 @@ export class AuthRegisterComponent implements OnInit {
       this.authService.register(this.signUpForm.value).subscribe({
         next: () => {
           this.isSaving = false;
-          alert('User registered successfully');
+          alert('Inscription réussie. Consulter votre boite mail.');
+          this.router.navigate(['/login']);
         },
         error: (error) => {
           this.isSaving = false;
           if (error.status === 400) {
-            const { errors } = error;
-            this.errors = errors;
-            alert('User already exists');
+           alert("L'utilisateur existe déjà ou données invalides.");
           } else {
-            alert('Error registering user');
+            alert('Une erreur est survenue. Veuillez réessayer.');
           }
         }
       });
     }
   }
+
 }

@@ -1,43 +1,60 @@
-import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-
-
+import { Agent, AgentService } from 'src/app/services/agents/agent.service';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-agents',
+  standalone: true,
   imports: [CommonModule, MatButtonModule],
   templateUrl: './agents.component.html',
   styleUrl: './agents.component.scss'
 })
-export class AgentsComponent {
+export class AgentsComponent implements OnInit {
   activeMenu: number | null = null;
+  agents: Agent[] = [];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private agentService: AgentService) {}
 
+  ngOnInit() {
+    this.loadAgents();
+  }
 
-  agents = [
-    { name: 'Agent Builder', description: 'Un agent IA pour construire des projets complexes.' },
-    { name: 'Agent Assistant', description: 'Un assistant IA pour la gestion des tâches quotidiennes.' },
-    { name: 'Agent Analytique', description: 'Un agent IA pour l\'analyse de données et les rapports.' },
-    { name: 'Agent Vocal', description: 'Un agent IA pour la génération de contenu créatif.' }
-  ];
+  loadAgents() {
+    this.agentService.getAllAgents().subscribe({
+      next: (data) => {
+        this.agents = data;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des agents :', err);
+      }
+    });
+  }
 
   toggleMenu(index: number) {
     this.activeMenu = this.activeMenu === index ? null : index;
   }
 
-  editAgent(agent: any) {
-    console.log('Modifier :', agent.name);
+  editAgent(agent: Agent) {
+    console.log('Modifier :', agent.agentName);
   }
 
-  chatAgent(agent: any) {
+  chatAgent(agent: Agent) {
     this.router.navigate(['/chatgpt-page']);
   }
 
-  deleteAgent(agent: any) {
-    console.log('Supprimer :', agent.name);
+  deleteAgent(agent: Agent) {
+    if (confirm(`Confirmer la suppression de "${agent.agentName}" ?`)) {
+      this.agentService.deleteAgent(agent.agentId).subscribe({
+        next: () => {
+          this.agents = this.agents.filter(a => a.agentId !== agent.agentId);
+        },
+        error: (err) => {
+          console.error('Erreur suppression :', err);
+        }
+      });
+    }
   }
 
   goToCreateAgent() {

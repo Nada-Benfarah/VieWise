@@ -1,5 +1,4 @@
 
-
 <div class="agents-container">
   <!-- En-tête de la page -->
   <div class="agents-header">
@@ -9,33 +8,33 @@
     </button>
   </div>
 
-<div class="cards">
-  <div class="cards__inner">
-    <div *ngFor="let agent of agents; let i = index" class="cards__card card">
+  <div class="cards">
+    <div class="cards__inner">
+      <div *ngFor="let agent of agents; let i = index" class="cards__card card">
 
-      <!-- Bouton menu en haut à droite -->
-      <div class="card__menu">
-        <button (click)="toggleMenu(i)" class="menu-btn">⋮</button>
-        <div *ngIf="activeMenu === i" class="menu-options">
-          <button (click)="editAgent(agent)">
-            <i class="fas fa-pen"></i> Modifier
-          </button>
-          <button (click)="chatAgent(agent)">
-            <i class="fas fa-comments"></i> Chat
-          </button>
-          <button (click)="deleteAgent(agent)">
-            <i class="fas fa-trash"></i> Supprimer
-          </button>
+        <!-- Bouton menu en haut à droite -->
+        <div class="card__menu">
+          <button (click)="toggleMenu(i)" class="menu-btn">⋮</button>
+          <div *ngIf="activeMenu === i" class="menu-options">
+            <button (click)="editAgent(agent)">
+              <i class="fas fa-pen"></i> Modifier
+            </button>
+            <button (click)="chatAgent(agent)">
+              <i class="fas fa-comments"></i> Chat
+            </button>
+            <button (click)="deleteAgent(agent)">
+              <i class="fas fa-trash"></i> Supprimer
+            </button>
+          </div>
+
         </div>
 
+        <p class="card__heading">{{ agent.agentName }}</p>
+        <ul class="card_bullets flow" role="list">
+          <li>{{ agent.agentObjective }}</li>
+        </ul>
+        <a class="card__cta cta" href="">Essayer</a>
       </div>
-
-      <p class="card__heading">{{ agent.name }}</p>
-      <ul class="card_bullets flow" role="list">
-        <li>{{ agent.description }}</li>
-      </ul>
-      <a class="card__cta cta" href="">Essayer</a>
     </div>
   </div>
-</div>
 </div>
