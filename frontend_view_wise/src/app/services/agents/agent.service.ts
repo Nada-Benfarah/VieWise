@@ -38,6 +38,9 @@ export class AgentService {
     return this.http.put<Agent>(`${this.apiUrl}${id}/`, agent);
   }
 
+
+
+
   deleteAgent(id: number) {
     return this.http.delete(`${environment.apiBaseUrl}/api/agents/agents/${id}/`);
   }
