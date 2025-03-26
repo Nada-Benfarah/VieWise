@@ -22,6 +22,8 @@ export interface UserRegisterForm {
   password: string;
 }
 
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -31,7 +33,7 @@ export class AuthService {
 
   constructor(private http: HttpClient, private storageService:StorageService) {}
 
-  private API_URL = 'http://localhost:8000/api/logout';
+  // private API_URL = 'http://localhost:8000/api/logout';
 
 
 
@@ -48,7 +50,7 @@ export class AuthService {
   }
 
   register(data: UserRegisterForm) {
-    return this.http.post(`${environment.apiBaseUrl}/auth/register`, data);
+    return this.http.post(`${environment.apiBaseUrl}/auth/register/`, data);
   }
 
   getCurrentUser() {

@@ -1,83 +1,53 @@
-
 <main class="main-container">
   <section class="left-panel">
-
-    <form class="form">
+    <form class="form" (ngSubmit)="submitAgent()">
       <div class="form-group">
         <label for="agent-name">Nom</label>
-        <input id="agent-name" type="text" class="input" placeholder="Name your agent" />
+        <input id="agent-name" type="text" class="input" placeholder="Nom de l'agent" [(ngModel)]="agent.agentName" name="agentName" required />
       </div>
 
       <div class="form-group">
-        <label for="agent-description">Description</label>
-        <input id="agent-description" type="text" class="input" placeholder="Add a short description about what this Agent does" />
+        <label for="agent-role">Rôle</label>
+        <input id="agent-role" type="text" class="input" placeholder="Rôle de l'agent" [(ngModel)]="agent.agentRole" name="agentRole" required />
       </div>
 
       <div class="form-group">
-        <label for="provider">Fournisseur IA</label>
-        <select id="provider" class="select">
-          <option value="" disabled selected>Choisissez un fournisseur</option>
-          <option value="openai">OpenAI</option>
-          <option value="anthropic">Anthropic</option>
-          <option value="cohere">Cohere</option>
-          <option value="mistral">Mistral</option>
+        <label for="agent-objective">Objectif</label>
+        <input id="agent-objective" type="text" class="input" placeholder="Objectif de l'agent" [(ngModel)]="agent.agentObjective" name="agentObjective" required />
+      </div>
+
+      <div class="form-group">
+        <label for="agent-instructions">Instructions</label>
+        <textarea id="agent-instructions" class="textarea" [(ngModel)]="agent.agentInstructions" name="agentInstructions" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="datasource">Source de données</label>
+        <select id="datasource" class="select" [(ngModel)]="agent.datasource" name="datasource" required>
+          <option value="" disabled selected>Choisissez une source</option>
+          <option *ngFor="let ds of datasources" [value]="ds.id">{{ ds.name }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="model">Modèle IA</label>
-        <select id="model" class="select">
+        <label for="modele">Modèle IA</label>
+        <select id="modele" class="select" [(ngModel)]="agent.modele" name="modele" required>
           <option value="" disabled selected>Choisissez un modèle</option>
-          <option value="gpt-4">GPT-4</option>
-          <option value="claude-2">Claude 2</option>
-          <option value="command-r">Command-R+</option>
-          <option value="mixtral">Mixtral 8x7B</option>
+          <option *ngFor="let model of modeles" [value]="model.id">{{ model.name }}</option>
         </select>
       </div>
-
-      <div class="form-group">
-        <label for="instructions">Instructions</label>
-        <textarea id="instructions" class="textarea" readonly>
-You are an AI that answers questions over a knowledge base.
-
-- On each message you will receive context from the knowledge base and an user message.
-- Be brief and polite.
-- Be conversational and friendly.
-        </textarea>
-      </div>
-
 
       <div class="form-group">
         <label>Démarreurs de conversation</label>
-
         <div *ngFor="let starter of conversationStarters; let i = index" class="conversation-starter">
-          <input
-            type="text"
-            class="input"
-            placeholder="Ajouter une phrase d’exemple"
-            [(ngModel)]="conversationStarters[i]"
-            name="starter-{{ i }}"
-            (input)="handleInputChange(i)"
-          />
-          <button
-            type="button"
-            class="btn-remove"
-            [disabled]="!starter || starter.trim() === ''"
-            (click)="removeStarter(i)"
-          >
-            ✕
-          </button>
+          <input type="text" class="input" placeholder="Ajouter une phrase d’exemple" [(ngModel)]="conversationStarters[i]" name="starter-{{ i }}" (input)="handleInputChange(i)" />
+          <button type="button" class="btn-remove" [disabled]="!starter || starter.trim() === ''" (click)="removeStarter(i)">✕</button>
         </div>
       </div>
 
-
-
-
-
-
-
-
-
+      <div class="button">
+        <button type="submit" class="btn btn-primary">Créer l'agent</button>
+      </div>
     </form>
   </section>
 
@@ -92,23 +62,12 @@ You are an AI that answers questions over a knowledge base.
           <span class="hint">Glissez ou cliquez pour ajouter des fichiers</span>
         </p>
         <p class="or-separator">OU</p>
-
         <div class="upload-button-container">
-          <button class="btn-secondary" type="button">
-            Créer et importer via une connexion
-          </button>
+          <button class="btn-secondary" type="button">Créer et importer via une connexion</button>
           <p class="file-types">.doc, .docx, .pdf, .txt, .rtf, .odt, .xls, .xlsx, .csv, .tsv, .ods</p>
         </div>
-        <!-- input caché -->
-        <input
-          type="file"
-          #fileInput
-          multiple
-          hidden
-          (change)="onFilesSelected($event)"
-        />
+        <input type="file" #fileInput multiple hidden (change)="onFilesSelected($event)" />
       </div>
-
 
       <div class="form-group tools-section">
         <div class="tools-header">
@@ -117,19 +76,10 @@ You are an AI that answers questions over a knowledge base.
             <span class="tools-count">0 / 5 activés</span>
             <p class="tools-desc">Ajoutez des outils pour enrichir le fonctionnement de votre modèle IA.</p>
           </div>
-          <button class="btn-add-tool">
+          <button class="btn-add-tool" type="button">
             <span class="plus-icon">+</span> Ajouter un outil
           </button>
         </div>
-
-
-<!--        <div class="tools-upgrade">-->
-<!--          <label for="upgrade-btn">Passer à Workflow</label>-->
-<!--          <button id="upgrade-btn" class="btn-upgrade">Créer l'agent</button>-->
-<!--        </div>-->
-                  <div class="button">
-                    <input type="submit" value="Créer l'agent">
-                  </div>
       </div>
     </form>
   </section>

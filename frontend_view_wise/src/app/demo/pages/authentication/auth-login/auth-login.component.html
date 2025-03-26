@@ -5,7 +5,7 @@
         <a href="javascript:"><img src="assets/images/logo-dark.svg" alt="logo" /></a>
       </div>
       <div class="card my-5">
-        <div [formGroup]="signInForm" class="card-body">
+        <div [formGroup]="signInForm" (ngSubmit)="signIn()" novalidate class="card-body">
           <div class="d-flex justify-content-between align-items-end mb-4">
             <h3 class="mb-0"><b>Login</b></h3>
             <a [routerLink]="['/register']" class="link-primary">Don't have an account?</a>
@@ -32,7 +32,7 @@
             <h5 class="text-secondary f-w-400"><a href="javascript:">Forgot Password?</a></h5>
           </div>
           <div class="d-grid mt-4">
-            <button type="button" class="btn btn-primary" (click)="signIn()" [disabled]="signInForm.invalid || isSaving" >
+            <button type="submit" class="btn btn-primary"  [disabled]="signInForm.invalid || isSaving" >
               {{ isSaving ? 'Login...' : 'Login' }}
             </button>
           </div>
