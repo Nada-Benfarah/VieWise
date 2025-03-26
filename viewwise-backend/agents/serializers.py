@@ -20,3 +20,5 @@ class AgentSerializer(serializers.ModelSerializer):
             'agentId', 'agentName', 'agentRole', 'agentObjective', 'agentInstructions',
             'creator', 'creator_email', 'etat', 'datasource', 'modele'
         ]
+        read_only_fields = ['creator']
+

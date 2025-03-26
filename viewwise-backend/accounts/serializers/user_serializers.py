@@ -1,8 +1,6 @@
-# user_serializers.py
 from rest_framework import serializers
 from ..models import CustomUser
 
-# ✅ User Serializer
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for displaying user information."""
     class Meta:

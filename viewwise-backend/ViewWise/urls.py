@@ -10,8 +10,12 @@ urlpatterns = [
     path('api/agents/', include('agents.urls')),
     path('api/workflows/', include('workflows.urls')),
     path('api/companies/', include('companies.urls')),
-    path('api/users/', include('users.urls')),
     path('api/subscriptions/', include('subscriptions.urls')),
+    path('api/monitoring/', include('monitoring.urls')),
+    path('api/marketplace/', include('marketplace.urls')),
+    path('api/invitations/', include('invitations.urls'))
+
+
 
 
 

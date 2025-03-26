@@ -19,8 +19,20 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            user = request.user
+            data = {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone_number": user.phone_number,
+            }
+            return Response(data)
+
+    def delete(self, request):
+            user = request.user
+            user.delete()
+            return Response({"detail": "Compte supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
 
 
 # ✅ List All Users (SuperUser Only)
@@ -29,3 +41,4 @@ class UserListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsSuperUser]
+

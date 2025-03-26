@@ -22,7 +22,7 @@ class Agent(models.Model):
     agentRole = models.CharField(max_length=100)
     agentObjective = models.TextField()
     agentInstructions = models.TextField()
-    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_agents')
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     etat = models.CharField(max_length=50, choices=[('draft', 'Draft'), ('deployed', 'Deployed')])
     datasource = models.ForeignKey(DataSource, on_delete=models.CASCADE)
     modele = models.ForeignKey(Modele, on_delete=models.CASCADE)
