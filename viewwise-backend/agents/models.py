@@ -4,7 +4,7 @@ from accounts.models import CustomUser
 class DataSource(models.Model):
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=100)
-    config = models.JSONField()
+    config = models.JSONField(default=dict)
 
     def __str__(self):
         return self.name
@@ -29,3 +29,11 @@ class Agent(models.Model):
 
     def __str__(self):
         return self.agentName
+
+class AgentFile(models.Model):
+    agent = models.ForeignKey(Agent, related_name='files', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='agent_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name
