@@ -373,3 +373,27 @@ $box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 .menu-options button i {
   margin-right: 6px;
 }
+.card-container {
+  position: relative;
+}
+
+.menu-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  border-radius: 50%;
+  padding: 0.3rem 0.5rem;
+}
+
+.menu-floating {
+  position: absolute;
+  top: -10px; // au-dessus de la carte
+  right: -200px; // décale complètement en dehors
+  width: 180px;
+  z-index: 999;
+  background: white;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 0;
+}

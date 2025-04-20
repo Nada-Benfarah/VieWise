@@ -1,0 +1,143 @@
+$green: #75b800;
+$gray-light: #eef1f3;
+$bar-size: 6px;
+$bar-radius: 60px;
+$bar-bg: rgba(0, 0, 0, 0.075);
+$primary-hover: #007bff;
+$selected-bg: #e6f0ff;
+$selected-color: #003366;
+
+body {
+  background: $gray-light;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+
+.logo img {
+  width: 180px;
+  margin-bottom: 20px;
+}
+
+
+.progress-bar-container {
+  width: 100%;
+  max-width: 80%;
+  margin: 2rem auto;
+  background: $bar-bg;
+  border-radius: $bar-radius;
+  overflow: hidden;
+
+  .bar {
+    width: 100%;
+    height: $bar-size;
+  }
+
+  .progress {
+    height: $bar-size;
+    width: 0;
+    background: $green;
+    transition: width 0.5s ease;
+  }
+}
+
+
+.question-section {
+  margin-top: 1rem;
+
+  h4 {
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    margin-bottom: 1.5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    button {
+      padding: 12px 20px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+
+      &:hover {
+        border-color: $primary-hover;
+        background-color: #f0f8ff;
+      }
+
+      &.selected {
+        border-color: $primary-hover;
+        background-color: $selected-bg;
+        color: $selected-color;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+
+    .nav-btn {
+      padding: 0.8rem 2rem;
+      font-weight: bold;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &.back {
+        background-color: #ccc;
+        color: #000;
+
+        &:hover {
+          background-color: #b0b0b0;
+        }
+      }
+
+      &.next {
+        background-color: #000;
+        color: #fff;
+        margin-left: auto;
+
+        &:hover {
+          background-color: #333;
+        }
+
+        &:disabled {
+          background-color: #999;
+          cursor: not-allowed;
+        }
+      }
+
+      &.submit {
+        background-color: green;
+        color: white;
+
+        &:hover {
+          background-color: #faad14;
+        }
+
+        &:disabled {
+          background-color: #999;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}

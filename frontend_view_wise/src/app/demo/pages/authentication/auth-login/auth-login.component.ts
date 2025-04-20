@@ -39,13 +39,14 @@ export class AuthLoginComponent implements OnInit {
     });
   }
 
-  signIn() {
+  signIn(event?: Event) {
+    event?.preventDefault();
+    console.log("✅ Formulaire soumis avec :", this.signInForm.value);
+
     if (this.signInForm.invalid || this.isSaving) return;
 
     this.isSaving = true;
     this.errors = null;
-    console.log(this.signInForm.value,"uuuuu")
-
     this.authService.login(this.signInForm.value).subscribe({
       next: (res: any) => {
         this.isSaving = false;
@@ -57,11 +58,18 @@ export class AuthLoginComponent implements OnInit {
         } as User;
 
         this.storageService.setToken(access);
+        localStorage.setItem('current_user', JSON.stringify(user));
+
+        // Affichage dans la console
+        console.log("👤 Utilisateur connecté :", user);
+
         this.router.navigate(['/']);
       },
       error: (error) => {
         this.isSaving = false;
         this.errors = error.error?.detail || 'Échec de la connexion. Veuillez réessayer.';
+        alert('Vous devez activez votre adresse email avant de se connecter');
+
       }
     });
   }

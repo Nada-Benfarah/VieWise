@@ -23,7 +23,7 @@ export class AgentService {
   constructor(private http: HttpClient) {}
 
   getAllAgents() {
-    return this.http.get<Agent[]>(`${environment.apiBaseUrl}/api/agents/agents`);
+    return this.http.get<Agent[]>(this.apiUrl);
   }
 
   getAgentById(id: number) {
@@ -31,18 +31,31 @@ export class AgentService {
   }
 
   createAgent(agent: Agent) {
-    return this.http.post<Agent>(`${environment.apiBaseUrl}/api/agents/agents/`, agent);
+    return this.http.post<Agent>(this.apiUrl, agent);
+  }
+
+  uploadFile(agentId: number, file: File) {
+    const formData = new FormData();
+    formData.append('agent', agentId.toString());
+    formData.append('file', file);
+    return this.http.post(`${environment.apiBaseUrl}/api/agent-files/`, formData);
+  }
+
+  createAgentWithFiles(formData: FormData) {
+    return this.http.post(`${environment.apiBaseUrl}/api/agents/create-with-files/`, formData);
   }
 
   updateAgent(id: number, agent: Agent) {
     return this.http.put<Agent>(`${this.apiUrl}${id}/`, agent);
   }
 
-
+  updateAgentWithFiles(agentId: number, formData: FormData) {
+    return this.http.put(`${this.apiUrl}${agentId}/update-with-files/`, formData);
+  }
 
 
   deleteAgent(id: number) {
-    return this.http.delete(`${environment.apiBaseUrl}/api/agents/agents/${id}/`);
+    return this.http.delete(`${this.apiUrl}${id}/`);
   }
 
   getAllDatasources() {
@@ -51,6 +64,9 @@ export class AgentService {
 
   getAllModeles() {
     return this.http.get<any[]>(`${environment.apiBaseUrl}/api/agents/modeles/`);
+  }
+  deleteAgentFile(fileId: number) {
+    return this.http.delete(`${environment.apiBaseUrl}/api/agent-files/${fileId}/`);
   }
 
 }

@@ -39,6 +39,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/pricing-plans/pricing-plans.component').then((c) => c.PricingPlansComponent)
       },
       {
+        path: 'create-agent/:id',
+        loadComponent: () => import('./pages/agents/create-agent/create-agent.component').then((c) => c.CreateAgentComponent)
+      },
+      {
         path: 'create-agent',
         loadComponent: () => import('./pages/agents/create-agent/create-agent.component').then((c) => c.CreateAgentComponent)
       },
@@ -53,7 +57,12 @@ const routes: Routes = [
       {
         path: 'chatgpt-page',
         loadComponent: () => import('./pages/agents/chatgpt-page/chatgpt-page.component').then((c) => c.ChatgptPageComponent)
+      },
+      {
+        path: 'welcome',
+        loadComponent: () => import('./pages/welcome/welcome.component').then((c) => c.WelcomeComponent)
       }
+
 
 
     ]

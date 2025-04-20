@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   login(data: UserLoginForm) {
-    return this.http.post(`${environment.apiBaseUrl}/auth/login`, data);
+    return this.http.post(`${environment.apiBaseUrl}/auth/login/`, data);
   }
 
   register(data: UserRegisterForm) {

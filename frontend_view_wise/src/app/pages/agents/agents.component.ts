@@ -12,7 +12,6 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './agents.component.scss'
 })
 export class AgentsComponent implements OnInit {
-  activeMenu: number | null = null;
   agents: Agent[] = [];
 
   constructor(private router: Router, private agentService: AgentService) {}
@@ -32,12 +31,10 @@ export class AgentsComponent implements OnInit {
     });
   }
 
-  toggleMenu(index: number) {
-    this.activeMenu = this.activeMenu === index ? null : index;
-  }
+
 
   editAgent(agent: Agent) {
-    console.log('Modifier :', agent.agentName);
+    this.router.navigate(['/create-agent', agent.agentId]);
   }
 
   chatAgent(agent: Agent) {
