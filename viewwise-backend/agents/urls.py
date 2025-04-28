@@ -19,3 +19,5 @@ urlpatterns = [
     path('fetch-links/', FetchLinksFromWebsite.as_view(), name='fetch-links')
 
 ]
+
+

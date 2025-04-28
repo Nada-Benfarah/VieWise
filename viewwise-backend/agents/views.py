@@ -128,7 +128,7 @@ class AgentUpdateWithFilesView(UpdateAPIView):
 # ✅ Vue pour récupérer les liens d'un site web
 class FetchLinksFromWebsite(APIView):
     def post(self, request):
-        url = request.data.get('url')
+        url = request.data.get('websiteUrl')
         if not url:
             return Response({"error": "URL manquante."}, status=status.HTTP_400_BAD_REQUEST)
 
