@@ -194,15 +194,11 @@ export class CreateAgentComponent implements OnInit {
       return;
     }
 
-    const body = { websiteUrl: this.websiteUrl };
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'  // 🔥 Très important ici
-    });
+    const body = { websiteUrl: this.websiteUrl }; // ✅ on envoie bien 'websiteUrl'
 
     this.agentService.fetchLinksFromWebsite(body).subscribe({
-      next: (res) => {
-        this.websiteLinks = res.links;
+      next: (res: any) => {
+        this.websiteLinks = res.links; // ✅ 'links' récupéré correctement
       },
       error: (err) => {
         console.error('Erreur lors de la récupération des liens', err);
@@ -210,7 +206,6 @@ export class CreateAgentComponent implements OnInit {
       }
     });
   }
-
 
   removeLink(index: number): void {
     this.websiteLinks.splice(index, 1);
