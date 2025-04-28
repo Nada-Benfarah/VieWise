@@ -74,7 +74,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             last_name="",
             password=password
         )
-        user.is_active = False  # 👈 Désactive le compte à la création
+#         user.is_active = False  # 👈 Désactive le compte à la création
         user.save()
         return user
 

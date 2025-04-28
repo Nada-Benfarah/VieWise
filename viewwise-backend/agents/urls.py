@@ -1,7 +1,7 @@
 # agents/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AgentViewSet, DataSourceViewSet, ModeleViewSet, AgentFileViewSet, AgentCreateWithFilesView, AgentUpdateWithFilesView
+from .views import AgentViewSet, DataSourceViewSet, ModeleViewSet, AgentFileViewSet, AgentCreateWithFilesView, AgentUpdateWithFilesView, FetchLinksFromWebsite
 
 router = DefaultRouter()
 router.register(r'agents', AgentViewSet)
@@ -16,4 +16,6 @@ urlpatterns = [
 
     # ✅ Router DRF
     path('', include(router.urls)),
+    path('fetch-links/', FetchLinksFromWebsite.as_view(), name='fetch-links')
+
 ]

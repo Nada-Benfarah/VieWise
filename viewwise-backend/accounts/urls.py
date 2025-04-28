@@ -20,6 +20,7 @@ from accounts.views.user_views import (
     UserProfileView,
     UserListView
 )
+from accounts.views.onboarding_views import UserOnboardingView
 
 urlpatterns = [
     # ✅ Authentication
@@ -27,6 +28,8 @@ urlpatterns = [
     path("login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("onboarding/", UserOnboardingView.as_view(), name="user-onboarding"),
+
 
     # ✅ Password Reset
     path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset"),
