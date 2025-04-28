@@ -20,27 +20,21 @@
           </ul>
           <a class="card__cta cta" href="#">Essayer</a>
 
-          <button class="btn btn-light btn-sm dropdown-toggle menu-btn"
-                  type="button"
-                  id="dropdownMenu{{ i }}"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false">
+        <button class="menu-btn"
+                type="button"
+                id="dropdownMenu{{ i }}"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
 
-          </button>
-
-          <ul class="dropdown-menu menu-floating"
-              [attr.aria-labelledby]="'dropdownMenu' + i">
-            <li><button class="dropdown-item" (click)="editAgent(agent)"><i class="fas fa-pen"></i> Modifier</button></li>
-            <li><button class="dropdown-item" (click)="chatAgent(agent)"><i class="fas fa-comments"></i> Chat</button></li>
-            <li><button class="dropdown-item text-danger" (click)="deleteAgent(agent)"><i class="fas fa-trash"></i> Supprimer</button></li>
-          </ul>
-
+        <ul class="dropdown-menu menu-floating"
+            [attr.aria-labelledby]="'dropdownMenu' + i">
+          <li><button class="dropdown-item" (click)="editAgent(agent)"><i class="fas fa-pen"></i> Modifier</button></li>
+          <li><button class="dropdown-item" (click)="chatAgent(agent)"><i class="fas fa-comments"></i> Chat</button></li>
+          <li><button class="dropdown-item text-danger" (click)="deleteAgent(agent)"><i class="fas fa-trash"></i> Supprimer</button></li>
+        </ul>
       </div>
     </div>
   </div>
-  </div>
-
-
-
-
-
+</div>

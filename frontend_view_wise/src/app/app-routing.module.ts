@@ -57,10 +57,6 @@ const routes: Routes = [
       {
         path: 'chatgpt-page',
         loadComponent: () => import('./pages/agents/chatgpt-page/chatgpt-page.component').then((c) => c.ChatgptPageComponent)
-      },
-      {
-        path: 'welcome',
-        loadComponent: () => import('./pages/welcome/welcome.component').then((c) => c.WelcomeComponent)
       }
 
 
@@ -79,6 +75,10 @@ const routes: Routes = [
         path: 'register',
         loadComponent: () =>
           import('./demo/pages/authentication/auth-register/auth-register.component').then((c) => c.AuthRegisterComponent)
+      },
+      {
+        path: 'welcome',
+        loadComponent: () => import('./pages/welcome/welcome.component').then((c) => c.WelcomeComponent)
       }
     ]
   }

@@ -172,11 +172,54 @@
             <span class="tools-count">0 / 5 activés</span>
             <p class="tools-desc">Ajoutez des outils pour enrichir le fonctionnement de votre modèle IA.</p>
           </div>
-          <button class="btn-add-tool" type="button">
-            <span class="plus-icon">+</span> Ajouter un outil
-          </button>
+          <div class="dropup position-relative">
+            <!-- Bouton Add Tool -->
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="plus-icon">+</span> Ajouter un outil
+            </button>
+
+            <!-- Card affichée au-dessus -->
+            <ul class="dropdown-menu show-tools-menu">
+              <div class="tools-dropdown p-3">
+                <div *ngFor="let category of toolsAvailable" class="tools-category">
+                  <h5 class="category-title">{{ category.category }}</h5>
+                  <div *ngFor="let tool of category.tools" class="tool-item">
+                    <i class="{{ tool.icon }}"></i>
+                    <span>{{ tool.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </ul>
+          </div>
+
+
+
+
         </div>
       </div>
+
+
+      <div class="form-group">
+        <label for="website-url">Entrer une URL pour récupérer les liens</label>
+        <div class="d-flex gap-2">
+          <input id="website-url" type="text" class="input" [(ngModel)]="websiteUrl" name="websiteUrl" placeholder="https://monsite.com" />
+          <button type="button" class="btn btn-secondary" (click)="fetchWebsiteLinks()">Charger les liens</button>
+        </div>
+      </div>
+
+      <!-- Liste des liens récupérés -->
+      <div *ngIf="websiteLinks.length > 0" class="links-list">
+        <h5>Liens trouvés :</h5>
+        <ul>
+          <li *ngFor="let link of websiteLinks; let i = index">
+            {{ link }}
+            <button type="button" class="btn btn-danger btn-sm ms-2" (click)="removeLink(i)">Supprimer</button>
+          </li>
+        </ul>
+      </div>
+
+
+
     </form>
   </section>
 </main>

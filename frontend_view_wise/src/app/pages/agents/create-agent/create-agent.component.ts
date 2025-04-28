@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { Agent, AgentService } from '../../../services/agents/agent.service';
 import { ActivatedRoute } from '@angular/router';
+import { HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-agent',
@@ -51,7 +52,25 @@ export class CreateAgentComponent implements OnInit {
   isEditMode = false;
   agentId: number | null = null;
   existingFiles: any[] = [];
-
+  toolsAvailable = [
+    { category: 'Email', tools: [{ name: 'Add Email', icon: 'fas fa-envelope' }] },
+    { category: 'Web', tools: [
+        { name: 'Scrape Website', icon: 'fas fa-globe' },
+        { name: 'Search News & Blog Articles', icon: 'fas fa-newspaper' },
+        { name: 'Web Search', icon: 'fas fa-search' },
+      ]},
+    { category: 'Calendrier', tools: [
+        { name: 'Google Calendar - Create Events', icon: 'fas fa-calendar-plus' },
+        { name: 'Google Calendar - Update Events', icon: 'fas fa-calendar-alt' },
+      ]},
+    { category: 'Réseaux sociaux', tools: [
+        { name: 'Facebook Create Post', icon: 'fab fa-facebook' },
+        { name: 'Instagram Create Post', icon: 'fab fa-instagram' },
+        { name: 'Instagram Read Comments', icon: 'fas fa-comments' },
+      ]}
+  ];
+  websiteUrl: string = '';
+  websiteLinks: string[] = [];
   constructor(private agentService: AgentService, private router: Router, private route: ActivatedRoute) {
   }
 
@@ -122,6 +141,8 @@ export class CreateAgentComponent implements OnInit {
     formData.append('creator', this.agent.creator.toString());
     formData.append('datasource', this.agent.datasource.toString());
     formData.append('modele', this.agent.modele.toString());
+    formData.append('website_links', JSON.stringify(this.websiteLinks));
+
 
     this.uploadedFiles.forEach(file => {
       formData.append('files', file, file.name);
@@ -166,5 +187,34 @@ export class CreateAgentComponent implements OnInit {
       });
     }
   }
+
+  fetchWebsiteLinks(): void {
+    if (!this.websiteUrl) {
+      alert("Veuillez saisir une URL valide.");
+      return;
+    }
+
+    const body = { websiteUrl: this.websiteUrl };
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'  // 🔥 Très important ici
+    });
+
+    this.agentService.fetchLinksFromWebsite(body).subscribe({
+      next: (res) => {
+        this.websiteLinks = res.links;
+      },
+      error: (err) => {
+        console.error('Erreur lors de la récupération des liens', err);
+        alert('Impossible de récupérer les liens.');
+      }
+    });
+  }
+
+
+  removeLink(index: number): void {
+    this.websiteLinks.splice(index, 1);
+  }
+
 
 }

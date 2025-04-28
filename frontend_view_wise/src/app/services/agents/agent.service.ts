@@ -1,5 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface Agent {
@@ -67,6 +68,11 @@ export class AgentService {
   }
   deleteAgentFile(fileId: number) {
     return this.http.delete(`${environment.apiBaseUrl}/api/agent-files/${fileId}/`);
+  }
+
+
+  fetchLinksFromWebsite(body: { websiteUrl: string }) {
+    return this.http.post<{ links: string[] }>(`${environment.apiBaseUrl}/api/fetch-links/`, body);
   }
 
 }

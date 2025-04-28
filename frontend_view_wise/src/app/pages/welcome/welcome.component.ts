@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AuthService, OnboardingData } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-welcome',
@@ -16,6 +18,11 @@ export class WelcomeComponent implements OnInit {
   selectedRole: string | null = null;
   selectedGoal: string | null = null;
   selectedCompany: string | null = null;
+
+  constructor(private authService: AuthService,private router: Router
+  ) {
+  }
+
 
   ngOnInit() {
     this.updateProgress();
@@ -63,6 +70,24 @@ export class WelcomeComponent implements OnInit {
   }
 
   submit(): void {
-    alert('Formulaire soumis avec succès !');
+    const onboardingData: OnboardingData = {
+      discovery: this.selectedDiscovery!,
+      role: this.selectedRole!,
+      goal: this.selectedGoal!,
+      company_size: this.selectedCompany!
+    };
+
+    this.authService.submitOnboarding(onboardingData).subscribe({
+      next: () => {
+        alert('Formulaire soumis avec succès !');
+        this.router.navigate(['/dashboard']);
+
+      },
+      error: (error) => {
+        console.error('Erreur lors de la soumission :', error);
+        alert('Une erreur est survenue lors de la soumission.');
+
+      }
+    });
   }
 }

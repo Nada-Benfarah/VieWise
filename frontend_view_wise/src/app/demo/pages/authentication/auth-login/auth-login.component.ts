@@ -47,10 +47,12 @@ export class AuthLoginComponent implements OnInit {
 
     this.isSaving = true;
     this.errors = null;
+
     this.authService.login(this.signInForm.value).subscribe({
       next: (res: any) => {
         this.isSaving = false;
         const { access, refresh, user } = res;
+
         this.authService.user = {
           id: user.id,
           email: user.email,
@@ -59,17 +61,24 @@ export class AuthLoginComponent implements OnInit {
 
         this.storageService.setToken(access);
         localStorage.setItem('current_user', JSON.stringify(user));
-
-        // Affichage dans la console
         console.log("👤 Utilisateur connecté :", user);
 
-        this.router.navigate(['/']);
+        // 🔍 Vérifier si l'onboarding est déjà rempli
+        this.authService.checkOnboardingCompleted().subscribe((completed) => {
+          if (completed) {
+            // ✅ Onboarding déjà rempli
+            this.router.navigate(['/']);
+          } else {
+            // ❌ Onboarding manquant
+            this.router.navigate(['/welcome']);
+          }
+        });
+
       },
       error: (error) => {
         this.isSaving = false;
         this.errors = error.error?.detail || 'Échec de la connexion. Veuillez réessayer.';
-        alert('Vous devez activez votre adresse email avant de se connecter');
-
+        alert('Vous devez activer votre adresse email avant de vous connecter');
       }
     });
   }

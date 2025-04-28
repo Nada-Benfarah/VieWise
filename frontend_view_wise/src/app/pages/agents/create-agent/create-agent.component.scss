@@ -497,7 +497,7 @@
 
 
 .file-size {
-  color: #6b46c1; // ou une autre couleur vive
+  color: #6b46c1;
   font-weight: bold;
 }
 .upload-area {
@@ -525,5 +525,96 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+
+.tools-dropdown {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+
+  .tools-category {
+    margin-bottom: 20px;
+
+    .category-title {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .tool-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+
+      i {
+        font-size: 18px;
+        color: #6b46c1;
+      }
+
+      span {
+        font-size: 14px;
+        color: #333;
+      }
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+}
+.show-tools-menu {
+  min-width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  transform: translateY(-10px);
+
+  .tools-dropdown {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .tools-category {
+    margin-bottom: 20px;
+
+    .category-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .tool-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      i {
+        font-size: 18px;
+        color: #007bff;
+      }
+
+      span {
+        font-size: 14px;
+        color: #333;
+      }
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
   }
 }
