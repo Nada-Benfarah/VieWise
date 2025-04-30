@@ -59,6 +59,15 @@ export const NavigationItems: NavigationItem[] = [
         url: '/pricing-plans',
         icon: 'dollar',
         breadcrumbs: false
+      },
+      {
+        id: 'workflow',
+        title: 'Workflow',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/workflow',
+        icon: 'apartment',
+        breadcrumbs: false
       }
 
     ]

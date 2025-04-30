@@ -1,0 +1,62 @@
+<!-- workflow-page.component.html -->
+<div class="workflow-page-container">
+  <h2 class="page-title">Workflows</h2>
+
+  <!-- Bouton de création -->
+  <div class="actions-bar">
+    <button class="create-btn" (click)="openModal()">
+      <span class="plus-icon">+</span> New Workflow
+    </button>
+  </div>
+
+  <!-- Liste vide ou workflows existants -->
+  <div class="workflow-list-empty" *ngIf="workflows.length === 0">
+    <p>Aucun workflow créé pour le moment.</p>
+  </div>
+  <div class="workflow-list" *ngIf="workflows.length > 0">
+    <div *ngFor="let flow of workflows" class="workflow-card">
+      <h3>{{ flow.name }}</h3>
+      <p>{{ flow.description }}</p>
+    </div>
+  </div>
+
+  <!-- Modal style carddd.gif -->
+  <div class="modal-overlay" *ngIf="isModalOpen">
+    <div class="modal-popup">
+      <div class="modal-header">
+        <h2>New workflow</h2>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+      <p class="modal-subtitle">
+        Let us know the job to be done for this workflow, and we'll generate it for you!
+      </p>
+      <p class="modal-hint">
+        For conditional logic, add router nodes manually in the workflow builder after this step.
+      </p>
+
+      <input
+        type="text"
+        [(ngModel)]="workflowName"
+        class="modal-input"
+        placeholder="Enter workflow name..."
+      />
+
+      <textarea
+        [(ngModel)]="jobDescription"
+        class="modal-textarea"
+        placeholder="Enter job description or add images...">
+    </textarea>
+
+      <button class="btn-generate" (click)="generateWithAI()">Generate with AI ✨</button>
+
+      <div class="modal-separator">or</div>
+
+      <div class="modal-options">
+        <button class="option-btn">Import from JSON ⬆️</button>
+        <button class="option-btn">Start from scratch ✏️</button>
+        <button class="option-btn">Browse templates 📄</button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -57,6 +57,14 @@ const routes: Routes = [
       {
         path: 'chatgpt-page',
         loadComponent: () => import('./pages/agents/chatgpt-page/chatgpt-page.component').then((c) => c.ChatgptPageComponent)
+      },
+      {
+        path: 'workflow',
+        loadComponent: () => import('./pages/workflow/workflow.component').then((c) => c.WorkflowComponent)
+      },
+      {
+        path: 'workflow/editor',
+        loadComponent: () => import('./pages/workflow/worflow-editor/worflow-editor.component').then((c) => c.WorflowEditorComponent)
       }
 
 

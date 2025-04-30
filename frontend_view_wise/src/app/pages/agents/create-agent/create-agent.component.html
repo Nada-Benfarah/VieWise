@@ -203,7 +203,9 @@
         <label for="website-url">Entrer une URL pour récupérer les liens</label>
         <div class="d-flex gap-2">
           <input id="website-url" type="text" class="input" [(ngModel)]="websiteUrl" name="websiteUrl" placeholder="https://monsite.com" />
-          <button type="button" class="btn btn-secondary" (click)="fetchWebsiteLinks()">Charger les liens</button>
+          <button type="button" class="btn-charger-liens" (click)="fetchWebsiteLinks()">
+            <i class="fas fa-link"></i> Charger les liens
+          </button>
         </div>
       </div>
 
@@ -213,7 +215,7 @@
         <ul>
           <li *ngFor="let link of websiteLinks; let i = index">
             {{ link }}
-            <button type="button" class="btn btn-danger btn-sm ms-2" (click)="removeLink(i)">Supprimer</button>
+            <button type="button" class="btn-delete-link" (click)="removeLink(i)"></button>
           </li>
         </ul>
       </div>
