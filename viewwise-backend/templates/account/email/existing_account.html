@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Compte déjà existant</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+<table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+    <tr>
+        <td style="padding: 24px; background-color: #a797ff; text-align: center;">
+            <h1 style="color: #000; font-weight: 900; margin: 0;">VIEWISE</h1>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 32px;">
+            <h2 style="color: #292929;">Votre compte existe déjà</h2>
+            <p style="font-size: 16px; color: #333;">
+                Bonjour,
+            </p>
+            <p style="font-size: 16px; color: #333;">
+                Un compte utilisant l'adresse <strong>{{ email }}</strong> existe déjà sur ViewWise.
+            </p>
+            <p style="font-size: 16px; color: #333;">
+                Si vous avez oublié votre mot de passe, vous pouvez le réinitialiser en cliquant ci-dessous :
+            </p>
+            <p style="text-align: center; margin: 32px 0;">
+                <a href="{{ password_reset_url }}" style="display: inline-block; background-color: #8863ef; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none;">Réinitialiser mon mot de passe</a>
+            </p>
+            <p style="font-size: 14px; color: #777;">
+                Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 16px; background-color: #f8f6ff; text-align: center; font-size: 12px; color: #999;">
+            © 2025 ViewWise. Tous droits réservés.
+        </td>
+    </tr>
+</table>
+</body>
+</html>

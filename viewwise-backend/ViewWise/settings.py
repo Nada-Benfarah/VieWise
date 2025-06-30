@@ -84,6 +84,9 @@ ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
+ACCOUNT_ADAPTER = "accounts.adapters.CustomAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.CustomSocialAccountAdapter"
+
 # 📌 Social Login Providers Configuration
 SOCIALACCOUNT_PROVIDERS = {
    'google': {
@@ -115,8 +118,9 @@ SOCIALACCOUNT_PROVIDERS = {
 # 📌 Django REST Framework (DRF) configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',

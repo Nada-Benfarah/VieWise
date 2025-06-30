@@ -15,10 +15,6 @@ class DataSource(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def get_urls(self):
-        """Retourne la liste des URLs si la source est un ensemble de liens."""
-        return self.config.get('urls', []) if isinstance(self.config, dict) else []
-
     def __str__(self):
         return self.name
 
@@ -45,6 +41,14 @@ class Agent(models.Model):
 
     def __str__(self):
         return self.agentName
+
+class Link(models.Model):
+    url = models.JSONField()  # Remplace TextField par JSONField
+    agent = models.ForeignKey(Agent, related_name='links', on_delete=models.CASCADE)
+    source_name = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.url
 
 class AgentFile(models.Model):
     agent = models.ForeignKey(Agent, related_name='files', on_delete=models.CASCADE)

@@ -6,8 +6,8 @@ from rest_framework.generics import UpdateAPIView
 from django.db import transaction
 import json
 
-from .models import Agent, DataSource, Modele, AgentFile
-from .serializers import AgentSerializer, DataSourceSerializer, ModeleSerializer, AgentFileSerializer
+from .models import Agent, DataSource, Modele, AgentFile, Link
+from .serializers import AgentSerializer, DataSourceSerializer, ModeleSerializer, AgentFileSerializer, LinkSerializer
 from .document_loader import DocumentLoader
 
 # ✅ Vue pour CRUD des agents
@@ -38,14 +38,13 @@ class AgentFileViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# ✅ Vue pour création d'agent + fichiers
 class AgentCreateWithFilesView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     @transaction.atomic
     def post(self, request):
         try:
-            # Données agent de base
+            # ⚙️ Données principales de l'agent
             agent_data = {
                 'agentName': request.data.get('agentName'),
                 'agentRole': request.data.get('agentRole'),
@@ -54,41 +53,37 @@ class AgentCreateWithFilesView(APIView):
                 'creator': request.data.get('creator'),
                 'etat': request.data.get('etat'),
                 'datasource': request.data.get('datasource'),
-                'modele': request.data.get('modele')
+                'modele': request.data.get('modele'),
             }
 
-            # ➔ Vérifie si des liens personnalisés sont envoyés
-            website_links = request.data.get('website_links')
-            if website_links:
-                links = json.loads(website_links)
-                datasource = DataSource.objects.create(
-                    name=f"Import depuis {request.data.get('agentName')}",
-                    type="custom_links",
-                    config={"urls": links}
-                )
-                agent_data['datasource'] = datasource.id  # Remplace la datasource par la nouvelle
-
-            # ➔ Création de l'agent
+            # 📦 Création de l'agent
             agent_serializer = AgentSerializer(data=agent_data)
-            if agent_serializer.is_valid():
-                agent = agent_serializer.save()
-            else:
-                return Response(agent_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            agent_serializer.is_valid(raise_exception=True)
+            agent = agent_serializer.save()
 
-            # ➔ Ajout des fichiers uploadés
+            # 📁 Fichiers liés
             files = request.FILES.getlist('files')
             for f in files:
                 AgentFile.objects.create(agent=agent, file=f)
 
+            # 🌐 Gestion des liens d’un seul site web
+            site_web = request.data.get('site_web')  # ex: "https://example.com"
+            website_links = request.data.get('website_links')  # JSON array de liens
+
+            if site_web and website_links:
+                links = json.loads(website_links)  # liste de chaînes d'URLs
+                for url in links:
+                    Link.objects.create(agent=agent, url=url, source_name=site_web)
+
             return Response({
-                "message": "Agent et fichiers créés avec succès",
-                "agent": agent_serializer.data
+                "message": "Agent, fichiers et liens créés avec succès",
+                "agent": AgentSerializer(agent).data
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# ✅ Vue pour mise à jour d'un agent + ajout de fichiers
+
 class AgentUpdateWithFilesView(UpdateAPIView):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
@@ -96,7 +91,7 @@ class AgentUpdateWithFilesView(UpdateAPIView):
 
     @transaction.atomic
     def put(self, request, *args, **kwargs):
-        instance = self.get_object()
+        agent = self.get_object()
 
         agent_data = {
             'agentName': request.data.get('agentName'),
@@ -109,21 +104,30 @@ class AgentUpdateWithFilesView(UpdateAPIView):
             'modele': request.data.get('modele')
         }
 
-        serializer = AgentSerializer(instance, data=agent_data)
-        if serializer.is_valid():
-            agent = serializer.save()
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = AgentSerializer(agent, data=agent_data)
+        serializer.is_valid(raise_exception=True)
+        agent = serializer.save()
 
-        # Ajout des fichiers supplémentaires
+        # 📁 Ajout de fichiers supplémentaires
         files = request.FILES.getlist('files')
         for f in files:
             AgentFile.objects.create(agent=agent, file=f)
 
+        # 🔁 Mise à jour des liens (remplace les anciens)
+        site_web = request.data.get('site_web')
+        website_links = request.data.get('website_links')
+
+        if site_web and website_links:
+            links = json.loads(website_links)
+            agent.links.all().delete()  # supprime les anciens liens
+            for url in links:
+                Link.objects.create(agent=agent, url=url, source_name=site_web)
+
         return Response({
             "message": "Agent mis à jour avec succès",
-            "agent": serializer.data
+            "agent": AgentSerializer(agent).data
         }, status=status.HTTP_200_OK)
+
 
 # ✅ Vue pour récupérer les liens d'un site web
 class FetchLinksFromWebsite(APIView):
