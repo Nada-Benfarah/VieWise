@@ -292,3 +292,71 @@
   }
 }
 
+.selected-agent {
+  border: 2px solid #7f00ff;
+  box-shadow: 0 0 0 4px rgba(127, 0, 255, 0.15);
+}
+
+
+line.show {
+  opacity: 1;
+}
+
+.save-workflow-btn {
+  margin-left: 10px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.subflow-box {
+  position: absolute;
+  border: 2px dashed #8aa5ff;
+  background: rgba(138, 165, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  color: #4e74f9;
+  pointer-events: none;
+  z-index: 0;
+}
+.group-box {
+  position: absolute;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: rgba(230, 240, 255, 0.3);
+  z-index: 0;
+  pointer-events: none;
+
+  .group-label {
+    position: absolute;
+    top: -20px;
+    left: 10px;
+    font-weight: bold;
+    font-size: 12px;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+}
+.workflow-node[fixed] {
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+.workflow-editor-container {
+  max-height: 700px;
+  overflow: hidden;
+  transform: scale(0.85);
+  transform-origin: top center;
+}
+.cloned-badge {
+  background: #ffe0f0;
+  color: #c2185b;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 12px;
+  font-weight: 600;
+}

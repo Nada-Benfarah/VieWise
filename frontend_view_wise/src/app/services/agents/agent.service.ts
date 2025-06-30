@@ -3,17 +3,28 @@
   import { Observable } from 'rxjs';
   import { environment } from 'src/environments/environment';
 
+  export interface Link {
+    id?: number;
+    url: string;
+    description?: string;
+  }
+
   export interface Agent {
+    links: any;
     agentId?: number;
     agentName: string;
     agentRole: string;
     agentObjective: string;
     agentInstructions: string;
-    etat: 'draft' | 'deployed';
+    creator?: number;
+    creator_email?: string;
+    etat: string;
     datasource: number;
     modele: number;
-    creator?: number;
+    files?: File[];
+    site_web?: string;
   }
+
 
   @Injectable({
     providedIn: 'root',

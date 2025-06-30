@@ -2,11 +2,10 @@
   <div class="auth-wrapper v3">
     <div class="auth-form">
       <div class="auth-header">
-        <a href="javascript:"><img src="assets/images/logo-dark.svg" alt="logo" /></a>
+        <a href="javascript:"><img src="assets/images/logo.svg" class="view-logo" alt="logo" /></a>
       </div>
 
       <div class="card my-5">
-        <!-- ✅ ici on remplace <div> par <form> -->
         <form [formGroup]="signInForm" (ngSubmit)="signIn($event)" novalidate class="card-body">
           <div class="d-flex justify-content-between align-items-end mb-4">
             <h3 class="mb-0"><b>Login</b></h3>
@@ -52,7 +51,11 @@
             @for (item of SignInOptions; track item) {
               <div class="col-4">
                 <div class="d-grid">
-                  <button type="button" class="btn mt-2 btn-light-primary bg-light text-muted">
+                  <button
+                    type="button"
+                    class="btn mt-2 btn-light-primary bg-light text-muted"
+                    (click)="handleGoogleClick()"
+                  >
                     <img src="{{ item.image }}" alt="google img" />
                     <span class="d-none d-sm-inline-block">{{ item.name }}</span>
                   </button>
@@ -60,6 +63,7 @@
               </div>
             }
           </div>
+
         </form>
       </div>
 

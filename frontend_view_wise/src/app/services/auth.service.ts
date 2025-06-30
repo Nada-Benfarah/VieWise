@@ -2,7 +2,7 @@ import { StorageService } from './storage.service';
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface UserLoginForm {
@@ -108,6 +108,19 @@ export class AuthService {
       })
     );
   }
+
+  loginWithGoogle(idToken: string) {
+    return this.http.post(`${environment.apiBaseUrl}/auth/social/google/`, {
+      access_token: idToken
+    }).pipe(
+      catchError((err) => {
+        console.error('Erreur Google login:', err);
+        return throwError(() => err); // ← on renvoie l'erreur d'origine
+      })
+    );
+  }
+
+
 
 
 }

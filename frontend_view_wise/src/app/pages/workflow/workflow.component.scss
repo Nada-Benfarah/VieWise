@@ -1,3 +1,5 @@
+$primary-color: #4a196a;
+
 .workflow-page-container {
   padding: 2rem;
   background-color: #f7f8fa;
@@ -11,10 +13,11 @@
 
 .actions-bar {
   margin-bottom: 1.5rem;
+
 }
 
 .create-btn {
-  background-color: #7f00ff;
+  background-color: $primary-color;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -22,6 +25,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease;
+
 }
 
 .create-btn:hover {
@@ -120,66 +124,182 @@
   margin-bottom: 20px;
 }
 
-.btn-generate {
-  width: 100%;
-  background: linear-gradient(135deg, #7f00ff, #e100ff);
-  border: none;
-  padding: 12px;
-  border-radius: 12px;
+
+.create-btn {
+  background:$primary-color;;
   color: white;
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 10px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.3s ease;
 
-  &:hover {
-    background: linear-gradient(135deg, #9d35ff, #7f00ff);
+  .plus-icon {
+    margin-right: 8px;
+    font-weight: bold;
   }
+
+
 }
 
-.modal-separator {
-  margin: 10px 0;
-  color: #999;
-  font-size: 12px;
+.workflow-list-empty {
+  text-align: center;
+  color: #666;
+  font-size: 15px;
+  padding: 2rem;
+  border: 1px dashed #aaa;
+  background-color: #fff;
+  border-radius: 10px;
 }
 
-.modal-options {
+.workflow-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.workflow-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  border-top: 4px solid #7f00ff;
+  transition: transform 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
 
-  .option-btn {
-    width: 100%;
-    background: #f4f1fb;
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-header h3 {
+    font-size: 18px;
+    color: #222;
+    margin: 0 0 6px;
+  }
+
+  .card-header p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 12px;
+  }
+
+  .editor-btn {
+    margin-top: auto;
+    background-color: #7f00ff;
+    color: white;
     border: none;
-    padding: 12px;
-    border-radius: 10px;
-    color: #5f2aa0;
-    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
     font-size: 14px;
     cursor: pointer;
+    transition: background 0.3s ease;
 
     &:hover {
-      background: #ebe3fb;
+      background-color: #9d35ff;
     }
   }
 }
+.workflow-card {
+  // ... (garde les styles précédents)
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+  .card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+    gap: 8px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .editor-btn,
+  .delete-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .editor-btn {
+    background-color: #7f00ff;
+    color: white;
+
+    &:hover {
+      background-color: #9d35ff;
+    }
+  }
+
+  .delete-btn {
+    background-color: #f44336;
+    color: white;
+
+    &:hover {
+      background-color: #d32f2f;
+    }
   }
 }
-.modal-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-bottom: 16px;
+.workflow-card {
+  position: relative;
+  background: #fff;
+  padding: 1.2rem 1rem 1rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #7f00ff;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    color: #555;
+
+    &:hover {
+      color: #000;
+      transform: scale(1.1);
+    }
+  }
+
+  .delete-btn {
+    color: #d32f2f;
+
+    &:hover {
+      color: #b71c1c;
+    }
+  }
+
+  .card-content {
+    padding-top: 20px;
+  }
+
+  .workflow-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c2c2c;
+    margin: 0 0 6px 0;
+  }
+
+  .workflow-description {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+  }
 }

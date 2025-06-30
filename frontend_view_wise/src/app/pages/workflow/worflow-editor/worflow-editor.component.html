@@ -1,13 +1,21 @@
 <div class="workflow-editor-container">
   <!-- Barre d'outils supérieure -->
   <div class="action-bar">
-    <button class="new-node-btn" (click)="toggleDropdown()">+ New node</button>
+    <button *ngIf="!readonly" class="new-node-btn" (click)="toggleDropdown()">+ New node</button>
+
+    <button *ngIf="!readonly" class="save-workflow-btn" (click)="saveWorkflowToBackend()">
+      💾 {{ editingWorkflowId ? 'Mettre à jour le Workflow' : 'Enregistrer le Workflow' }}
+    </button>
 
     <!-- Contrôles de zoom alignés à droite -->
     <div class="zoom-controls">
       <button (click)="zoomOut()">−</button>
       <span>{{ (zoom * 100) | number:'1.0-0' }}%</span>
       <button (click)="zoomIn()">+</button>
+    </div>
+
+    <div class="workflow-header">
+      <span *ngIf="isCloned" class="cloned-badge">Cloné depuis un workflow</span>
     </div>
   </div>
 
@@ -20,46 +28,80 @@
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#4e74f9" />
           </marker>
         </defs>
-        <line *ngFor="let line of connectors"
+        <line *ngFor="let line of connectors; let i = index"
               [attr.x1]="line.x1" [attr.y1]="line.y1"
               [attr.x2]="line.x2" [attr.y2]="line.y2"
               stroke="#4e74f9"
               stroke-width="2"
               stroke-dasharray="6,4"
-              marker-end="url(#arrow)" />
+              marker-end="url(#arrow)"
+              class="show"
+              (click)="removeRelation(i)"
+              style="cursor: pointer" />
+
+
       </svg>
+
+
+      <!-- Encadrés pour les subflows -->
+      <!-- GroupBoxes -->
+      <div *ngFor="let box of groupBoxes"
+           class="group-box"
+           [style.left.px]="box.x"
+           [style.top.px]="box.y"
+           [style.width.px]="box.width"
+           [style.height.px]="box.height">
+        <div class="group-label">{{ box.id }}</div>
+      </div>
+
+
+
+
 
       <!-- Nœuds du workflow -->
       <div  *ngFor="let node of nodes; let i = index"
-           class="workflow-node"
-           [style.left.px]="node.x"
-           [style.top.px]="node.y"
-           (mousedown)="startDrag($event, i)">
+            class="workflow-node"
+            [attr.fixed]="node.groupId ? true : null"
+            [style.left.px]="node.x"
+            [style.top.px]="node.y"
+            (mousedown)="startDrag($event, i)">
 
-        <!-- Icône et label du nœud -->
+
+      <!-- Icône et label du nœud -->
         <div class="node-icon">{{ getIconForType(node.type) }}</div>
-        <div class="node-label">{{ node.label }}</div>
+        <div class="node-label" [ngClass]="{ 'has-tooltip': node.metadata?.tasks?.length }">
+          {{ node.label }}
+          <div class="tooltip" *ngIf="node.metadata?.tasks?.length">
+            <strong>Tâches :</strong>
+            <ul>
+              <li *ngFor="let task of node.metadata.tasks">{{ task }}</li>
+            </ul>
+          </div>
+        </div>
+
 
         <!-- Bouton de suppression -->
-        <button class="delete-btn" (click)="removeNode(i)">✖</button>
+        <button *ngIf="!readonly" class="delete-btn" (click)="removeNode(i)">✖</button>
 
         <!-- Bouton + sous chaque nœud -->
-        <div *ngIf="i !== nodes.length - 1" class="plus-node-btn" (click)="toggleDropdown(i)">+</div>
+        <div *ngIf="!readonly && i !== nodes.length - 1" class="plus-node-btn" (click)="toggleDropdown(i)">+</div>
 
         <!-- Liste déroulante liée à ce nœud -->
         <div *ngIf="dropdownVisible && dropdownIndex === i" class="dropdown dropdown-inline">
           <ul>
             <li (click)="addNode('human')">👤 Human Input</li>
             <li (click)="addNode('agent')">🤖 Agent</li>
+            <li (click)="addNode('orchestrator')">🛠 Orchestrator</li>
             <li (click)="addNode('loop')">🔁 Loop</li>
-            <li (click)="addNode('router')">🔀 Router</li>
-            <li (click)="addNode('code')">💻 Code</li>
-            <li (click)="addNode('webhook')">🌐 Webhook</li>
+            <li (click)="addNode('optimizer')">⚖ Optimizer</li>
+            <li (click)="addNode('subflow')">🔂 Subflow</li>
           </ul>
         </div>
 
         <!-- Indicateur de fin -->
-        <div *ngIf="i === nodes.length - 1" class="end-indicator">End</div>
+<!--        <div *ngIf="i === nodes.length - 1" class="end-indicator">End</div>-->
+        <div  class="plus-node-btn" (click)="toggleDropdown(i)">+</div>
+
       </div>
     </div>
 
@@ -68,11 +110,23 @@
       <ul>
         <li (click)="addNode('human')">👤 Human Input</li>
         <li (click)="addNode('agent')">🤖 Agent</li>
+        <li (click)="addNode('orchestrator')">🛠 Orchestrator</li>
         <li (click)="addNode('loop')">🔁 Loop</li>
-        <li (click)="addNode('router')">🔀 Router</li>
-        <li (click)="addNode('code')">💻 Code</li>
-        <li (click)="addNode('webhook')">🌐 Webhook</li>
+        <li (click)="addNode('optimizer')">⚖ Optimizer</li>
+        <li (click)="addNode('subflow')">🔂 Subflow</li>
       </ul>
     </div>
   </div>
+  <app-orchestrator-modal
+    *ngIf="orchestratorModalVisible"
+    [availableWorkflows]="availableSubflows"
+    [mode]="modalMode"
+    [availableAgents]="availableAgents"
+    (close)="closeOrchestratorModal()"
+    (saveData)="handleModalSave($event)">
+  </app-orchestrator-modal>
+
+
+
 </div>
+

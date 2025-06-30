@@ -7,9 +7,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
-import { Agent, AgentService } from '../../../services/agents/agent.service';
+import { Agent, AgentService, Link } from '../../../services/agents/agent.service';
 import { ActivatedRoute } from '@angular/router';
-import { HttpHeaders } from '@angular/common/http';
+import { NotificationService } from '../../../services/notification/notification.service';
 
 @Component({
   selector: 'app-create-agent',
@@ -35,6 +35,7 @@ export class CreateAgentComponent implements OnInit {
   defaultModel = { id: 1, name: 'GPT-4 Turbo', description: 'Modèle de génération avancé' };
 
   agent: Agent = {
+    links: [],
     agentName: '',
     agentRole: '',
     agentObjective: '',
@@ -42,6 +43,8 @@ export class CreateAgentComponent implements OnInit {
     datasource: this.defaultDatasource.id,
     modele: this.defaultModel.id,
     etat: 'draft',
+    site_web:''
+
 
   };
 
@@ -69,37 +72,62 @@ export class CreateAgentComponent implements OnInit {
         { name: 'Instagram Read Comments', icon: 'fas fa-comments' },
       ]}
   ];
-  websiteUrl: string = '';
+
   websiteLinks: string[] = [];
-  constructor(private agentService: AgentService, private router: Router, private route: ActivatedRoute) {
+  loadingLinks = false;
+  errorLoadingLinks = '';
+  constructor(private notificationService: NotificationService,private agentService: AgentService, private router: Router, private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
+    const state = history.state;
     this.agentId = Number(this.route.snapshot.paramMap.get('id'));
-    this.isEditMode = !!this.agentId;
+    const isCloning = !!state?.isClone;
 
-    if (this.isEditMode) {
-      this.agentService.getAgentById(this.agentId!).subscribe(agent => {
-        this.agent = {
-          ...agent,
-          datasource: agent.datasource, // ou agent.datasource.id
-          modele: agent.modele,         // ou agent.modele.id
-        };
-        this.existingFiles = (agent as any).files || [];
+    this.isEditMode = !!this.agentId && !isCloning;
 
+    console.log('isCloning:', isCloning);
+    console.log('agentId:', this.agentId);
+    console.log('isEditMode:', this.isEditMode);
+
+    if (this.agentId) {
+      this.agentService.getAgentById(this.agentId).subscribe(agent => {
+        if (isCloning) {
+          // ✅ Mode clonage
+          this.agent = {
+            ...agent,
+            agentName: agent.agentName + ' (Copie)',
+            etat: 'draft',
+            creator: null, // sera re-set plus tard
+          };
+          this.agentId = null; // ID nul pour forcer une création
+          this.isEditMode = false;
+        } else {
+          // ✅ Mode édition
+          this.agent = agent;
+          this.existingFiles = agent.files || [];
+          this.isEditMode = true;
+        }
+
+        try {
+          this.websiteLinks = agent.links.map(linkObj => linkObj.url?.url || '').filter(Boolean);
+          if (agent.links.length > 0) {
+            this.agent.site_web = agent.links[0].source_name || '';
+          }
+        } catch (err) {
+          console.error("Erreur lors du traitement des liens :", err);
+        }
       });
     }
 
     const storedUser = localStorage.getItem('current_user');
-    if (storedUser && !this.isEditMode) {
+    if (storedUser && !this.agent.creator) {
       const user = JSON.parse(storedUser);
       this.agent.creator = user.id;
     }
 
-    // Instructions par défaut si création
     if (!this.isEditMode) {
       this.agent.agentInstructions = `Vous êtes une IA qui répond à des questions via une base de connaissances.
-
 - Pour chaque message, vous recevrez un contexte de la base de connaissances et un message utilisateur.
 - Soyez bref et poli.
 - Soyez conversationnel et amical.`;
@@ -130,86 +158,115 @@ export class CreateAgentComponent implements OnInit {
   removeFile(fileToRemove: File): void {
     this.uploadedFiles = this.uploadedFiles.filter(file => file !== fileToRemove);
   }
-
   submitAgent(): void {
     const formData = new FormData();
+
     formData.append('agentName', this.agent.agentName);
     formData.append('agentRole', this.agent.agentRole);
     formData.append('agentObjective', this.agent.agentObjective);
     formData.append('agentInstructions', this.agent.agentInstructions);
     formData.append('etat', this.agent.etat);
+
+    // ✅ Sécuriser creator, utile pour clonage depuis marketplace
+    if (!this.agent.creator) {
+      const storedUser = localStorage.getItem('current_user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        this.agent.creator = user.id;
+      } else {
+        this.notificationService.error("Utilisateur non identifié. Impossible de créer l'agent.");
+        return;
+      }
+    }
+
     formData.append('creator', this.agent.creator.toString());
     formData.append('datasource', this.agent.datasource.toString());
     formData.append('modele', this.agent.modele.toString());
-    formData.append('website_links', JSON.stringify(this.websiteLinks));
 
-
+    // ✅ Fichiers uploadés
     this.uploadedFiles.forEach(file => {
       formData.append('files', file, file.name);
     });
 
+    // ✅ Traitement des liens du site web
+    const validLinks = (this.websiteLinks || [])
+      .filter(link => typeof link === 'string' && link.trim().length > 0)
+      .map(url => ({ url, description: '', source_name: this.agent.site_web || '' }));
+
+    formData.append('website_links', JSON.stringify(validLinks));
+    formData.append('site_web', this.agent.site_web || '');
+
+    // ✅ Création ou mise à jour selon mode
     if (this.isEditMode && this.agentId) {
       this.agentService.updateAgentWithFiles(this.agentId, formData).subscribe({
         next: () => {
-          alert('Agent mis à jour avec succès.');
+          this.notificationService.success('Agent mis à jour avec succès.');
           this.router.navigate(['/agents']);
         },
         error: err => {
           console.error(err);
-          alert("Erreur lors de la mise à jour de l'agent.");
+          this.notificationService.error("Erreur lors de la mise à jour de l'agent.");
         }
       });
     } else {
       this.agentService.createAgentWithFiles(formData).subscribe({
         next: () => {
-          alert('Agent et fichiers créés avec succès.');
+          this.notificationService.success('Agent créé avec succès.');
           this.router.navigate(['/agents']);
         },
         error: err => {
           console.error(err);
-          alert("Erreur lors de la création de l'agent.");
+          this.notificationService.error("Erreur lors de la création de l'agent.");
         }
       });
     }
   }
+
+
 
   removeExistingFile(fileId: number) {
     if (confirm('Confirmer la suppression de ce fichier ?')) {
       this.agentService.deleteAgentFile(fileId).subscribe({
         next: () => {
           this.existingFiles = this.existingFiles.filter(f => f.id !== fileId);
-          alert('Fichier supprimé avec succès.');
+          this.notificationService.success('Fichier supprimé avec succès.');
         },
         error: (err) => {
           console.error('Erreur lors de la suppression du fichier :', err);
-          alert("Une erreur est survenue pendant la suppression.");
+          this.notificationService.error("Une erreur est survenue pendant la suppression.");
         }
       });
     }
+
   }
 
   fetchWebsiteLinks(): void {
-    if (!this.websiteUrl) {
-      alert("Veuillez saisir une URL valide.");
+    if (!this.agent.site_web) {
+      this.notificationService.warning("Veuillez saisir une URL valide.");
       return;
     }
 
-    const body = { websiteUrl: this.websiteUrl }; // ✅ on envoie bien 'websiteUrl'
-
+    const body = { websiteUrl: this.agent.site_web };
     this.agentService.fetchLinksFromWebsite(body).subscribe({
       next: (res: any) => {
-        this.websiteLinks = res.links; // ✅ 'links' récupéré correctement
+        this.websiteLinks = res.links || [];
+        this.notificationService.success("Liens récupérés avec succès.");
       },
       error: (err) => {
         console.error('Erreur lors de la récupération des liens', err);
-        alert('Impossible de récupérer les liens.');
+        this.notificationService.error('Impossible de récupérer les liens.');
       }
     });
+
   }
 
   removeLink(index: number): void {
-    this.websiteLinks.splice(index, 1);
+    const linkToRemove = this.websiteLinks[index];
+    if (confirm(`Confirmer la suppression du lien : ${linkToRemove} ?`)) {
+      this.websiteLinks.splice(index, 1);
+    }
   }
+
 
 
 }

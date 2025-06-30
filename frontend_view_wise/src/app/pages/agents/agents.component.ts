@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Agent, AgentService } from 'src/app/services/agents/agent.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
   selector: 'app-agents',
@@ -14,7 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class AgentsComponent implements OnInit {
   agents: Agent[] = [];
 
-  constructor(private router: Router, private agentService: AgentService) {}
+  constructor(private router: Router, private agentService: AgentService, private notificationService: NotificationService) {}
 
   ngOnInit() {
     this.loadAgents();
@@ -27,9 +28,11 @@ export class AgentsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur lors du chargement des agents :', err);
+        this.notificationService.error('Impossible de charger les agents.');
       }
     });
   }
+
 
 
 
@@ -46,13 +49,16 @@ export class AgentsComponent implements OnInit {
       this.agentService.deleteAgent(agent.agentId).subscribe({
         next: () => {
           this.agents = this.agents.filter(a => a.agentId !== agent.agentId);
+          this.notificationService.success(`Agent "${agent.agentName}" supprimé avec succès.`);
         },
         error: (err) => {
           console.error('Erreur suppression :', err);
+          this.notificationService.error(`Erreur lors de la suppression de l'agent "${agent.agentName}".`);
         }
       });
     }
   }
+
 
   goToCreateAgent() {
     this.router.navigate(['/create-agent']);

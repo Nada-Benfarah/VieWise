@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { WorkflowService } from '../../services/workflow/workflow.service';
+import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
   selector: 'app-workflow',
@@ -10,38 +12,45 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './workflow.component.html',
   styleUrls: ['./workflow.component.scss']
 })
-export class WorkflowComponent {
-  // ✅ propriétés nécessaires pour éviter les erreurs HTML
-  workflows: any[] = []; // vide par défaut, à peupler dynamiquement si besoin
-  isModalOpen: boolean = false;
-  jobDescription: string = '';
-  workflowName: string = '';
+export class WorkflowComponent implements OnInit {
+  workflows: any[] = [];
 
-  constructor(private router: Router) {}
-
-  openModal(): void {
-    this.isModalOpen = true;
+  constructor(private notificationService:NotificationService,private router: Router, private workflowService: WorkflowService) {
   }
 
-  closeModal(): void {
-    this.isModalOpen = false;
-    this.jobDescription = '';
-    this.workflowName = '';
+  ngOnInit(): void {
+    this.loadWorkflows();
   }
 
-  generateWithAI(): void {
-    if (!this.workflowName.trim() || !this.jobDescription.trim()) {
-      alert('Veuillez remplir le nom et la description.');
-      return;
-    }
+  loadWorkflows(): void {
+    this.workflowService.getAllWorkflows().subscribe({
+      next: (data) => this.workflows = data,
+      error: () => this.notificationService.error("Erreur lors du chargement des workflows")
 
-    console.log('Nom du workflow :', this.workflowName);
-    console.log('Description :', this.jobDescription);
+    });
+  }
 
-    this.router.navigate(['/workflow/editor'],{
-      state: {
-        name: this.workflowName,
-        description: this.jobDescription
+  goToCreateWorkflow(): void {
+    this.router.navigate(['/workflow/editor']);
+  }
+
+  openWorkflowEditor(workflow: any): void {
+    this.router.navigate(['/workflow/editor'], {
+      state: { loadedWorkflow: workflow }
+    });
+  }
+
+  deleteWorkflow(workflowId: number): void {
+    const confirmed = confirm("Êtes-vous sûr de vouloir supprimer ce workflow ?");
+    if (!confirmed) return;
+
+    this.workflowService.deleteWorkflow(workflowId).subscribe({
+      next: () => {
+        this.workflows = this.workflows.filter(wf => wf.workflowId !== workflowId);
+        this.notificationService.success("Workflow supprimé avec succès.")
+      },
+      error: () => {
+        this.notificationService.error("Erreur lors de la suppression du workflow.")
       }
     });
   }

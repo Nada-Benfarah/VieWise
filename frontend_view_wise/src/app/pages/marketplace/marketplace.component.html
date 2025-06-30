@@ -1,11 +1,18 @@
 <div class="marketplace-container">
+
+  <!-- Barre de navigation -->
+  <div class="view-switch">
+    <button [class.active]="viewMode === 'agents'" (click)="changeViewMode('agents')">🧠 Agents</button>
+    <button [class.active]="viewMode === 'workflows'" (click)="changeViewMode('workflows')">⚙️ Workflows</button>
+  </div>
+
   <!-- Barre de recherche -->
   <div class="search-bar">
     <input type="text" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="onSearchChange()" />
   </div>
 
-  <!-- Boutons de filtrage -->
-  <div class="filter-buttons">
+  <!-- Filtres (uniquement pour les agents) -->
+  <div class="filter-buttons" *ngIf="viewMode === 'agents'">
     <button class="filter-button" [class.active]="selectedCategory === 'Tous'" (click)="onCategoryChange('Tous')">Tous</button>
     <button class="filter-button" [class.active]="selectedCategory === 'Commercialisation'" (click)="onCategoryChange('Commercialisation')">Commercialisation</button>
     <button class="filter-button" [class.active]="selectedCategory === 'Entreprise'" (click)="onCategoryChange('Entreprise')">Entreprise</button>
@@ -16,15 +23,71 @@
     <button class="filter-button" [class.active]="selectedCategory === 'Légal'" (click)="onCategoryChange('Légal')">Légal</button>
   </div>
 
-  <!-- Grille des cartes agents -->
-  <div class="card-grid">
+  <!-- Grille des agents -->
+  <div *ngIf="viewMode === 'agents'" class="card-grid">
+    <!-- Dans la carte d’agent -->
     <div *ngFor="let item of filteredAgents" class="agent-card">
-      <div class="icon">
-        <i class="fas fa-robot"></i> <!-- Icône d'IA (robot) -->
-      </div>
+      <div class="icon"><i class="fas fa-robot"></i></div>
       <h3 class="agent-title">{{ item.agent.agentName }}</h3>
       <p class="agent-description">{{ item.agent.agentObjective }}</p>
+
+      <div class="card-actions animated-buttons">
+        <button class="modern-btn view" (click)="openAgentDetails(item.agent)">
+          <i class="fas fa-eye"></i> Voir
+        </button>
+        <button class="modern-btn clone" (click)="cloneAgent(item)">
+          <i class="fas fa-clone"></i> Cloner
+        </button>
+      </div>
+
     </div>
+
+  </div>
+
+  <!-- Grille des workflows -->
+  <div *ngIf="viewMode === 'workflows'" class="workflow-market-grid">
+    <div *ngFor="let wf of filteredWorkflows" class="workflow-market-card">
+      <h4 class="workflow-title">{{ wf.workflowName }}</h4>
+      <p class="workflow-desc">{{ wf.description }}</p>
+
+
+      <div class="card-actions animated-buttons">
+        <button class="modern-btn view" (click)="viewWorkflow(wf)">
+          <i class="fas fa-eye"></i> Voir
+        </button>
+        <button class="modern-btn clone" (click)="cloneWorkflow(wf)">
+          <i class="fas fa-clone"></i> Cloner
+        </button>
+      </div>
+
+    </div>
+
   </div>
 
 </div>
+<!-- Modal d’agent -->
+<div class="modal-overlay" *ngIf="showAgentModal">
+  <div class="modal-content">
+    <h2>Détails de l'Agent</h2>
+    <p><strong>Nom :</strong> {{ selectedAgent?.agentName }}</p>
+    <p><strong>Objectif :</strong> {{ selectedAgent?.agentObjective }}</p>
+    <p><strong>Rôle :</strong> {{ selectedAgent?.agentRole }}</p>
+    <p><strong>Instructions :</strong> {{ selectedAgent?.agentInstructions }}</p>
+    <button (click)="closeAgentModal()">Fermer</button>
+  </div>
+</div>
+<!-- Modal d'affichage du workflow -->
+<!-- Modal d'affichage du workflow -->
+<div class="modal-overlay" *ngIf="showWorkflowModal">
+  <div class="modal-content large">
+    <button class="modal-close-btn" (click)="closeWorkflowModal()">✖</button>
+    <h2>{{ selectedWorkflow?.workflowName }}</h2>
+
+    <!-- Envoi complet du workflow -->
+    <app-worflow-editor
+      [readonly]="true"
+      [loadedWorkflow]="selectedWorkflow"
+    ></app-worflow-editor>
+  </div>
+</div>
+

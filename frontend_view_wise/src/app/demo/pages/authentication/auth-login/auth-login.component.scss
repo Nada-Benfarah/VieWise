@@ -42,7 +42,7 @@
 
       .auth-form {
         flex-direction: column;
-        background: url('../../../../../assets/images/authentication/img-auth-bg.svg');
+        background: #FFFFFF;
         min-height: 100vh;
         padding: 24px;
         background-repeat: no-repeat;
@@ -109,4 +109,7 @@ form i {
   position: absolute;
   top: 203px;
   right: 45px;
+}
+.view-logo{
+  width: 30%;
 }

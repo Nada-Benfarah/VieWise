@@ -1,62 +1,36 @@
-<!-- workflow-page.component.html -->
 <div class="workflow-page-container">
-  <h2 class="page-title">Workflows</h2>
+  <h2 class="page-title">Mes Workflows</h2>
 
   <!-- Bouton de création -->
   <div class="actions-bar">
-    <button class="create-btn" (click)="openModal()">
-      <span class="plus-icon">+</span> New Workflow
+    <button class="create-btn" (click)="goToCreateWorkflow()">
+      <span class="plus-icon">＋</span> Nouveau Workflow
     </button>
   </div>
 
-  <!-- Liste vide ou workflows existants -->
+  <!-- Liste vide -->
   <div class="workflow-list-empty" *ngIf="workflows.length === 0">
-    <p>Aucun workflow créé pour le moment.</p>
+    <p>🚫 Aucun workflow pour le moment. Cliquez sur “Nouveau Workflow” pour commencer.</p>
   </div>
+
+  <!-- Liste des workflows -->
   <div class="workflow-list" *ngIf="workflows.length > 0">
     <div *ngFor="let flow of workflows" class="workflow-card">
-      <h3>{{ flow.name }}</h3>
-      <p>{{ flow.description }}</p>
-    </div>
-  </div>
+      <div class="card-actions">
+        <button class="icon-btn view-btn" title="Voir dans l'éditeur" (click)="openWorkflowEditor(flow)">
+          🔎
+        </button>
 
-  <!-- Modal style carddd.gif -->
-  <div class="modal-overlay" *ngIf="isModalOpen">
-    <div class="modal-popup">
-      <div class="modal-header">
-        <h2>New workflow</h2>
-        <button class="close-btn" (click)="closeModal()">✕</button>
+        <button class="icon-btn delete-btn" title="Supprimer ce workflow" (click)="deleteWorkflow(flow.workflowId)">
+          🗑️
+        </button>
       </div>
-      <p class="modal-subtitle">
-        Let us know the job to be done for this workflow, and we'll generate it for you!
-      </p>
-      <p class="modal-hint">
-        For conditional logic, add router nodes manually in the workflow builder after this step.
-      </p>
 
-      <input
-        type="text"
-        [(ngModel)]="workflowName"
-        class="modal-input"
-        placeholder="Enter workflow name..."
-      />
-
-      <textarea
-        [(ngModel)]="jobDescription"
-        class="modal-textarea"
-        placeholder="Enter job description or add images...">
-    </textarea>
-
-      <button class="btn-generate" (click)="generateWithAI()">Generate with AI ✨</button>
-
-      <div class="modal-separator">or</div>
-
-      <div class="modal-options">
-        <button class="option-btn">Import from JSON ⬆️</button>
-        <button class="option-btn">Start from scratch ✏️</button>
-        <button class="option-btn">Browse templates 📄</button>
+      <!-- Contenu principal -->
+      <div class="card-content">
+        <h3 class="workflow-title">{{ flow.workflowName }}</h3>
+        <p class="workflow-description">{{ flow.description }}</p>
       </div>
     </div>
   </div>
-
 </div>
