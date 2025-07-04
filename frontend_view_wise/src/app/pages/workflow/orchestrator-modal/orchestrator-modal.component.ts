@@ -42,6 +42,9 @@ export class OrchestratorModalComponent {
   searchTerm: string = '';
   dropdownOpen: boolean = false;
   selectedAgent: Agent | null = null;
+  evaluatorTopic: string = '';
+  evaluatorGoal: string = '';
+  evaluatorAttributes: { name: string, criterion: string }[] = [{ name: '', criterion: '' }];
   ngOnInit(): void {
     this.filteredWorkflows = this.availableWorkflows;
 
@@ -113,9 +116,12 @@ export class OrchestratorModalComponent {
       case 'optimizer':
         this.saveData.emit({
           title: this.title.trim(),
-          items: this.items.filter(i => i.trim() !== '')
+          topic: this.evaluatorTopic.trim(),
+          goal: this.evaluatorGoal.trim(),
+          attributes: this.evaluatorAttributes.filter(attr => attr.name && attr.criterion)
         });
         break;
+
 
       case 'loop':
         this.saveData.emit({
@@ -153,4 +159,12 @@ export class OrchestratorModalComponent {
   closeModal(): void {
     this.close.emit();
   }
+  addEvaluatorAttribute(): void {
+    this.evaluatorAttributes.push({ name: '', criterion: '' });
+  }
+
+  removeEvaluatorAttribute(index: number): void {
+    this.evaluatorAttributes.splice(index, 1);
+  }
+
 }

@@ -235,9 +235,37 @@ export class WorflowEditorComponent implements OnInit{
   }
 
   removeNode(index: number): void {
-    this.nodes.splice(index, 1);
+    const targetNode = this.nodes[index];
+
+    // Si c'est un subflow (il a un groupId), supprimer tous les nœuds de ce groupe
+    if (targetNode.groupId) {
+      const groupId = targetNode.groupId;
+
+      // 1. Trouver tous les indices du groupe
+      const indicesToDelete = this.nodes
+        .map((node, idx) => ({ node, idx }))
+        .filter(({ node }) => node.groupId === groupId)
+        .map(({ idx }) => idx);
+
+      // 2. Supprimer relations liées
+      this.relations = this.relations.filter(
+        r => !indicesToDelete.includes(r.parentIndex) && !indicesToDelete.includes(r.childIndex)
+      );
+
+      // 3. Supprimer les nœuds par index décroissant (pour éviter les décalages)
+      indicesToDelete.sort((a, b) => b - a).forEach(i => this.nodes.splice(i, 1));
+    } else {
+      // Sinon suppression classique
+      this.nodes.splice(index, 1);
+      this.relations = this.relations.filter(
+        r => r.parentIndex !== index && r.childIndex !== index
+      );
+    }
+
     this.updateConnectors();
+    this.updateGroupBoxes();
   }
+
 
   startDrag(event: MouseEvent, index: number): void {
 

@@ -48,7 +48,7 @@
 
 
     <!-- ORCHESTRATOR ou OPTIMIZER -->
-    <div *ngIf="mode === 'orchestrator' || mode === 'optimizer'" class="form-group">
+    <div *ngIf="mode === 'orchestrator'" class="form-group">
       <label>Titre *</label>
       <input type="text"
              [(ngModel)]="title"
@@ -119,6 +119,35 @@
       </div>
     </div>
 
+    <!-- Evaluator Form -->
+    <div *ngIf="mode === 'optimizer'" class="form-group">
+      <label>Title *</label>
+      <input type="text" [(ngModel)]="title" placeholder="Enter evaluator title" />
+
+      <label>Topic *</label>
+      <input type="text" [(ngModel)]="evaluatorTopic" placeholder="Enter topic" />
+
+      <label>Attributes</label>
+      <div *ngFor="let attr of evaluatorAttributes; let i = index" class="task-row">
+        <input
+          type="text"
+          [(ngModel)]="evaluatorAttributes[i].name"
+          placeholder="Attribute name"
+        />
+        <input
+          type="text"
+          [(ngModel)]="evaluatorAttributes[i].criterion"
+          placeholder="Criterion"
+        />
+        <button class="delete-task" (click)="removeEvaluatorAttribute(i)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      <button (click)="addEvaluatorAttribute()" class="add-task">+ Add attribute</button>
+
+      <label>Goal *</label>
+      <input type="text" [(ngModel)]="evaluatorGoal" placeholder="Enter goal" />
+    </div>
 
     <div class="modal-footer">
       <button class="cancel-btn" (click)="closeModal()">Annuler</button>
