@@ -23,7 +23,7 @@ export class WorkflowComponent implements OnInit {
   }
 
   loadWorkflows(): void {
-    this.workflowService.getAllWorkflows().subscribe({
+    this.workflowService.getMyWorkflows().subscribe({
       next: (data) => this.workflows = data,
       error: () => this.notificationService.error("Erreur lors du chargement des workflows")
 

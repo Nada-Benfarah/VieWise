@@ -17,8 +17,12 @@ export class WorkflowService {
     return this.http.get(`${this.baseUrl}${id}/`);
   }
   getAllWorkflows(): Observable<any[]> {
-    return this.http.get<any[]>(this.baseUrl);
+    return this.http.get<any[]>(`${this.baseUrl}?all=true`);
   }
+  getMyWorkflows(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseUrl); // sans `?all=true`
+  }
+
   deleteWorkflow(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}${id}/`);
   }

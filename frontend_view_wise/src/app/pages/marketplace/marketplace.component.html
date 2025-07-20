@@ -3,7 +3,7 @@
   <!-- Barre de navigation -->
   <div class="view-switch">
     <button [class.active]="viewMode === 'agents'" (click)="changeViewMode('agents')">🧠 Agents</button>
-    <button   *ngIf="isBusinessPlan" [class.active]="viewMode === 'workflows'" (click)="changeViewMode('workflows')">⚙️ Workflows</button>
+    <button   [class.active]="viewMode === 'workflows'" (click)="changeViewMode('workflows')">⚙️ Workflows</button>
   </div>
 
   <!-- Barre de recherche -->
@@ -91,3 +91,14 @@
   </div>
 </div>
 
+<!-- 🔒 Modale Upgrade Plan -->
+<div class="modal-overlay" *ngIf="showUpgradeModal">
+  <div class="modal-content">
+    <h2>Fonctionnalité réservée</h2>
+    <p>Le clonage des workflows est disponible uniquement pour les utilisateurs Business.</p>
+    <div class="modal-actions">
+      <button class="cancel-btn" (click)="closeUpgradeModal()">Annuler</button>
+      <button class="confirm-btn" (click)="goToPricingPlans()">Voir les plans</button>
+    </div>
+  </div>
+</div>
