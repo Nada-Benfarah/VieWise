@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
 from .models import Agent, DataSource, Modele, AgentFile, Link
+from invitations.models import Invitation
 
 class DataSourceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,12 +27,14 @@ class AgentSerializer(serializers.ModelSerializer):
     creator_email = serializers.CharField(source='creator.email', read_only=True)
     files = serializers.SerializerMethodField()
     links = LinkSerializer(many=True, required=False)  # ← champs imbriqué via related_name='links'
+    role = serializers.SerializerMethodField(read_only=True)
+    owner = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Agent
         fields = [
             'agentId', 'agentName', 'agentRole', 'agentObjective', 'agentInstructions',
-            'creator', 'creator_email', 'etat', 'datasource', 'modele', 'files', 'links'
+            'creator', 'creator_email', 'etat', 'datasource', 'modele', 'files', 'links', 'role', 'owner'
         ]
 
     def get_files(self, obj):
@@ -65,3 +68,27 @@ class AgentSerializer(serializers.ModelSerializer):
                 Link.objects.create(agent=instance, **link_data)
 
         return instance
+
+    def get_owner(self, obj):
+            user = self.context['request'].user
+            return obj.creator == user
+
+    def get_role(self, obj):
+        user = self.context['request'].user
+
+        if obj.creator == user:
+            return "Éditeur"
+
+        # 🔍 On regarde si une invitation "Acceptée" contient cet agent
+        invitations = Invitation.objects.filter(
+            invited_user=user,
+            status="Accepté"
+        ).order_by('-created_at')
+
+        for inv in invitations:
+            if str(obj.pk) in map(str, inv.selected_agents):
+                return inv.role
+
+        return "Visiteur"
+
+

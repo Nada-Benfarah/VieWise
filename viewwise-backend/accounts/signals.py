@@ -29,19 +29,28 @@ def activate_user_after_confirmation(request, email_address, **kwargs):
     except Exception as e:
         logger.error(f"❌ Error activating user after email confirmation: {e}")
 
+
 @receiver(post_save, sender=CustomUser)
 def assign_default_plan(sender, instance, created, **kwargs):
     if created:
         try:
             free_plan = Plan.objects.get(name__iexact="FREE")
         except Plan.DoesNotExist:
-            return  # Assure-toi que ce plan existe
+            logger.error("⚠️ Le plan FREE n'existe pas.")
+            return
 
-        subscriber = Subscriber.objects.create(user=instance, company=instance.company)
-        Subscription.objects.create(
-            subscriber=subscriber,
-            plan=free_plan,
-            start_date=date.today(),
-            end_date=date.today() + timedelta(days=14),
-            is_active=True
-        )
+        try:
+            # Créer le subscriber (sans champ company)
+            subscriber = Subscriber.objects.create(user=instance)
+
+            # Créer la subscription au plan FREE
+            Subscription.objects.create(
+                subscriber=subscriber,
+                plan=free_plan,
+                start_date=date.today(),
+                end_date=date.today() + timedelta(days=14),
+                is_active=True
+            )
+            logger.info(f"✅ Abonnement FREE assigné à {instance.email}")
+        except Exception as e:
+            logger.error(f"❌ Erreur lors de l'assignation du plan FREE : {e}")

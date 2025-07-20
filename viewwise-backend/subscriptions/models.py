@@ -4,11 +4,11 @@ from companies.models import Company
 
 class Subscriber(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='subscriber_profile')
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='subscribers')
+#     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='subscribers')
     joined_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.company.name}"
+        return f"{self.user.email}"
 
 class Plan(models.Model):
     name = models.CharField(max_length=100)

@@ -24,7 +24,7 @@ TAGS_POOL = [
     "LinkedIn, Professionnel", "Analyse, Données", "CRM, Lead", "IA, Machine Learning"
 ]
 
-EMAIL_CREATOR_ID = 1  # 👈 Ton user ID ici
+EMAIL_CREATOR_ID = 10  # 👈 Ton user ID ici
 NOMBRE_AGENTS = 50
 
 def get_sequence_name(model, field_name='id'):
