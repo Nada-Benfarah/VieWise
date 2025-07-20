@@ -3,7 +3,7 @@
   <!-- Barre de navigation -->
   <div class="view-switch">
     <button [class.active]="viewMode === 'agents'" (click)="changeViewMode('agents')">🧠 Agents</button>
-    <button [class.active]="viewMode === 'workflows'" (click)="changeViewMode('workflows')">⚙️ Workflows</button>
+    <button   *ngIf="isBusinessPlan" [class.active]="viewMode === 'workflows'" (click)="changeViewMode('workflows')">⚙️ Workflows</button>
   </div>
 
   <!-- Barre de recherche -->

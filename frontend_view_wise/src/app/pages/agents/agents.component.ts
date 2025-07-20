@@ -4,6 +4,7 @@ import { Agent, AgentService } from 'src/app/services/agents/agent.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { NotificationService } from '../../services/notification/notification.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-agents',
@@ -14,24 +15,37 @@ import { NotificationService } from '../../services/notification/notification.se
 })
 export class AgentsComponent implements OnInit {
   agents: Agent[] = [];
+  currentUserId: number | null = null;
 
-  constructor(private router: Router, private agentService: AgentService, private notificationService: NotificationService) {}
+  constructor(private authService:AuthService,private router: Router, private agentService: AgentService, private notificationService: NotificationService) {}
 
   ngOnInit() {
-    this.loadAgents();
+    const storedUser = localStorage.getItem('current_user');
+
+      const user = JSON.parse(storedUser);
+      this.currentUserId = user?.id ?? null;
+      console.log('📦 ID utilisateur depuis localStorage:', this.currentUserId);
+      this.loadAgents();
+
   }
 
   loadAgents() {
-    this.agentService.getAllAgents().subscribe({
-      next: (data) => {
-        this.agents = data;
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des agents :', err);
-        this.notificationService.error('Impossible de charger les agents.');
-      }
+    this.agents = [];
+
+    this.agentService.getAllAgents().subscribe(allAgents => {
+      console.log('aaaaaaaaaaaaaaaaa:', this.currentUserId);
+
+      const mapped = allAgents.map(agent => ({
+        ...agent,
+        owner: agent.creator === this.currentUserId,
+        role: agent.role || (agent.creator === this.currentUserId ? 'Éditeur' : 'Visiteur')
+      }));
+      this.agents = mapped;
+      console.log('xxxxxxx:', this.agents);
+
     });
   }
+
 
 
 

@@ -27,10 +27,12 @@ import {
 
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { PlanService } from '../../../../../services/plan/plan.service';
+import { PricingPlansComponent } from '../../../../../pages/pricing-plans/pricing-plans.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-nav-content',
-  imports: [CommonModule, RouterModule, NavGroupComponent, NgScrollbarModule],
+  imports: [CommonModule, RouterModule, NavGroupComponent, NgScrollbarModule, PricingPlansComponent],
   templateUrl: './nav-content.component.html',
   styleUrls: ['./nav-content.component.scss']
 })
@@ -53,8 +55,13 @@ export class NavContentComponent implements OnInit {
   storageUsed = 0;
   storageLimit = 0;
   formattedStorage = '';
+  showUpgradeModal = false;
 
-  constructor(private planService: PlanService, private router: Router) {
+  constructor(
+    private planService: PlanService,
+    private router: Router,
+    private dialog: MatDialog
+  ) {
     this.iconService.addIcon(
       DashboardOutline,
       OpenAIOutline,
@@ -109,7 +116,7 @@ export class NavContentComponent implements OnInit {
     const parent = ele?.parentElement;
     const up_parent = parent?.parentElement?.parentElement;
     const last_parent = up_parent?.parentElement;
-    [parent, up_parent, last_parent].forEach(p => {
+    [parent, up_parent, last_parent].forEach((p) => {
       if (p?.classList.contains('coded-hasmenu')) {
         p.classList.add('coded-trigger', 'active');
       }
@@ -125,4 +132,25 @@ export class NavContentComponent implements OnInit {
   goToPricing(): void {
     this.router.navigate(['/pricing-plans']);
   }
+  handleInvitation(): void {
+    if (this.plan?.name?.toLowerCase() === 'free') {
+      this.showUpgradeModal = true;
+      document.body.classList.add('modal-open'); // ✅ blur activé
+    } else {
+      this.router.navigate(['/invite-management']);
+    }
+  }
+
+
+  closeUpgradeModal(): void {
+    this.showUpgradeModal = false;
+  }
+
+  onPlanUpgrade(planName: string): void {
+    this.showUpgradeModal = false;
+    document.body.classList.remove('modal-open'); // ✅ blur désactivé
+    this.router.navigate(['/invite-management']);
+  }
+
+
 }

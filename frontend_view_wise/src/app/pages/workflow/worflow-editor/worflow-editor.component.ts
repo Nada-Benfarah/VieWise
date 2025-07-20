@@ -153,19 +153,17 @@ export class WorflowEditorComponent implements OnInit{
 
     if (parentIndex !== null && this.nodes[parentIndex]) {
       const parent = this.nodes[parentIndex];
-      const spacing = 220;
-      const baseY = parent.y + 140;
+      const spacingX = 200;
+      const spacingY = 140;
 
-      if (!this.childCountMap[parentIndex]) {
-        this.childCountMap[parentIndex] = 0;
-      }
-      const siblingCount = this.childCountMap[parentIndex];
-      const totalWidth = siblingCount * spacing;
+      const siblingCount = this.childCountMap[parentIndex] || 0;
+      const offset = (siblingCount - Math.floor(siblingCount / 2)) * spacingX - spacingX;
 
-      x = parent.x - (totalWidth / 2) + siblingCount * spacing;
-      y = baseY;
+      x = parent.x + offset;
+      y = parent.y + spacingY;
 
-      this.childCountMap[parentIndex]++;
+      this.childCountMap[parentIndex] = siblingCount + 1;
+
     } else {
       x = largeurCanvas / 2 - 80;
       y = this.nodes.length ? this.nodes[this.nodes.length - 1].y + 140 : 100;

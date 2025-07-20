@@ -241,3 +241,16 @@
 
 
 
+<div class="modal-overlay" *ngIf="showUpgradeModal">
+  <div class="modal-content">
+    <h4>Limite atteinte</h4>
+    <p>
+      Vous avez atteint la limite de votre plan actuel. Pour débloquer plus de fonctionnalités (ex. workflows, agents, outils...), nous vous recommandons de passer à un plan supérieur.
+    </p>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" (click)="closeUpgradeModal()">Fermer</button>
+      <button class="confirm-btn" (click)="goToPricingPlans()">Voir les plans</button>
+    </div>
+  </div>
+</div>

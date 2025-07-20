@@ -6,6 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './theme/layouts/admin-layout/admin-layout.component';
 import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.component';
 import { AuthGuard } from './guards/auth.guard';
+import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 
 const routes: Routes = [
   {
@@ -48,11 +49,17 @@ const routes: Routes = [
       },
       {
         path: 'workflow',
+        canActivate: [WorkflowAccessGuard],
         loadComponent: () => import('./pages/workflow/workflow.component').then((c) => c.WorkflowComponent)
       },
       {
         path: 'workflow/editor',
+        canActivate: [WorkflowAccessGuard],
         loadComponent: () => import('./pages/workflow/worflow-editor/worflow-editor.component').then((c) => c.WorflowEditorComponent)
+      },
+      {
+        path: 'invite-management',
+        loadComponent: () => import('./pages/invite/invite.component').then((c) => c.InviteComponent)
       }
 
 

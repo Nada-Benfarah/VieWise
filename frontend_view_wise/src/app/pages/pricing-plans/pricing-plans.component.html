@@ -2,7 +2,7 @@
   <div class="container">
 
 
-    <div class="row">
+    <div *ngIf="!isModal"  class="row">
       <div class="col-md-12">
         <div class="site-heading text-center">
           <h2>Pricing <span>Plan</span></h2>
@@ -15,10 +15,13 @@
 
     <div class="row">
       <!-- ***** Pricing Item Start ***** -->
-      <div class="col-lg-3 col-md-6">
-        <div class="pricing-item">
+      <div *ngIf="!isModal" class="col-lg-3 col-md-6">
+        <div class="pricing-item" [ngClass]="getPlanClass('FREE')" >
+
           <div class="pricing-header">
-            <h3 class="pricing-title">FREE</h3>
+            <h3 class="pricing-title">
+              <span *ngIf="isCurrent('FREE')">✔</span> FREE
+            </h3>
           </div>
           <div class="pricing-body">
             <div class="price-wrapper">
@@ -41,10 +44,14 @@
 
       <!-- ***** Pricing Item Start ***** -->
       <div class="col-lg-3 col-md-6">
-        <div class="pricing-item active">
+        <div class="pricing-item active" [ngClass]="getPlanClass('PRO')">
+
           <div class="pricing-header">
-            <h3 class="pricing-title">PRO</h3>
+            <h3 class="pricing-title">
+              <span *ngIf="isCurrent('PRO')">✔</span> PRO
+            </h3>
           </div>
+
           <div class="pricing-body">
             <div class="price-wrapper">
               <span class="currency">TND</span>
@@ -53,7 +60,7 @@
             </div>
             <ul class="list">
                     <li class="active"> 20,000 credits/month</li>
-                    <li class="active"> 1 user</li>
+                    <li class="active"> 3 user</li>
                     <li class="active"> 1 agent</li>
                     <li class="active"> 3 tools</li>
                     <li class="active"> 100MB of Knowledge</li>
@@ -61,7 +68,7 @@
             </ul>
           </div>
           <div class="pricing-footer">
-            <a href="#" class="btn-primary-line">Try now</a>
+            <a   (click)="confirmUpgrade('PRO')" class="btn-primary-line">Try now</a>
           </div>
         </div>
       </div>
@@ -69,9 +76,12 @@
 
       <!-- ***** Pricing Item Start ***** -->
       <div class="col-lg-3 col-md-6">
-        <div class="pricing-item">
+        <div class="pricing-item" [ngClass]="getPlanClass('TEAM')">
+
           <div class="pricing-header">
-            <h3 class="pricing-title">TEAM</h3>
+            <h3 class="pricing-title">
+              <span *ngIf="isCurrent('TEAM')">✔</span> TEAM
+            </h3>
           </div>
           <div class="pricing-body">
             <div class="price-wrapper">
@@ -90,7 +100,7 @@
             </ul>
           </div>
           <div class="pricing-footer">
-            <a href="#" class="btn-primary-line">Try now</a>
+            <a (click)="confirmUpgrade('TEAM')"  class="btn-primary-line">Try now</a>
           </div>
         </div>
       </div>
@@ -99,9 +109,12 @@
 
       <!-- ***** Pricing Item Start ***** -->
       <div class="col-lg-3 col-md-6">
-        <div class="pricing-item">
+        <div class="pricing-item" [ngClass]="getPlanClass('BUSINESS')">
+
           <div class="pricing-header">
-            <h3 class="pricing-title">BUSINESS</h3>
+            <h3 class="pricing-title">
+              <span *ngIf="isCurrent('BUSINESS')">✔</span> BUSINESS
+            </h3>
           </div>
           <div class="pricing-body">
             <div class="price-wrapper">
@@ -121,7 +134,7 @@
             </ul>
           </div>
           <div class="pricing-footer">
-            <a href="#" class="btn-primary-line">Try now</a>
+            <a (click)="confirmUpgrade('BUSINESS')" class="btn-primary-line">Try now</a>
           </div>
         </div>
       </div>
@@ -129,3 +142,22 @@
     </div>
   </div>
 </section>
+<div class="modal-overlay" *ngIf="showConfirmationModal">
+  <div class="modal-content">
+    <h4>Confirmer l’abonnement</h4>
+    <p>Vous êtes sur le point de passer au plan <strong>{{ selectedPlanToUpgrade }}</strong> !</p>
+
+    <ul class="feature-list">
+      <li *ngFor="let f of getSelectedPlanFeatures()">✔ {{ f }}</li>
+    </ul>
+
+    <p class="upgrade-note">
+      Cette mise à niveau vous donne accès à plus de fonctionnalités et de puissance.
+    </p>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" (click)="cancelUpgrade()">Annuler</button>
+      <button class="confirm-btn" (click)="proceedUpgrade()">Confirmer</button>
+    </div>
+  </div>
+</div>

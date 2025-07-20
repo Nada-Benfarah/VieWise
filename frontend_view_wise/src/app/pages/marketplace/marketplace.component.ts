@@ -6,6 +6,7 @@ import { WorkflowService } from '../../services/workflow/workflow.service';
 import { Agent } from '../../services/agents/agent.service';
 import { Router } from '@angular/router';
 import { WorflowEditorComponent } from '../workflow/worflow-editor/worflow-editor.component';
+import { PlanService } from 'src/app/services/plan/plan.service';
 
 @Component({
   selector: 'app-marketplace',
@@ -27,17 +28,32 @@ export class MarketplaceComponent implements OnInit {
   showAgentModal: boolean = false;
   selectedWorkflow: any = null;
   showWorkflowModal = false;
+  isBusinessPlan: boolean;
 
   constructor(
     private router: Router,
     private marketplaceService: MarketplaceService,
-    private workflowService: WorkflowService
+    private workflowService: WorkflowService,  private planService: PlanService
   ) {
   }
 
   ngOnInit(): void {
+    this.checkPlan();
     this.loadAgents();
     this.loadWorkflows();
+  }
+  checkPlan(): void {
+    this.planService.getCurrentUserPlan().subscribe({
+      next: (plan) => {
+        this.isBusinessPlan = plan?.name?.toLowerCase() === 'business';
+        if (!this.isBusinessPlan && this.viewMode === 'workflows') {
+          this.viewMode = 'agents'; // Rediriger à l'onglet Agents
+        }
+      },
+      error: () => {
+        this.isBusinessPlan = false;
+      }
+    });
   }
 
   loadAgents(): void {

@@ -216,13 +216,30 @@ export class CreateAgentComponent implements OnInit {
         },
         error: err => {
           console.error(err);
-          this.notificationService.error("Erreur lors de la création de l'agent.");
+          if (err.status === 403) {
+            this.notificationService.error(err.error?.detail || 'Limite d’agent atteinte.');
+            this.openUpgradeModal();
+          } else {
+            this.notificationService.error('Erreur lors de la création de l’agent.');
+          }
         }
       });
     }
   }
 
+  showUpgradeModal = false;
 
+  openUpgradeModal() {
+    this.showUpgradeModal = true;
+  }
+
+  closeUpgradeModal() {
+    this.showUpgradeModal = false;
+  }
+
+  goToPricingPlans() {
+    this.router.navigate(['/pricing-plans']); // adapte selon ta route exacte
+  }
 
   removeExistingFile(fileId: number) {
     if (confirm('Confirmer la suppression de ce fichier ?')) {

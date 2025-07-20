@@ -126,7 +126,7 @@ ul, li {
     padding-bottom: 10px;
 
     .pricing-title {
-      font-weight: 400;
+      font-weight: 700;
       font-size: 14px;
       letter-spacing: 1px;
       color: #fff;
@@ -261,3 +261,257 @@ ul, li {
 .pricing-footer {
   margin-top: auto;
 }
+
+
+.pricing-item.previous-plan {
+  background-color: #f4f4f4;
+  border: 2px solid #ddd;
+  opacity: 1;
+  box-shadow: inset 0 0 0 1000px rgba(240, 240, 240, 0.6);
+
+  .pricing-header .pricing-title {
+    background-color: #e4e4e4;
+    color: #666;
+    font-weight: 600;
+
+    span {
+      margin-right: 6px;
+      font-size: 18px;
+      color: #aaa;
+    }
+  }
+
+  .pricing-body .price-wrapper {
+    background-color: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+
+    .currency, .price, .period {
+      color: #777;
+    }
+  }
+
+  .pricing-body .list li {
+    color: #bbb;
+
+    &.active {
+      color: #888;
+      &::before {
+        content: "✔";
+        color: #999;
+        font-size: 16px;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .pricing-footer .btn-primary-line {
+    background-color: #e0e0e0;
+    color: #777;
+    border: none;
+    pointer-events: none;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.pricing-item.current-plan {
+  background: linear-gradient(135deg, #ececec, #f9f9f9);
+  border: 3px solid #999;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+
+  .pricing-header .pricing-title {
+    background-image: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+    color: #333;
+
+    span {
+      color: #00c853;
+      margin-right: 6px;
+      font-size: 18px;
+    }
+  }
+
+  .pricing-body .price-wrapper {
+    background: linear-gradient(135deg, #f3f9ff 0%, #e6f7ff 100%);
+    border-top: 1px solid #d0e0f0;
+    border-bottom: 1px solid #d0e0f0;
+
+    .currency, .price, .period {
+      color: #333;
+    }
+  }
+
+  .pricing-body .list li.active {
+    color: #333;
+
+    &::before {
+      content: "✔";
+      color: #00c853;
+      font-weight: bold;
+      font-size: 16px;
+      animation: popIn 0.4s ease;
+    }
+  }
+
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+  .pricing-footer .btn-primary-line {
+    background-color: #e0e0e0;
+    color: #777;
+    border: none;
+    pointer-events: none;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(127, 0, 255, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(127, 0, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(127, 0, 255, 0); }
+}
+
+.pricing-item.upgrade-plan {
+  border: 3px solid $primary-color;
+  transform: scale(1.05);
+  animation: pulse 2s infinite;
+  position: relative;
+  z-index: 1;
+  transition: all 0.4s ease-in-out;
+
+  .pricing-header .pricing-title {
+    background-image: $gradient-bg;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .pricing-body .price-wrapper {
+    background: linear-gradient(135deg, #f7f0ff, #ead9ff);
+    border-top: 2px solid #d3bfff;
+    border-bottom: 2px solid #d3bfff;
+
+    .currency, .price, .period {
+      color: $primary-color;
+      font-weight: bold;
+    }
+  }
+
+  .pricing-body .list li.active::before {
+    color: $primary-color;
+    animation: pulse 1.5s infinite;
+  }
+
+  .pricing-footer .btn-primary-line {
+    background-color: $primary-color;
+    color: white;
+    font-weight: bold;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 14px rgba(127, 0, 255, 0.5);
+    animation: pulse 2s infinite;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+      box-shadow: 0 8px 20px rgba(127, 0, 255, 0.6);
+      transform: scale(1.05);
+    }
+  }
+
+  &::after {
+    content: "Upgrade";
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    background-color: #ffc107;
+    color: #111;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 5px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    animation: pulse 2s infinite;
+  }
+}
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.cancel-btn,
+.confirm-btn {
+  padding: 10px 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #ccc;
+}
+
+.confirm-btn {
+  background: #7F00FF;
+  color: white;
+}
+.feature-list {
+  text-align: left;
+  margin: 20px 0;
+  padding-left: 20px;
+
+  li {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 8px;
+    position: relative;
+
+    &::before {
+      content: "✔";
+      color: #00c853;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+  }
+}
+
+.upgrade-note {
+  font-size: 14px;
+  font-style: italic;
+  color: $secondary-color;
+  margin-top: 10px;
+  text-align: center;
+}
+

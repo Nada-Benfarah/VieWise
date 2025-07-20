@@ -45,12 +45,12 @@
   }
 
   .badge-free {
-    background: #e0c8ff;
+    background: linear-gradient(135deg, #e100ff 0%, #7f00ff 100%);
     color: #7f00ff;
     padding: 3px 10px;
     border-radius: 50px;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -72,4 +72,78 @@
       color: #7f00ff;
     }
   }
+}
+
+.invite-btn {
+  font-size: 14px;
+  padding: 6px 18px;
+  border-radius: 20px ;
+  font-weight: 700;
+  margin-top: 8px;
+  color: #7f00ff;
+
+  &:hover {
+    background: linear-gradient(135deg, #e100ff 0%, #7f00ff 100%);
+    color: #FFFFFF;
+  }
+
+
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: -15px;
+  left: 150px;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease-out forwards;
+
+}
+
+
+.modal-content {
+  background: transparent;
+  width: 90%;
+  max-width: 1300px;
+  max-height: 95vh;
+  border-radius: 8px;
+  padding: 0.7rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-out;
+
+}
+
+.blur-background {
+  filter: blur(5px);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.3s ease-in-out;
 }

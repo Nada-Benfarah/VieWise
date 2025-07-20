@@ -23,6 +23,8 @@
     modele: number;
     files?: File[];
     site_web?: string;
+    owner?: boolean;   // true si l'utilisateur est le créateur
+    role?: 'Éditeur' | 'Visiteur' | string;
   }
 
 
@@ -85,7 +87,9 @@
     fetchLinksFromWebsite(body: { websiteUrl: string }): Observable<{ links: string[] }> {
       return this.http.post<{ links: string[] }>(`${environment.apiBaseUrl}/api/fetch-links/`, body);
     }
-
+    getSharedAgentsWithRoles(): Observable<any[]> {
+      return this.http.get<any[]>(`${environment.apiBaseUrl}/api/agents/shared/`);
+    }
 
 
 

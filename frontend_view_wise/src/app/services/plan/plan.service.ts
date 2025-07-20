@@ -11,4 +11,8 @@ export class PlanService {
   getCurrentUserPlan(): Observable<any> {
     return this.http.get(`${this.baseUrl}/my-plan/`);
   }
+  upgradePlan(planName: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/upgrade-plan/`, { plan_name: planName });
+  }
+
 }
