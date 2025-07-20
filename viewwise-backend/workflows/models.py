@@ -1,5 +1,6 @@
 from django.db import models
 from agents.models import Agent  # relation vers Agent
+from accounts.models import CustomUser
 
 class Tool(models.Model):
     name = models.CharField(max_length=255)
@@ -25,6 +26,7 @@ class Workflow(models.Model):
     tools = models.ManyToManyField(Tool, related_name='workflows')
     is_active = models.BooleanField(default=True)
     nodes = models.JSONField(default=list)
+    shared_with = models.ManyToManyField(CustomUser, related_name='shared_workflows', blank=True)  # pour Workflow
     relations = models.JSONField(default=list)
     def __str__(self):
         return self.workflowName

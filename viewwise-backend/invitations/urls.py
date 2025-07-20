@@ -8,3 +8,4 @@ router.register(r'', InvitationViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 ]
+

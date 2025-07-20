@@ -13,7 +13,10 @@ import logging
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponseRedirect
-
+from invitations.models import Invitation
+from agents.models import Agent
+from workflows.models import Workflow
+from accounts.utils import post_signup_logic
 
 
 User = get_user_model()
@@ -77,6 +80,11 @@ class ActivateAccountRedirectView(APIView):
             if default_token_generator.check_token(user, token):
                 user.is_active = True
                 user.save()
+
+                try:
+                    post_signup_logic(user)
+                except Exception as e:
+                    logger.warning(f"⚠️ Erreur post-signup pour {user.email}: {e}")
                 logger.info(f"✅ Compte activé pour {user.email}")
                 return HttpResponseRedirect("http://localhost:4200/login?activated=true")
             else:
