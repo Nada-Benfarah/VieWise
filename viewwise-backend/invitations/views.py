@@ -202,24 +202,23 @@ class InvitationViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # 🔒 Vérifie qu'on a un invited_user pour nettoyer proprement
         if instance.invited_user:
             invited_user = instance.invited_user
 
-            # ✅ Supprimer tous les agents partagés par cette invitation
+            # Supprimer les workflows partagés
+            for workflow_id in instance.selected_workflows:
+                try:
+                    wf = Workflow.objects.get(pk=workflow_id)
+                    wf.shared_with.remove(invited_user)
+                except Workflow.DoesNotExist:
+                    pass
+
+            # Supprimer les agents partagés
             for agent_id in instance.selected_agents:
                 try:
                     agent = Agent.objects.get(pk=agent_id)
                     agent.shared_with.remove(invited_user)
                 except Agent.DoesNotExist:
-                    pass
-
-            # ✅ (Optionnel) Supprimer aussi les workflows partagés
-            for workflow_id in instance.selected_workflows:
-                try:
-                    workflow = Workflow.objects.get(pk=workflow_id)
-                    workflow.shared_with.remove(invited_user)
-                except:
                     pass
 
         return super().destroy(request, *args, **kwargs)

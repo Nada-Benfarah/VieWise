@@ -28,5 +28,7 @@ class Workflow(models.Model):
     nodes = models.JSONField(default=list)
     shared_with = models.ManyToManyField(CustomUser, related_name='shared_workflows', blank=True)  # pour Workflow
     relations = models.JSONField(default=list)
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_workflows', null=True)
+
     def __str__(self):
         return self.workflowName

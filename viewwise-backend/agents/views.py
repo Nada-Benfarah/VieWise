@@ -21,6 +21,8 @@ class AgentViewSet(viewsets.ModelViewSet):
     serializer_class = AgentSerializer
 
     def get_queryset(self):
+        if self.request.query_params.get('all') == 'true':
+                        return Agent.objects.all()
         user = self.request.user
         return Agent.objects.filter(Q(creator=user) | Q(shared_with=user)).distinct()
         
