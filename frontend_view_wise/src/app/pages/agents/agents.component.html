@@ -10,31 +10,32 @@
 
   <div class="cards">
     <div class="cards__inner">
-      <div *ngFor="let agent of agents; let i = index" class="cards__card card">
+      <div *ngFor="let agent of agents; let i = index" class="card-container position-relative">
 
-        <!-- Bouton menu en haut à droite -->
-        <div class="card__menu">
-          <button (click)="toggleMenu(i)" class="menu-btn">⋮</button>
-          <div *ngIf="activeMenu === i" class="menu-options">
-            <button (click)="editAgent(agent)">
-              <i class="fas fa-pen"></i> Modifier
-            </button>
-            <button (click)="chatAgent(agent)">
-              <i class="fas fa-comments"></i> Chat
-            </button>
-            <button (click)="deleteAgent(agent)">
-              <i class="fas fa-trash"></i> Supprimer
-            </button>
-          </div>
+        <!-- Carte principale -->
+        <div class="card">
+          <p class="card__heading">{{ agent.agentName }}</p>
+          <ul class="card_bullets flow" role="list">
+            <li>{{ agent.agentObjective }}</li>
+          </ul>
+          <a class="card__cta cta" href="#">Essayer</a>
 
-        </div>
+        <button class="menu-btn"
+                type="button"
+                id="dropdownMenu{{ i }}"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
 
-        <p class="card__heading">{{ agent.agentName }}</p>
-        <ul class="card_bullets flow" role="list">
-          <li>{{ agent.agentObjective }}</li>
+        <ul class="dropdown-menu menu-floating"
+            [attr.aria-labelledby]="'dropdownMenu' + i">
+          <li *ngIf="agent.owner || agent.role === 'Éditeur'"><button class="dropdown-item"  (click)="editAgent(agent)"><i class="fas fa-pen"></i> Modifier</button></li>
+          <li><button class="dropdown-item" (click)="chatAgent(agent)"><i class="fas fa-comments"></i> Chat</button></li>
+          <li  *ngIf="agent.owner || agent.role === 'Éditeur'"><button class="dropdown-item text-danger" (click)="deleteAgent(agent)"><i class="fas fa-trash"></i> Supprimer</button></li>
         </ul>
-        <a class="card__cta cta" href="">Essayer</a>
       </div>
     </div>
   </div>
+</div>
 </div>

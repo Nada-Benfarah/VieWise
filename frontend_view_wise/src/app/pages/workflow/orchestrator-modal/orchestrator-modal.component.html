@@ -1,0 +1,157 @@
+<div class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>
+        {{ mode === 'orchestrator' ? 'Superviseur' :
+        mode === 'optimizer' ? 'New Evaluator' :
+          mode === 'loop' ? 'Nouvelle boucle' :
+            'Sélection du subflow' }}
+      </h2>
+      <button class="close-btn" (click)="closeModal()">✖</button>
+    </div>
+
+    <div *ngIf="mode === 'agent'" class="form-group">
+      <label>Choisir un agent existant *</label>
+
+      <div class="custom-dropdown">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="🔍 Rechercher un agent..."
+          (focus)="dropdownOpen = true"
+          (click)="dropdownOpen = true"
+        />
+
+        <ul *ngIf="dropdownOpen" class="dropdown-list">
+          <li
+            *ngFor="let agent of filteredAgents"
+            (click)="selectAgent(agent)"
+            class="dropdown-item"
+          >
+            {{ agent.agentName }}
+          </li>
+
+          <li *ngIf="filteredAgents.length === 0" class="dropdown-no-result">
+            Aucun agent trouvé
+          </li>
+        </ul>
+      </div>
+
+      <div *ngIf="selectedAgent">
+        ✅ Agent sélectionné : <strong>{{ selectedAgent.agentName }}</strong>
+      </div>
+    </div>
+
+
+
+
+
+
+    <!-- ORCHESTRATOR ou OPTIMIZER -->
+    <div *ngIf="mode === 'orchestrator'" class="form-group">
+      <label>Titre *</label>
+      <input type="text"
+             [(ngModel)]="title"
+             [placeholder]="mode === 'orchestrator' ? 'Nom du superviseur' : 'Enter evaluator title'" />
+
+      <label>{{ mode === 'orchestrator' ? 'Tâches' : 'Attributes' }}</label>
+       <div *ngFor="let item of items; let i = index; trackBy: trackByIndex" class="task-row">
+
+        <input  type="text"
+               [ngModel]="items[i]"
+               (ngModelChange)="updateItem(i, $event)"
+               [placeholder]="mode === 'orchestrator' ? 'Nom de la tâche' : 'Attribute name'" />
+         <button class="delete-task" title="Supprimer" (click)="removeItem(i)">
+           <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+             <path d="M9 3v1H4v2h1v14a2 2 0 002 2h10a2 2 0 002-2V6h1V4h-5V3H9zm2 4v12h2V7h-2z"/>
+           </svg>
+         </button>
+      </div>
+      <button (click)="addItem()" class="add-task">
+        + {{ mode === 'orchestrator' ? 'Ajouter une tâche' : 'Add attribute' }}
+      </button>
+    </div>
+
+    <!-- LOOP -->
+    <div *ngIf="mode === 'loop'" class="form-group">
+      <label>Titre *</label>
+      <input type="text" [(ngModel)]="title" placeholder="Entrez le titre de la boucle" />
+
+      <label>Tâche *</label>
+      <input type="text" [(ngModel)]="task" placeholder="Entrez la tâche à effectuer" />
+
+      <label>Pour chaque *</label>
+      <input type="text" [(ngModel)]="variable" placeholder="Ex : élément" />
+
+      <label>Dans *</label>
+      <input type="text" [(ngModel)]="collection" placeholder="Ex : éléments" />
+    </div>
+
+    <!-- SUBFLOW -->
+    <div *ngIf="mode === 'subflow'" class="form-group">
+      <label>Sélectionner un workflow *</label>
+      <div class="custom-dropdown">
+        <input
+          type="text"
+          [(ngModel)]="searchWorkflowTerm"
+          (input)="onWorkflowSearch(searchWorkflowTerm)"
+          placeholder="🔍 Rechercher un workflow..."
+          (focus)="dropdownOpen = true"
+        />
+
+        <ul *ngIf="dropdownOpen" class="dropdown-list">
+          <li
+            *ngFor="let wf of filteredWorkflows"
+            (click)="selectWorkflow(wf)"
+            class="dropdown-item"
+          >
+            {{ wf.workflowName }}
+          </li>
+
+          <li *ngIf="filteredWorkflows.length === 0" class="dropdown-no-result">
+            Aucun workflow trouvé
+          </li>
+        </ul>
+      </div>
+
+      <div *ngIf="selectedWorkflow">
+        ✅ Workflow sélectionné : <strong>{{ selectedWorkflow.workflowName }}</strong>
+      </div>
+    </div>
+
+    <!-- Evaluator Form -->
+    <div *ngIf="mode === 'optimizer'" class="form-group">
+      <label>Title *</label>
+      <input type="text" [(ngModel)]="title" placeholder="Enter evaluator title" />
+
+      <label>Topic *</label>
+      <input type="text" [(ngModel)]="evaluatorTopic" placeholder="Enter topic" />
+
+      <label>Attributes</label>
+      <div *ngFor="let attr of evaluatorAttributes; let i = index" class="task-row">
+        <input
+          type="text"
+          [(ngModel)]="evaluatorAttributes[i].name"
+          placeholder="Attribute name"
+        />
+        <input
+          type="text"
+          [(ngModel)]="evaluatorAttributes[i].criterion"
+          placeholder="Criterion"
+        />
+        <button class="delete-task" (click)="removeEvaluatorAttribute(i)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      <button (click)="addEvaluatorAttribute()" class="add-task">+ Add attribute</button>
+
+      <label>Goal *</label>
+      <input type="text" [(ngModel)]="evaluatorGoal" placeholder="Enter goal" />
+    </div>
+
+    <div class="modal-footer">
+      <button class="cancel-btn" (click)="closeModal()">Annuler</button>
+      <button class="save-btn" (click)="save()">Créer</button>
+    </div>
+  </div>
+</div>

@@ -16,10 +16,11 @@ class WorkflowSerializer(serializers.ModelSerializer):
     agents = serializers.PrimaryKeyRelatedField(many=True, queryset=Agent.objects.all())
     tools = serializers.PrimaryKeyRelatedField(many=True, queryset=Tool.objects.all())
     trigger = serializers.PrimaryKeyRelatedField(queryset=Trigger.objects.all(), allow_null=True)
-
+    nodes = serializers.JSONField()
+    relations = serializers.JSONField()
     class Meta:
         model = Workflow
         fields = [
             'workflowId', 'workflowName', 'description',
-            'agents', 'trigger', 'tools', 'is_active'
+            'agents', 'trigger', 'tools', 'is_active', 'nodes','relations'
         ]

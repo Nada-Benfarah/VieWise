@@ -68,12 +68,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         email = validated_data["email"]
         password = validated_data["password"]
 
-        return CustomUser.objects.create_user(
+        user = CustomUser.objects.create_user(
             email=email,
             first_name=first_name,
             last_name="",
             password=password
         )
+#         user.is_active = False  # 👈 Désactive le compte à la création
+        user.save()
+        return user
 
 
 # ✅ JWT Token Serializer

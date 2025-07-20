@@ -2,7 +2,7 @@ import { StorageService } from './storage.service';
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface UserLoginForm {
@@ -20,6 +20,12 @@ export interface UserRegisterForm {
   username: string;
   email: string;
   password: string;
+}
+export interface OnboardingData {
+  discovery: string;
+  role: string;
+  goal: string;
+  company_size: string;
 }
 
 
@@ -46,7 +52,7 @@ export class AuthService {
   }
 
   login(data: UserLoginForm) {
-    return this.http.post(`${environment.apiBaseUrl}/auth/login`, data);
+    return this.http.post(`${environment.apiBaseUrl}/auth/login/`, data);
   }
 
   register(data: UserRegisterForm) {
@@ -83,5 +89,38 @@ export class AuthService {
   isLoggedIn(): boolean {
     return this.storageService.getToken() !== null; // Check if token exists
   }
+
+  submitOnboarding(data: OnboardingData) {
+    return this.http.post(`${environment.apiBaseUrl}/auth/onboarding/`, data);
+  }
+  checkOnboardingCompleted(): Observable<boolean> {
+    return this.http.get(`${environment.apiBaseUrl}/auth/onboarding/`).pipe(
+      map(() => true), // Si la requête réussit, l'onboarding est complété
+      catchError((error) => {
+        if (error.status === 404) {
+          // Si l'API renvoie 404, cela signifie que l'onboarding n'est pas encore complété
+          return of(false);
+        } else {
+          // Pour toute autre erreur, on peut soit la propager, soit retourner false
+          console.error('Erreur lors de la vérification de l\'onboarding :', error);
+          return of(false);
+        }
+      })
+    );
+  }
+
+  loginWithGoogle(idToken: string) {
+    return this.http.post(`${environment.apiBaseUrl}/auth/social/google/`, {
+      access_token: idToken
+    }).pipe(
+      catchError((err) => {
+        console.error('Erreur Google login:', err);
+        return throwError(() => err); // ← on renvoie l'erreur d'origine
+      })
+    );
+  }
+
+
+
 
 }

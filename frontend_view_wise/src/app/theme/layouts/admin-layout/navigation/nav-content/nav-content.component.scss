@@ -1,0 +1,149 @@
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(127, 0, 255, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(127, 0, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(127, 0, 255, 0);
+  }
+}
+
+.subscription-card {
+  background: linear-gradient(135deg, #f7f0ff 0%, #e3d7ff 100%);
+  color: #4b0082;
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
+
+  .upgrade-btn {
+    background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    margin-bottom: 15px;
+    width: 100%;
+    animation: pulse 2.5s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:hover {
+      background: linear-gradient(135deg, #e100ff 0%, #7f00ff 100%);
+    }
+  }
+
+  .badge-free {
+    background: linear-gradient(135deg, #e100ff 0%, #7f00ff 100%);
+    color: #7f00ff;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    justify-content: center;
+  }
+
+  .credit-info,
+  .storage-info {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #4b0082;
+
+    .value {
+      font-size: 15px;
+      font-weight: bold;
+      margin-right: 4px;
+      color: #7f00ff;
+    }
+  }
+}
+
+.invite-btn {
+  font-size: 14px;
+  padding: 6px 18px;
+  border-radius: 20px ;
+  font-weight: 700;
+  margin-top: 8px;
+  color: #7f00ff;
+
+  &:hover {
+    background: linear-gradient(135deg, #e100ff 0%, #7f00ff 100%);
+    color: #FFFFFF;
+  }
+
+
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: -15px;
+  left: 150px;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease-out forwards;
+
+}
+
+
+.modal-content {
+  background: transparent;
+  width: 90%;
+  max-width: 1300px;
+  max-height: 95vh;
+  border-radius: 8px;
+  padding: 0.7rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-out;
+
+}
+
+.blur-background {
+  filter: blur(5px);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.3s ease-in-out;
+}

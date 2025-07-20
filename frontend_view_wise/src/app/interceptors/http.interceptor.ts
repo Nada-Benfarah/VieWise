@@ -7,11 +7,19 @@ export const httpInterceptor: HttpInterceptorFn = (req, next) => {
   const token = storageService.getToken();
 
   if (token) {
-    console.log("from http interceptor", token);
+    const isJwt = token.includes('.') && token.split('.').length === 3;
+    const headerPrefix = isJwt ? 'Bearer' : 'Token';
+
     const cloned = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: { Authorization: `${headerPrefix} ${token}` }
     });
+
+
+
+
+
     return next(cloned);
   }
+
   return next(req);
 };

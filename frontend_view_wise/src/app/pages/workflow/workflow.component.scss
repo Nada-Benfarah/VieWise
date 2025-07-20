@@ -1,0 +1,305 @@
+$primary-color: #4a196a;
+
+.workflow-page-container {
+  padding: 2rem;
+  background-color: #f7f8fa;
+}
+
+.page-title {
+  font-size: 24px;
+  margin-bottom: 1rem;
+  color: #2f2f2f;
+}
+
+.actions-bar {
+  margin-bottom: 1.5rem;
+
+}
+
+.create-btn {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+
+}
+
+.create-btn:hover {
+  background-color: #9d35ff;
+}
+
+.workflow-list-empty {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.workflow-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.workflow-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #7f00ff;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-popup {
+  width: 600px;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+
+  h2 {
+    font-size: 20px;
+    margin: 0;
+    color: #222;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #aaa;
+    cursor: pointer;
+
+    &:hover {
+      color: #333;
+    }
+  }
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: #333;
+  margin-top: 4px;
+}
+
+.modal-hint {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 18px;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 90px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 20px;
+}
+
+
+.create-btn {
+  background:$primary-color;;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  .plus-icon {
+    margin-right: 8px;
+    font-weight: bold;
+  }
+
+
+}
+
+.workflow-list-empty {
+  text-align: center;
+  color: #666;
+  font-size: 15px;
+  padding: 2rem;
+  border: 1px dashed #aaa;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.workflow-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.workflow-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  border-top: 4px solid #7f00ff;
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-header h3 {
+    font-size: 18px;
+    color: #222;
+    margin: 0 0 6px;
+  }
+
+  .card-header p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 12px;
+  }
+
+  .editor-btn {
+    margin-top: auto;
+    background-color: #7f00ff;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background-color: #9d35ff;
+    }
+  }
+}
+.workflow-card {
+  // ... (garde les styles précédents)
+
+  .card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+    gap: 8px;
+  }
+
+  .editor-btn,
+  .delete-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .editor-btn {
+    background-color: #7f00ff;
+    color: white;
+
+    &:hover {
+      background-color: #9d35ff;
+    }
+  }
+
+  .delete-btn {
+    background-color: #f44336;
+    color: white;
+
+    &:hover {
+      background-color: #d32f2f;
+    }
+  }
+}
+.workflow-card {
+  position: relative;
+  background: #fff;
+  padding: 1.2rem 1rem 1rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #7f00ff;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    color: #555;
+
+    &:hover {
+      color: #000;
+      transform: scale(1.1);
+    }
+  }
+
+  .delete-btn {
+    color: #d32f2f;
+
+    &:hover {
+      color: #b71c1c;
+    }
+  }
+
+  .card-content {
+    padding-top: 20px;
+  }
+
+  .workflow-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c2c2c;
+    margin: 0 0 6px 0;
+  }
+
+  .workflow-description {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+  }
+}

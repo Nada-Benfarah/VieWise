@@ -1,0 +1,123 @@
+<main class="invitation-container">
+  <section class="left-panel">
+    <form class="form" (ngSubmit)="sendInvitations()">
+      <div class="form-group">
+        <label for="emails">Emails (séparés par virgule)</label>
+        <input
+          id="emails"
+          type="text"
+          class="input"
+          placeholder="ex: user1@example.com, user2@example.com"
+          [(ngModel)]="emailInput"
+          name="emails"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="projects">Projets à inviter</label>
+        <div class="custom-multiselect">
+            <div *ngIf="availableProjects?.length">
+              <div class="multiselect-label">Agents</div>
+              <div class="checkbox-option" *ngFor="let p of agentProjects">
+                <input
+                  type="checkbox"
+                  [value]="p.name"
+                  (change)="toggleProjectSelection(p.id)"
+                  [checked]="selectedProjects.includes(p.id)"
+                />
+                <label>{{ p.name }}</label>
+              </div>
+
+              <div *ngIf="userPlanName === 'BUSINESS'" class="multiselect-label">Workflows</div>
+              <div  class="checkbox-option" *ngFor="let p of workflowProjects">
+                <input *ngIf="userPlanName === 'BUSINESS'"
+                  type="checkbox"
+                  [value]="p.id"
+                  (change)="toggleProjectSelection(p.id)"
+                  [checked]="selectedProjects.includes(p.id)"
+                />
+
+                <label *ngIf="userPlanName === 'BUSINESS'">{{ p.name }}</label>
+              </div>
+            </div>
+
+
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Rôle</label>
+        <select
+          id="role"
+          class="select"
+          [(ngModel)]="selectedRole"
+          name="role"
+        >
+          <option value="Éditeur">Éditeur</option>
+          <option value="Visiteur">Visiteur</option>
+        </select>
+      </div>
+
+      <div class="button">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="remainingInvitations <= 0"
+        >
+          Envoyer les invitations
+        </button>
+        <div class="invitation-stats">
+          <p>Invitations utilisées : {{ usedInvitations }} / {{ totalInvitations }}</p>
+        </div>
+        <p *ngIf="remainingInvitations <= 0" class="warning">
+          Vous avez atteint la limite maximale d’invitations.
+        </p>
+      </div>
+    </form>
+  </section>
+
+  <div class="separator"></div>
+
+  <section class="right-panel invitation-summary">
+    <div *ngIf="invitations.length > 0">
+      <h3 class="section-title">📩 Invitations envoyées</h3>
+
+      <table class="file-table">
+        <thead>
+        <tr>
+          <th>Email</th>
+          <th>Agents</th>
+          <th *ngIf="userPlanName === 'BUSINESS'">Workflows</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let inv of invitations; index as i">
+          <td>{{ inv.email }}</td>
+          <td>{{ inv.agents.join(', ') }}</td>
+          <td *ngIf="userPlanName === 'BUSINESS'">{{ inv.workflows.join(', ') }}</td>
+          <td>{{ inv.role }}</td>
+          <td>
+        <span [ngClass]="{
+          'badge-status': true,
+          'accepted': inv.status === 'Accepté',
+          'rejected': inv.status === 'Rejeté',
+          'pending': inv.status === 'En cours'
+        }">
+          {{ inv.status }}
+        </span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn-status" (click)="changeStatus(i, 'Accepté')" [disabled]="inv.status === 'Accepté'">✅</button>
+            <button class="btn-status" (click)="changeStatus(i, 'Rejeté')" [disabled]="inv.status === 'Rejeté'">❌</button>
+            <button class="delete-btn" (click)="deleteInvitation(i)">🗑</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

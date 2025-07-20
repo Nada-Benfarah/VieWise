@@ -1,0 +1,88 @@
+<div class="container">
+  <!-- Logo -->
+  <div class="logo">
+    <img src="assets/images/logo.svg" alt="Logo Make" />
+  </div>
+
+  <!-- Progress bar intégrée -->
+  <div class="progress-bar-container">
+    <span class="bar">
+      <span class="progress" [ngStyle]="{ width: progressWidth }"></span>
+    </span>
+  </div>
+
+  <!-- Page 1 -->
+  <div *ngIf="page === 1" class="question-section">
+    <h4>Discovery</h4>
+    <p>How did you hear about Make?</p>
+    <div class="grid">
+      <button
+        *ngFor="let option of discoveryOptions"
+        (click)="selectedDiscovery = option"
+        [ngClass]="{ 'selected': selectedDiscovery === option }"
+      >
+        {{ option }}
+      </button>
+    </div>
+    <div class="buttons">
+      <button class="nav-btn next" (click)="next()" [disabled]="!selectedDiscovery">Next</button>
+    </div>
+  </div>
+
+  <!-- Page 2 -->
+  <div *ngIf="page === 2" class="question-section">
+    <h4>Your role</h4>
+    <p>Which of the following best describes your role?</p>
+    <div class="grid">
+      <button
+        *ngFor="let option of roleOptions"
+        (click)="selectedRole = option"
+        [ngClass]="{ 'selected': selectedRole === option }"
+      >
+        {{ option }}
+      </button>
+    </div>
+    <div class="buttons">
+      <button class="nav-btn back" (click)="prev()">Back</button>
+      <button class="nav-btn next" (click)="next()" [disabled]="!selectedRole">Next</button>
+    </div>
+  </div>
+
+  <!-- Page 3 -->
+  <div *ngIf="page === 3" class="question-section">
+    <h4>Your Goal</h4>
+    <p>What do you want to automate?</p>
+    <div class="grid">
+      <button
+        *ngFor="let option of goalOptions"
+        (click)="selectedGoal = option"
+        [ngClass]="{ 'selected': selectedGoal === option }"
+      >
+        {{ option }}
+      </button>
+    </div>
+    <div class="buttons">
+      <button class="nav-btn back" (click)="prev()">Back</button>
+      <button class="nav-btn next" (click)="next()" [disabled]="!selectedGoal">Next</button>
+    </div>
+  </div>
+
+  <!-- Page 4 -->
+  <div *ngIf="page === 4" class="question-section">
+    <h4>Company size</h4>
+    <p>What size is your organization?</p>
+    <div class="grid">
+      <button
+        *ngFor="let option of companyOptions"
+        (click)="selectedCompany = option"
+        [ngClass]="{ 'selected': selectedCompany === option }"
+      >
+        {{ option }}
+      </button>
+    </div>
+    <div class="buttons">
+      <button class="nav-btn back" (click)="prev()">Back</button>
+      <button class="nav-btn submit" (click)="submit()" [disabled]="!selectedCompany">Submit</button>
+    </div>
+  </div>
+</div>

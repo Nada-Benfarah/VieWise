@@ -21,32 +21,49 @@
         <textarea id="agent-instructions" class="textarea" [(ngModel)]="agent.agentInstructions" name="agentInstructions" required></textarea>
       </div>
 
+<!--      <div class="form-group">-->
+<!--        <label for="datasource">Source de données</label>-->
+<!--        <select id="datasource" class="select" [(ngModel)]="agent.datasource" name="datasource" required>-->
+<!--          <option value="" disabled selected>Choisissez une source</option>-->
+<!--          <option *ngFor="let ds of datasources" [value]="ds.id">{{ ds.name }}</option>-->
+<!--        </select>-->
+<!--      </div>-->
+
       <div class="form-group">
         <label for="datasource">Source de données</label>
-        <select id="datasource" class="select" [(ngModel)]="agent.datasource" name="datasource" required>
-          <option value="" disabled selected>Choisissez une source</option>
-          <option *ngFor="let ds of datasources" [value]="ds.id">{{ ds.name }}</option>
+        <select id="datasource" class="select" [(ngModel)]="agent.datasource" name="datasource" disabled>
+          <option [value]="defaultDatasource.id">{{ defaultDatasource.name }}</option>
         </select>
       </div>
+
+<!--      <div class="form-group">-->
+<!--        <label for="modele">Modèle IA</label>-->
+<!--        <select id="modele" class="select" [(ngModel)]="agent.modele" name="modele" required>-->
+<!--          <option value="" disabled selected>Choisissez un modèle</option>-->
+<!--          <option *ngFor="let model of modeles" [value]="model.id">{{ model.name }}</option>-->
+<!--        </select>-->
+<!--      </div>-->
 
       <div class="form-group">
         <label for="modele">Modèle IA</label>
-        <select id="modele" class="select" [(ngModel)]="agent.modele" name="modele" required>
-          <option value="" disabled selected>Choisissez un modèle</option>
-          <option *ngFor="let model of modeles" [value]="model.id">{{ model.name }}</option>
+        <select id="modele" class="select" [(ngModel)]="agent.modele" name="modele" disabled>
+          <option [value]="defaultModel.id">{{ defaultModel.name }}</option>
         </select>
       </div>
 
-      <div class="form-group">
-        <label>Démarreurs de conversation</label>
-        <div *ngFor="let starter of conversationStarters; let i = index" class="conversation-starter">
-          <input type="text" class="input" placeholder="Ajouter une phrase d’exemple" [(ngModel)]="conversationStarters[i]" name="starter-{{ i }}" (input)="handleInputChange(i)" />
-          <button type="button" class="btn-remove" [disabled]="!starter || starter.trim() === ''" (click)="removeStarter(i)">✕</button>
-        </div>
-      </div>
+<!--      <div class="form-group">-->
+<!--        <label>Démarreurs de conversation</label>-->
+<!--        <div *ngFor="let starter of conversationStarters; let i = index" class="conversation-starter">-->
+<!--          <input type="text" class="input" placeholder="Ajouter une phrase d’exemple" [(ngModel)]="conversationStarters[i]" name="starter-{{ i }}" (input)="handleInputChange(i)" />-->
+<!--          <button type="button" class="btn-remove" [disabled]="!starter || starter.trim() === ''" (click)="removeStarter(i)">✕</button>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <div class="button">
+      <div *ngIf="!agentId" class="button">
         <button type="submit" class="btn btn-primary">Créer l'agent</button>
+      </div>
+      <div *ngIf="agentId" class="button">
+        <button type="submit" class="btn btn-primary">Mettre à jour  l'agent</button>
       </div>
     </form>
   </section>
@@ -55,10 +72,44 @@
 
   <section class="right-panel">
     <form class="form">
+<!--      <div class="upload-area" (click)="triggerFileInput()">-->
+<!--        <ng-container *ngIf="fileNames.length === 0; else fileList">-->
+<!--          <p class="empty-text">It's empty in here... for now.</p>-->
+<!--          <div class="drag-drop-box">-->
+<!--            <p class="icon">&#128194;</p>-->
+<!--            <p class="drag-text">Drag or click to upload</p>-->
+<!--          </div>-->
+<!--          <div class="upload-options">-->
+<!--            <p>OR</p>-->
+<!--            <button type="button" class="btn-upload-connection">Create and Import from Connection</button>-->
+<!--            <p>OR</p>-->
+<!--            <button type="button" class="btn-upload-website">Import from a Website</button>-->
+<!--          </div>-->
+<!--        </ng-container>-->
+
+<!--        <ng-template #fileList>-->
+<!--          <table class="file-table">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--              <th>Name</th>-->
+<!--              <th>Size</th>-->
+<!--              <th>Status</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--            <tr *ngFor="let file of uploadedFiles">-->
+<!--              <td>{{ file.name }}</td>-->
+<!--              <td class="file-size">{{ formatFileSize(file.size) }}</td>-->
+<!--              <td><span class="status-icon">✔️</span></td>-->
+<!--            </tr>-->
+<!--            </tbody>-->
+<!--          </table>-->
+<!--        </ng-template>-->
+
+<!--        <input type="file" #fileInput multiple hidden (change)="onFilesSelected($event)" />-->
+<!--      </div>-->
       <div class="upload-area" (click)="triggerFileInput()">
-        <p><strong>{{ fileNames.length > 0 ? fileNames.join(', ') : 'Aucun fichier sélectionné' }}</strong></p>
-        <p class="upload-label">
-          Téléversez vos fichiers<br />
+        <p class="upload-label">Téléversez vos fichiers<br />
           <span class="hint">Glissez ou cliquez pour ajouter des fichiers</span>
         </p>
         <p class="or-separator">OU</p>
@@ -69,6 +120,82 @@
         <input type="file" #fileInput multiple hidden (change)="onFilesSelected($event)" />
       </div>
 
+      <!-- Affichage des fichiers uploadés -->
+      <div *ngFor="let file of uploadedFiles" class="file-table-wrapper">
+        <table class="file-table">
+          <thead>
+          <tr>
+            <th style="width: 50%">Nom</th>
+            <th style="width: 20%">Taille</th>
+            <th style="width: 20%">Statut</th>
+            <th style="width: 10%">Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>{{ file.name }}</td>
+            <td><span class="file-size">{{ file.size | number:'1.0-1' }} KB</span></td>
+            <td><span class="status-icon">✔️</span></td>
+            <td><button class="delete-btn" type="button" (click)="removeFile(file)">🗑️</button></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="existingFiles.length > 0" class="file-table-wrapper">
+        <h4>Fichiers existants</h4>
+        <table class="file-table">
+          <thead>
+          <tr>
+            <th style="width: 60%">Nom</th>
+            <th style="width: 20%">Taille</th>
+            <th style="width: 20%">Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let file of existingFiles">
+            <td>{{ file.name }}</td>
+            <td><span class="file-size">{{ file.size / 1024 | number:'1.0-1' }} KB</span></td>
+            <td>
+              <button class="delete-btn" type="button" (click)="removeExistingFile(file.id)">🗑️</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+
+      <div class="form-group">
+        <label for="website-url">Entrer une URL pour récupérer les liens</label>
+        <div class="d-flex gap-2">
+          <input id="website-url" type="text" class="input" [(ngModel)]="agent.site_web" name="websiteUrl" placeholder="https://monsite.com" />
+          <button type="button" class="btn-charger-liens" (click)="fetchWebsiteLinks()">
+            <i class="fas fa-link"></i> Charger les liens
+          </button>
+        </div>
+      </div>
+
+      <!-- Liste des liens récupérés -->
+      <div *ngIf="websiteLinks.length > 0" class="links-list">
+        <h5>Liens trouvés :</h5>
+        <ul>
+          <li *ngFor="let link of websiteLinks; let i = index">
+            {{ link }}
+            <button type="button" class="btn-delete-link" (click)="removeLink(i)"></button>
+          </li>
+        </ul>
+      </div>
+
+
+
+
+
+
+
+
+
+
+
       <div class="form-group tools-section">
         <div class="tools-header">
           <div class="tools-info">
@@ -76,11 +203,54 @@
             <span class="tools-count">0 / 5 activés</span>
             <p class="tools-desc">Ajoutez des outils pour enrichir le fonctionnement de votre modèle IA.</p>
           </div>
-          <button class="btn-add-tool" type="button">
-            <span class="plus-icon">+</span> Ajouter un outil
-          </button>
+          <div class="dropup position-relative">
+            <!-- Bouton Add Tool -->
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="plus-icon">+</span> Ajouter un outil
+            </button>
+
+            <!-- Card affichée au-dessus -->
+            <ul class="dropdown-menu show-tools-menu">
+              <div class="tools-dropdown p-3">
+                <div *ngFor="let category of toolsAvailable" class="tools-category">
+                  <h5 class="category-title">{{ category.category }}</h5>
+                  <div *ngFor="let tool of category.tools" class="tool-item">
+                    <i class="{{ tool.icon }}"></i>
+                    <span>{{ tool.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </ul>
+          </div>
+
+
+
+
         </div>
       </div>
+
+
+
+
+
+
+
     </form>
   </section>
 </main>
+
+
+
+<div class="modal-overlay" *ngIf="showUpgradeModal">
+  <div class="modal-content">
+    <h4>Limite atteinte</h4>
+    <p>
+      Vous avez atteint la limite de votre plan actuel. Pour débloquer plus de fonctionnalités (ex. workflows, agents, outils...), nous vous recommandons de passer à un plan supérieur.
+    </p>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" (click)="closeUpgradeModal()">Fermer</button>
+      <button class="confirm-btn" (click)="goToPricingPlans()">Voir les plans</button>
+    </div>
+  </div>
+</div>

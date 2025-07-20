@@ -59,32 +59,17 @@ export const NavigationItems: NavigationItem[] = [
         url: '/pricing-plans',
         icon: 'dollar',
         breadcrumbs: false
-      }
-
-    ]
-  },
-  {
-    id: 'authentication',
-    title: 'Authentication',
-    type: 'group',
-    icon: 'icon-navigation',
-    children: [
-      {
-        id: 'login',
-        title: 'Login',
-        type: 'item',
-        classes: 'nav-item',
-        url: '/login',
-        icon: 'login'
       },
       {
-        id: 'register',
-        title: 'Register',
+        id: 'workflow',
+        title: 'Workflow',
         type: 'item',
         classes: 'nav-item',
-        url: '/register',
-        icon: 'profile'
+        url: '/workflow',
+        icon: 'apartment',
+        breadcrumbs: false
       }
+
     ]
   },
   {

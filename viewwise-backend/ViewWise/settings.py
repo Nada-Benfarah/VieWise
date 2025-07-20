@@ -84,6 +84,9 @@ ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
+ACCOUNT_ADAPTER = "accounts.adapters.CustomAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.CustomSocialAccountAdapter"
+
 # 📌 Social Login Providers Configuration
 SOCIALACCOUNT_PROVIDERS = {
    'google': {
@@ -115,18 +118,19 @@ SOCIALACCOUNT_PROVIDERS = {
 # 📌 Django REST Framework (DRF) configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-#         'rest_framework.permissions.IsAuthenticated',
-          'rest_framework.permissions.AllowAny',  # juste pour les tests
+        'rest_framework.permissions.IsAuthenticated',
+#           'rest_framework.permissions.AllowAny',  # juste pour les tests
     ),
 }
 
 # 📌 Simple JWT (Token-based authentication)
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -234,3 +238,6 @@ ACCOUNT_EMAIL_CONFIRMATION_SUBJECT = "account/email/email_confirmation_subject.t
 ACCOUNT_PASSWORD_RESET_TEMPLATE = "account/email/password_reset_message.html"
 ACCOUNT_PASSWORD_RESET_SUBJECT = "account/email/password_reset_subject.txt"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "http://localhost:4200/login?activated=true"
+ACCOUNT_CONFIRM_EMAIL_ON_GET = False
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = "http://localhost:4200/login"

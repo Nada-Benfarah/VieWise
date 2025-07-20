@@ -24,6 +24,7 @@ class Workflow(models.Model):
     trigger = models.ForeignKey(Trigger, on_delete=models.SET_NULL, null=True, blank=True)
     tools = models.ManyToManyField(Tool, related_name='workflows')
     is_active = models.BooleanField(default=True)
-
+    nodes = models.JSONField(default=list)
+    relations = models.JSONField(default=list)
     def __str__(self):
         return self.workflowName

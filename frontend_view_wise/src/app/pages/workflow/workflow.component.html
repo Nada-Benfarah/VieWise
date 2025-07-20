@@ -1,0 +1,36 @@
+<div class="workflow-page-container">
+  <h2 class="page-title">Mes Workflows</h2>
+
+  <!-- Bouton de création -->
+  <div class="actions-bar">
+    <button class="create-btn" (click)="goToCreateWorkflow()">
+      <span class="plus-icon">＋</span> Nouveau Workflow
+    </button>
+  </div>
+
+  <!-- Liste vide -->
+  <div class="workflow-list-empty" *ngIf="workflows.length === 0">
+    <p>🚫 Aucun workflow pour le moment. Cliquez sur “Nouveau Workflow” pour commencer.</p>
+  </div>
+
+  <!-- Liste des workflows -->
+  <div class="workflow-list" *ngIf="workflows.length > 0">
+    <div *ngFor="let flow of workflows" class="workflow-card">
+      <div class="card-actions">
+        <button class="icon-btn view-btn" title="Voir dans l'éditeur" (click)="openWorkflowEditor(flow)">
+          🔎
+        </button>
+:
+        <button class="icon-btn delete-btn" title="Supprimer ce workflow" (click)="deleteWorkflow(flow.workflowId)">
+          🗑️
+        </button>
+      </div>
+
+      <!-- Contenu principal -->
+      <div class="card-content">
+        <h3 class="workflow-title">{{ flow.workflowName }}</h3>
+        <p class="workflow-description">{{ flow.description }}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { map, Observable } from 'rxjs';
+import { CanActivate, Router, ActivatedRouteSnapshot } from '@angular/router';
+import { map, Observable, of, switchMap, catchError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-// Import AuthService if you need to validate the token with the backend
 
 @Injectable({
   providedIn: 'root'
@@ -13,14 +12,40 @@ export class AuthGuard implements CanActivate {
     private authService: AuthService
   ) {}
 
-  canActivate(): Observable<boolean> {
+  canActivate(route: ActivatedRouteSnapshot): Observable<boolean> {
     return this.authService.user.pipe(
-      map((connectedUser) => {
+      switchMap((connectedUser) => {
         if (connectedUser != null) {
-          return true;
+          return this.authService.checkOnboardingCompleted().pipe(
+            map((completed) => {
+              const tryingToAccessWelcome = route.routeConfig?.path === 'welcome';
+
+              if (completed) {
+                if (tryingToAccessWelcome) {
+                  // ⚡ L'utilisateur a terminé l'onboarding mais tente d'accéder à /welcome => On l'envoie vers le dashboard
+                  this.router.navigate(['/']);
+                  return false;
+                }
+                return true;
+              } else {
+                if (tryingToAccessWelcome) {
+                  // L'utilisateur n'a pas terminé, et il est sur /welcome => OK
+                  return true;
+                }
+                // 🚫 Il essaie d'aller ailleurs sans avoir terminé => bloqué vers /welcome
+                this.router.navigate(['/welcome']);
+                return false;
+              }
+            }),
+            catchError((error) => {
+              console.error('Erreur check onboarding :', error);
+              this.router.navigate(['/welcome']);
+              return of(false);
+            })
+          );
         } else {
           this.router.navigate(['/login']);
-          return false;
+          return of(false);
         }
       })
     );

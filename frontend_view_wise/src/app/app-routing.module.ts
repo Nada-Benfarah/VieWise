@@ -6,6 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './theme/layouts/admin-layout/admin-layout.component';
 import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.component';
 import { AuthGuard } from './guards/auth.guard';
+import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 
 const routes: Routes = [
   {
@@ -23,20 +24,12 @@ const routes: Routes = [
         loadComponent: () => import('./demo/dashboard/default/default.component').then((c) => c.DefaultComponent)
       },
       {
-        path: 'typography',
-        loadComponent: () => import('./demo/component/basic-component/color/color.component').then((c) => c.ColorComponent)
-      },
-      {
-        path: 'color',
-        loadComponent: () => import('./demo/component/basic-component/typography/typography.component').then((c) => c.TypographyComponent)
-      },
-      {
-        path: 'sample-page',
-        loadComponent: () => import('./demo/others/sample-page/sample-page.component').then((c) => c.SamplePageComponent)
-      },
-      {
         path: 'pricing-plans',
         loadComponent: () => import('./pages/pricing-plans/pricing-plans.component').then((c) => c.PricingPlansComponent)
+      },
+      {
+        path: 'create-agent/:id',
+        loadComponent: () => import('./pages/agents/create-agent/create-agent.component').then((c) => c.CreateAgentComponent)
       },
       {
         path: 'create-agent',
@@ -53,7 +46,22 @@ const routes: Routes = [
       {
         path: 'chatgpt-page',
         loadComponent: () => import('./pages/agents/chatgpt-page/chatgpt-page.component').then((c) => c.ChatgptPageComponent)
+      },
+      {
+        path: 'workflow',
+        canActivate: [WorkflowAccessGuard],
+        loadComponent: () => import('./pages/workflow/workflow.component').then((c) => c.WorkflowComponent)
+      },
+      {
+        path: 'workflow/editor',
+        canActivate: [WorkflowAccessGuard],
+        loadComponent: () => import('./pages/workflow/worflow-editor/worflow-editor.component').then((c) => c.WorflowEditorComponent)
+      },
+      {
+        path: 'invite-management',
+        loadComponent: () => import('./pages/invite/invite.component').then((c) => c.InviteComponent)
       }
+
 
 
     ]
@@ -70,6 +78,10 @@ const routes: Routes = [
         path: 'register',
         loadComponent: () =>
           import('./demo/pages/authentication/auth-register/auth-register.component').then((c) => c.AuthRegisterComponent)
+      },
+      {
+        path: 'welcome',
+        loadComponent: () => import('./pages/welcome/welcome.component').then((c) => c.WelcomeComponent)
       }
     ]
   }

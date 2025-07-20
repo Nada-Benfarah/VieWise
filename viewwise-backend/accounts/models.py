@@ -14,6 +14,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
 
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
@@ -52,6 +53,18 @@ class SuperAdministrator(models.Model):
 
     def __str__(self):
         return f"Super Admin - {self.user.email}"
+
+# ✅ Onboarding utilisateur
+class UserOnboarding(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="onboarding")
+    discovery = models.CharField(max_length=255)
+    role = models.CharField(max_length=255)
+    goal = models.CharField(max_length=255)
+    company_size = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Onboarding - {self.user.email}"
 
 
 

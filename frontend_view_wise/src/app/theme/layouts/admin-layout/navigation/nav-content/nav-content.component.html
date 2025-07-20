@@ -1,6 +1,43 @@
-<!-- Vertical layout -->
-<ng-scrollbar style="height: calc(100vh - 49px)" visibility="hover" id="nav-ps-mantis">
+<ng-scrollbar   [ngClass]="{ 'blur-background': showUpgradeModal }" style="height: calc(100vh - 49px)" visibility="hover" id="nav-ps-mantis">
   <div class="navbar-content">
+
+    <!-- Résumé de l'abonnement -->
+    <div  class="subscription-card m-3" >
+      <button *ngIf="plan?.name?.toLowerCase() !== 'business'" class="upgrade-btn" (click)="goToPricing()">
+        ⚡ Upgrade
+      </button>
+
+      <div class="badge-free">
+    <span class="badge" [ngClass]="{
+      'badge-fre': plan?.name?.toLowerCase() === 'free',
+      'badge-pro': plan?.name?.toLowerCase() === 'pro',
+      'badge-team': plan?.name?.toLowerCase() === 'team',
+      'badge-business': plan?.name?.toLowerCase() === 'business'
+    }">
+      ⭐ {{ plan?.name | uppercase }} Plan
+    </span>
+      </div>
+
+      <div class="credit-info">
+        <span class="value">{{ creditsUsed }}</span> / {{ creditsLimit }} AI Credits
+      </div>
+
+      <div class="storage-info">
+        <span class="value">{{ storageUsed }}</span> / {{ formattedStorage }} Storage
+      </div>
+    </div>
+
+
+    <!-- Bouton Invitation -->
+    <div class="text-center mt-2">
+      <button class="btn btn-outline-primary w-100 invite-btn" (click)="handleInvitation()">
+        ✉️ Envoyer une invitation
+      </button>
+    </div>
+
+
+
+    <!-- Navigation principale -->
     <ul class="nav coded-inner-navbar" (clickOutside)="fireOutClick()" (mouseleave)="navMob()">
       @for (item of navigations; track item) {
         @if (item.type === 'group') {
@@ -8,6 +45,8 @@
         }
       }
     </ul>
+
+    <!-- Bloc Pro -->
     <div class="m-4 mb-0">
       <div class="card nav-card">
         <div class="card-body">
@@ -32,3 +71,14 @@
     </div>
   </div>
 </ng-scrollbar>
+<!-- Modal d'upgrade -->
+<div class="modal-backdrop" *ngIf="showUpgradeModal" (click)="closeUpgradeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <app-pricing-plans
+      [isModal]="true"
+      (planSelected)="onPlanUpgrade($event)">
+    </app-pricing-plans>
+  </div>
+</div>
+
+
