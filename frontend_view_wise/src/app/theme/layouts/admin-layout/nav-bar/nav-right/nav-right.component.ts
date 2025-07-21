@@ -43,7 +43,7 @@ export class NavRightComponent {
   Customize = output();
   windowWidth: number;
   screenFull: boolean = true;
-
+  currentUser: any = null;
   constructor() {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
@@ -67,8 +67,16 @@ export class NavRightComponent {
         WalletOutline
       ]
     );
-  }
 
+    const storedUser = localStorage.getItem('current_user');
+    if (storedUser) {
+      try {
+        this.currentUser = JSON.parse(storedUser);
+      } catch (e) {
+        console.error("❌ Erreur parsing user", e);
+      }
+    }
+  }
   profile = [
     {
       icon: 'edit',
