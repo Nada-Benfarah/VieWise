@@ -130,7 +130,7 @@ export class AuthLoginComponent implements OnInit {
         // 🔍 Vérifier si l'onboarding est déjà rempli
         this.authService.checkOnboardingCompleted().subscribe((completed) => {
           if (completed) {
-            this.router.navigate(['/']);
+            this.router.navigate(['/dashboard']);
           } else {
             this.router.navigate(['/welcome']);
             this.notificationService.info('Tu dois remplir ce formulaire pour passer à la page suivante !', 'Info');

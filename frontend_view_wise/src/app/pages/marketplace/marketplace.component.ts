@@ -127,9 +127,17 @@ export class MarketplaceComponent implements OnInit {
 
 
   viewWorkflow(wf: any): void {
-    console.log("🧩 Workflow sélectionné :", wf);
-    this.selectedWorkflow = wf;
-    this.showWorkflowModal = true;
+    console.log("🧩 Chargement du workflow public :", wf);
+
+    this.workflowService.getPublicWorkflow(wf.workflowId).subscribe({
+      next: (res) => {
+        this.selectedWorkflow = res;
+        this.showWorkflowModal = true;
+      },
+      error: () => {
+        console.error("❌ Ce workflow est introuvable ou privé.");
+      }
+    });
   }
 
   closeWorkflowModal(): void {

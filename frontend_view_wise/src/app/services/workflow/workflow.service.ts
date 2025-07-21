@@ -29,6 +29,9 @@ export class WorkflowService {
   updateWorkflow(id: number, payload: any) {
     return this.http.put(`${this.baseUrl}${id}/`, payload);
   }
+  getPublicWorkflow(id: number) {
+    return this.http.get(`${this.baseUrl}${id}/public/`);
+  }
 
 }
 

@@ -1,23 +1,39 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { PlanService } from '../services/plan/plan.service';
+import { WorkflowService } from '../services/workflow/workflow.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WorkflowAccessGuard implements CanActivate {
-  constructor(private planService: PlanService, private router: Router) {}
+  constructor(private workflowService: WorkflowService, private planService: PlanService, private router: Router) {
+  }
 
   canActivate(): Observable<boolean> {
     return this.planService.getCurrentUserPlan().pipe(
-      map((plan) => {
+      switchMap(plan => {
         if (plan?.name?.toLowerCase() === 'business') {
-          return true; // autorisé
+          return of(true);
         } else {
-          this.router.navigate(['/pricing-plans']);
-          return false;
+          // Vérifie s’il a des workflows partagés
+          return this.workflowService.getAllWorkflows().pipe(
+            map(workflows => {
+              const hasShared = workflows.some(wf => !wf.owner); // 👈 shared
+              if (hasShared) {
+                return true;
+              } else {
+                this.router.navigate(['/pricing-plans']);
+                return false;
+              }
+            }),
+            catchError(() => {
+              this.router.navigate(['/pricing-plans']);
+              return of(false);
+            })
+          );
         }
       }),
       catchError(() => {

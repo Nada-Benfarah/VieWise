@@ -121,13 +121,13 @@ export class WorflowEditorComponent implements OnInit{
 
   ngOnInit(): void {
     if (this.readonly && this.loadedWorkflow) {
-      console.log('📦 Workflow reçu dans editor :', this.loadedWorkflow);
-      const id = this.loadedWorkflow.workflowId;
-      this.workflowService.getWorkflowById(id).subscribe((wf) => {
-        this.nodes = wf.nodes;
-        this.relations = wf.relations;
-        this.updateConnectors(); // 👈 ajoute cette ligne
-      });
+      console.log('📦 Chargement lecture seule depuis loadedWorkflow (pas d’API)');
+      // Utilise directement loadedWorkflow sans appeler getWorkflowById
+      this.nodes = this.loadedWorkflow.nodes || [];
+      this.relations = this.loadedWorkflow.relations || [];
+      this.workflowName = this.loadedWorkflow.workflowName || '';
+      this.updateConnectors();
+      return; // ✅ stop ici
     }
 
   }
