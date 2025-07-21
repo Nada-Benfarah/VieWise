@@ -72,7 +72,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
         workflows = Workflow.objects.filter(agents__creator=user).distinct().values('workflowId', 'workflowName')
 
         projects = [{"id": a["agentId"], "name": a["agentName"], "type": "agent"} for a in agents]
-        projects += [{"id": w["id"], "name": w["workflowName"], "type": "workflow"} for w in workflows]
+        projects += [{"id": w["workflowId"], "name": w["workflowName"], "type": "workflow"} for w in workflows]
 
         return Response(projects)
 
