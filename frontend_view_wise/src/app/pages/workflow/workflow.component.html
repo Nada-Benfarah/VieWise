@@ -2,7 +2,7 @@
   <h2 class="page-title">Mes Workflows</h2>
 
   <!-- Bouton de création -->
-  <div class="actions-bar">
+  <div *ngIf="isBusinessPlan" class="actions-bar">
     <button class="create-btn" (click)="goToCreateWorkflow()">
       <span class="plus-icon">＋</span> Nouveau Workflow
     </button>
@@ -20,7 +20,7 @@
         <button class="icon-btn view-btn" title="Voir dans l'éditeur" (click)="openWorkflowEditor(flow)">
           🔎
         </button>
-:
+
         <button class="icon-btn delete-btn" title="Supprimer ce workflow" (click)="deleteWorkflow(flow.workflowId)">
           🗑️
         </button>

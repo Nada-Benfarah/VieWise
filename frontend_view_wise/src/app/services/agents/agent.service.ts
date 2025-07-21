@@ -37,9 +37,11 @@
     constructor(private http: HttpClient) {}
 
     getAllAgents() {
-      return this.http.get<Agent[]>(this.apiUrl);
+      return this.http.get<Agent[]>(`${this.apiUrl}?all=true`);
     }
-
+    getMyAgents(): Observable<any[]> {
+      return this.http.get<any[]>(`${this.apiUrl}`);
+    }
     getAgentById(id: number) {
       return this.http.get<Agent>(`${this.apiUrl}${id}/`);
     }

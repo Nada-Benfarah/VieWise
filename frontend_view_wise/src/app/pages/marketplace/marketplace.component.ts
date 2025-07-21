@@ -20,6 +20,7 @@ export class MarketplaceComponent implements OnInit {
   filteredAgents: MarketplaceAgent[] = [];
   workflows: any[] = [];
   filteredWorkflows: any[] = [];
+  showUpgradeModal = false;
 
   searchTerm: string = '';
   selectedCategory: string = 'Tous';
@@ -59,7 +60,6 @@ export class MarketplaceComponent implements OnInit {
   loadAgents(): void {
     this.marketplaceService.getMarketplaceAgents().subscribe((agents) => {
       this.agents = agents;
-      console.log(agents, 'jjjjjjj')
       this.filteredAgents = agents;
     });
   }
@@ -127,9 +127,17 @@ export class MarketplaceComponent implements OnInit {
 
 
   viewWorkflow(wf: any): void {
-    console.log("🧩 Workflow sélectionné :", wf);
-    this.selectedWorkflow = wf;
-    this.showWorkflowModal = true;
+    console.log("🧩 Chargement du workflow public :", wf);
+
+    this.workflowService.getPublicWorkflow(wf.workflowId).subscribe({
+      next: (res) => {
+        this.selectedWorkflow = res;
+        this.showWorkflowModal = true;
+      },
+      error: () => {
+        console.error("❌ Ce workflow est introuvable ou privé.");
+      }
+    });
   }
 
   closeWorkflowModal(): void {
@@ -138,9 +146,14 @@ export class MarketplaceComponent implements OnInit {
   }
 
   cloneWorkflow(wf: any): void {
+    if (!this.isBusinessPlan) {
+      this.openUpgradeModal(); // 🛑 bloque si plan non Business
+      return;
+    }
+
     const clonedWorkflow = {
       ...wf,
-      workflowId: null, // reset ID
+      workflowId: null,
       workflowName: wf.workflowName + ' (Copie)'
     };
 
@@ -148,8 +161,20 @@ export class MarketplaceComponent implements OnInit {
       state: {
         loadedWorkflow: clonedWorkflow,
         isClone: true
-
       }
     });
   }
+
+  openUpgradeModal() {
+    this.showUpgradeModal = true;
+  }
+
+  closeUpgradeModal() {
+    this.showUpgradeModal = false;
+  }
+
+  goToPricingPlans() {
+    this.router.navigate(['/pricing-plans']); // adapte si nécessaire
+  }
+
 }

@@ -32,8 +32,7 @@ export class AgentsComponent implements OnInit {
   loadAgents() {
     this.agents = [];
 
-    this.agentService.getAllAgents().subscribe(allAgents => {
-      console.log('aaaaaaaaaaaaaaaaa:', this.currentUserId);
+    this.agentService.getMyAgents().subscribe(allAgents => {
 
       const mapped = allAgents.map(agent => ({
         ...agent,
@@ -41,7 +40,6 @@ export class AgentsComponent implements OnInit {
         role: agent.role || (agent.creator === this.currentUserId ? 'Éditeur' : 'Visiteur')
       }));
       this.agents = mapped;
-      console.log('xxxxxxx:', this.agents);
 
     });
   }

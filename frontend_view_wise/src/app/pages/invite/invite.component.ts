@@ -33,7 +33,7 @@ export class InviteComponent {
   ngOnInit() {
     this.planService.getCurrentUserPlan().subscribe({
       next: (data) => {
-        this.userPlanName = data;
+        this.userPlanName = data.name;
       },
       error: (err) => {
         console.error('Erreur chargement plan utilisateur', err);
