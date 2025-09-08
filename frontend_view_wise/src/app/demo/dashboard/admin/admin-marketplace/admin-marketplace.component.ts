@@ -279,9 +279,9 @@ export class AdminMarketplaceComponent implements OnInit {
   }
 
   editAgent(row: any): void {
-    if (!row?.agentId) return;
+    if (!row?.agent) return;
 
-    this.router.navigate(['/create-agent', row.agentId], {
+    this.router.navigate(['/create-agent', row.agent.agentId], {
       queryParams: { returnUrl: '/admin/marketplace' },
       state: { returnTo: '/admin/marketplace' }
     });
