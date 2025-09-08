@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import {Component, ElementRef, ViewChild} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {NotificationService} from "../../../services/notification/notification.service";
 
 type Role = 'user' | 'assistant';
 
@@ -52,6 +53,14 @@ export class ChatgptPageComponent {
   isStreaming = false;
   private readonly imgRe = /\.(png|jpe?g|gif|webp)$/i;
   private readonly pdfRe = /\.pdf$/i;
+  isCalling = false;
+  private callStream?: MediaStream;
+
+
+
+
+  constructor(private toastService:NotificationService) {
+  }
   // Sidebar actions
   newChat() {
     const id = 'c' + crypto.randomUUID();
@@ -270,5 +279,46 @@ export class ChatgptPageComponent {
 
   isPdf(name?: string): boolean {
     return !!name && this.pdfRe.test(name);
+  }
+
+  // Si tu ajoutes <audio #callMonitor>, décommente ceci :
+@ViewChild('callMonitor', { static: false }) callMonitor?: ElementRef<HTMLAudioElement>;
+
+  async toggleCall() {
+    if (!this.isCalling) {
+      await this.startCall();
+    } else {
+      this.endCall();
+    }
+  }
+
+  private async startCall() {
+    try {
+      // Demande la permission micro (HTTPS requis sur navigateur)
+      this.callStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // (Optionnel) écouter localement le micro :
+      if (this.callMonitor?.nativeElement) {
+        this.callMonitor.nativeElement.srcObject = this.callStream;
+      }
+
+      this.isCalling = true;
+      // TODO: ici tu peux brancher WebRTC / WebSocket vers ton serveur pour un vrai appel
+    } catch (err) {
+      console.error('Impossible de démarrer l’appel:', err);
+      // Affiche ton toast si tu as un service de notif
+      this.toastService?.error('Accès micro refusé ou indisponible');
+      this.isCalling = false;
+    }
+  }
+
+  private endCall() {
+    try {
+      this.callStream?.getTracks().forEach(t => t.stop());
+    } finally {
+      this.callStream = undefined;
+      this.isCalling = false;
+      if (this.callMonitor?.nativeElement) this.callMonitor.nativeElement.srcObject = null;
+    }
   }
 }

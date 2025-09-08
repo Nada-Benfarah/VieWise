@@ -281,7 +281,8 @@
           padding:6px 10px; border-radius:999px; font-size:12px;
           transition: background .15s, border-color .15s, color .15s;
           .name { max-width: 220px; overflow:hidden; text-overflow: ellipsis; white-space:nowrap; }
-          &:hover { background:#162035; border-color:#3a4660; color:#eef2fb; }
+          &:hover { background:#162035; border-color:#3a4660;
+            color:#eef2fb; }
         }
       }
     }
@@ -515,8 +516,10 @@
   filter: none;
   box-shadow: none;
 }
+/* 1) Textarea blanc + curseur blanc + placeholder lisible */
 .composer-wrap .input,
-.composer-wra
+.composer-wra/* 2) Réduire la hauteur globale de la page du composant */
+  /* Ajuste la valeur (ex. 56px, 64px…) selon l’espace que tu veux économiser */
 :root {
   --chatgpt-page-offset: 56px; /* << tu peux modifier cette valeur facilement */
 }
@@ -537,30 +540,113 @@
 .chatgpt-page .gpt-app {
   height: calc(150vh - var(--chatgpt-page-offset)) !important;
 }
-/* Forcer le texte/icônes/boutons en blanc, laisser les backgrounds tels quels */
-.composer-wrap .attachments .chip {
-  color: #fff !important;       /* couleur par défaut de tout le contenu */
+
+/* =========================
+   Footer fixe (toujours visible)
+   ========================= */
+:host {
+  /* Ajuste ces variables si besoin */
+  --sidebar-w: 280px;     /* largeur sidebar desktop */
+  --sidebar-w-sm: 72px;   /* largeur sidebar mobile */
+  --topbar-h: 56px;       /* hauteur de la topbar */
+  --composer-h: 110px;    /* hauteur visuelle du footer/composer */
 }
 
-.composer-wrap .attachments .chip i,
-.composer-wrap .attachments .chip .name,
-.composer-wrap .attachments .chip .x {
-  color: #fff !important;       /* explicite pour battre les règles précédentes */
-}
+:host ::ng-deep {
+  /* 1) Fixer le footer en bas, à droite de la sidebar */
+  .composer-wrap {
+    position: fixed !important;
+    left: var(--sidebar-w);
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    /* on NE change pas la largeur du textarea ici */
+  }
 
-/* Si certains icônes sont en SVG, s'assurer qu'ils héritent de la couleur */
-.composer-wrap .attachments .chip svg {
-  fill: currentColor;
-  stroke: currentColor;
-}
+  /* 2) Gestion du responsive: sidebar compacte */
+  @media (max-width: 960px) {
+    .composer-wrap { left: var(--sidebar-w-sm); }
+  }
 
-/* Optionnel : garder le hover discret mais blanc */
-.composer-wrap .attachments .chip:hover .x {
-  color: #fff !important;
+  /* 3) Empêcher le contenu d’être caché par le footer :
+        on réserve de l’espace en bas pour .welcome et .messages */
+  .welcome,
+  .messages {
+    padding-bottom: calc(var(--composer-h) + 24px) !important;
+  }
+
+  /* 4) Faire scroller uniquement la zone des messages,
+        garder le footer toujours visible */
+  .main {
+    position: relative; /* base saine pour empilement */
+  }
+
+  .messages {
+    /* hauteur visible entre la topbar et le footer fixe */
+    height: calc(100vh - var(--topbar-h)) !important;
+    overflow-y: auto !important;
+  }
 }
-:host ::ng-deep .composer-wrap .attachments .chip,
-:host ::ng-deep .composer-wrap .attachments .chip i,
-:host ::ng-deep .composer-wrap .attachments .chip .name,
-:host ::ng-deep .composer-wrap .attachments .chip .x {
-  color: #fff !important;
+/* Bouton d'appel */
+.icon-btn.call-btn {
+  border-color: #244a3d;
+  background: linear-gradient(180deg, #11221c, #0f1c18);
+  color: #a7f3d0; /* mint */
+  transition: filter .15s, transform .06s, box-shadow .15s;
+
+  &:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.18); /* vert */
+  }
+
+  &.active {
+    color: #10b981; /* emerald-500 */
+    border-color: #276749;
+    background: linear-gradient(180deg, #143126, #102820);
+    box-shadow: inset 0 0 0 1px rgba(16,185,129,.35), 0 6px 18px rgba(16,185,129,.2);
+  }
+}
+/* === Attachments en blanc (footer + messages) === */
+:host ::ng-deep {
+
+  /* Footer composer */
+  .composer-wrap .attachments .chip,
+  .composer-wrap .attachments .chip i,
+  .composer-wrap .attachments .chip .x {
+    color: #fff !important;
+  }
+
+  /* Forcer le nom en blanc */
+  .composer-wrap .attachments .chip .name {
+    color: #fff !important;
+    display: inline-block; /* force l’application de la couleur */
+  }
+
+  /* Messages (bubbles) */
+  .messages .bubble .attachments .chip,
+  .messages .bubble .attachments .chip i,
+  .messages .bubble .attachments .chip .x {
+    color: #fff !important;
+  }
+
+  /* Nom du fichier en blanc aussi dans les messages */
+  .messages .bubble .attachments .chip .name {
+    color: #fff !important;
+    display: inline-block;
+  }
+
+  /* Icônes SVG suivent la couleur */
+  .composer-wrap .attachments .chip svg,
+  .messages .bubble .attachments .chip svg {
+    fill: currentColor !important;
+    stroke: currentColor !important;
+  }
+
+  /* Garder le “x” blanc au hover/focus */
+  .composer-wrap .attachments .chip:hover .x,
+  .composer-wrap .attachments .chip .x:focus-visible,
+  .messages .bubble .attachments .chip:hover .x,
+  .messages .bubble .attachments .chip .x:focus-visible {
+    color: #fff !important;
+  }
 }

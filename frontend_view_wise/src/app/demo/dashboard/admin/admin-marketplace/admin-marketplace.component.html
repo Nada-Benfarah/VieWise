@@ -38,6 +38,8 @@
         <td>{{ r.tags || '—' }}</td>
         <td>
           <button class="icon danger" (click)="remove(r)">🗑️</button>
+          <button class="icon" title="Modifier dans l'éditeur" (click)="editAgent(r)">✏️</button>
+
         </td>
       </tr>
       <tr *ngIf="!pagedAgents.length"><td colspan="4" class="empty">Aucun résultat</td></tr>

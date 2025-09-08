@@ -26,11 +26,11 @@
     </div>
 
 
-    <div class="sidebar-bottom">
-      <button class="quiet"><i class="fas fa-gear"></i> Paramètres</button>
-      <button class="quiet"><i class="fas fa-circle-question"></i> Aide</button>
-      <button class="quiet"><i class="fas fa-user"></i> Profil</button>
-    </div>
+<!--    <div class="sidebar-bottom">-->
+<!--      <button class="quiet"><i class="fas fa-gear"></i> Paramètres</button>-->
+<!--      <button class="quiet"><i class="fas fa-circle-question"></i> Aide</button>-->
+<!--      <button class="quiet"><i class="fas fa-user"></i> Profil</button>-->
+<!--    </div>-->
   </aside>
 
   <!-- Main -->
@@ -130,7 +130,13 @@
             <i class="fas" [ngClass]="isRecording ? 'fa-microphone-slash' : 'fa-microphone'"></i>
           </button>
 
-          <span class="rec-indicator" *ngIf="isRecording">● {{ recordingSeconds }}s</span>
+          <!-- Nouveau : bouton d’appel -->
+          <button class="icon-btn call-btn" [class.active]="isCalling"
+                  title="{{ isCalling ? 'Terminer l’appel' : 'Démarrer un appel' }}"
+                  (click)="toggleCall()">
+            <i class="fas fa-phone"></i>
+          </button>
+
         </div>
 
         <div class="input-wrap">
@@ -152,12 +158,13 @@
       </div>
 
       <div class="attachments" *ngIf="files.length">
-        <div class="chip" *ngFor="let f of files; let i = index">
+        <div class="chip"  style="color:white" *ngFor="let f of files; let i = index">
           <i class="fas" [ngClass]="fileIcon(f)"></i>
-          <span class="name">{{ f.name }}</span>
+          <span class="name" style="color: #fff !important;">{{ f.name }}</span>
           <button class="x" (click)="removeFile(i)" aria-label="Supprimer">&times;</button>
         </div>
       </div>
+
 
       <div class="disclaimer">
         L’IA peut se tromper. Vérifiez les informations importantes.
@@ -165,3 +172,4 @@
     </footer>
   </main>
 </div>
+<audio #callMonitor autoplay></audio>

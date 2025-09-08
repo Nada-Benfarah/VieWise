@@ -12,6 +12,7 @@ import {
 import {ActivatedRoute, Router} from "@angular/router";
 import {WorflowEditorComponent} from "../../../../pages/workflow/worflow-editor/worflow-editor.component";
 import {WorkflowService} from "../../../../services/workflow/workflow.service";
+import {AdminAgent} from "../../../../services/adminAgent/admin-agent.service";
 
 interface AgentMini {
   agentId: number;
@@ -277,7 +278,14 @@ export class AdminMarketplaceComponent implements OnInit {
     });
   }
 
+  editAgent(row: any): void {
+    if (!row?.agentId) return;
 
+    this.router.navigate(['/create-agent', row.agentId], {
+      queryParams: { returnUrl: '/admin/marketplace' },
+      state: { returnTo: '/admin/marketplace' }
+    });
+  }
 
 
 
