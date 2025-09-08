@@ -1,0 +1,47 @@
+<div class="admin-page">
+  <div class="header">
+    <h2>Agents</h2>
+    <div class="actions">
+      <input class="search" type="text" placeholder="Recherche..." [(ngModel)]="q" (input)="apply()" />
+    </div>
+  </div>
+
+  <div class="table-card" [class.loading]="loading">
+    <table class="modern-table">
+      <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Objectif</th>
+        <th>État</th>
+        <th>Créateur</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let row of paged">
+        <td>{{ row.agentName }}</td>
+        <td class="muted">{{ row.agentObjective || '—' }}</td>
+        <td>
+          <span class="chip" [class.success]="row.etat==='deployed'" [class.muted]="row.etat!=='deployed'">
+            {{ row.etat || 'draft' }}
+          </span>
+        </td>
+        <td>{{ row.creator_email || '—' }}</td>
+        <td >
+          <button class="icon" title="Modifier cet agent" (click)="editAgent(row)">✏️</button>
+          <button class="icon danger" (click)="remove(row)">🗑️</button>
+        </td>
+      </tr>
+      <tr *ngIf="!paged.length">
+        <td colspan="5" class="empty">Aucun résultat</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager" *ngIf="filtered.length > pageSize">
+    <button class="btn pager-btn" [disabled]="page === 1" (click)="page = Math.max(1, page-1)">Préc.</button>
+    <span>Page {{ page }} / {{ Math.ceil(filtered.length / pageSize) }}</span>
+    <button class="btn pager-btn" [disabled]="page === Math.ceil(filtered.length / pageSize)" (click)="page = Math.min(Math.ceil(filtered.length / pageSize), page+1)">Suiv.</button>
+  </div>
+

@@ -1,0 +1,59 @@
+<!-- src/app/pages/profile/edit-profile/edit-profile.component.html -->
+<div class="profile-container">
+  <h2 class="profile-title">Mon profil</h2>
+
+  <div class="profile-photo-section">
+    <img
+      [src]="displayAvatar"
+      (error)="onImgError($event)"
+      alt="Photo de profil"
+      class="profile-photo"
+    />
+    <div class="photo-actions">
+      <label class="btn-upload">
+        Changer la photo
+        <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="isUploading" hidden />
+      </label>
+
+      <button class="btn-delete" *ngIf="user?.avatar_url" (click)="removePhoto()" [disabled]="isUploading">
+        <span class="icon">🗑️</span>
+        Supprimer la photo
+      </button>
+    </div>
+    <div class="uploading" *ngIf="isUploading">Téléversement en cours...</div>
+  </div>
+
+  <form [formGroup]="profileForm" class="profile-form" (ngSubmit)="saveProfile()">
+    <div class="form-group">
+      <label>Prénom</label>
+      <input type="text" formControlName="first_name" class="form-control" />
+      <small *ngIf="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched" class="error">
+        Prénom requis (max 150 caractères)
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label>Téléphone</label>
+      <input type="text" formControlName="phone_number" class="form-control" placeholder="+51209334" />
+      <small *ngIf="profileForm.get('phone_number')?.touched && profileForm.get('phone_number')?.hasError('pattern')"
+             class="error">
+        Format invalide. Exemple: +51209334.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" formControlName="email" class="form-control" [disabled]="true" />
+    </div>
+
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" formControlName="password" class="form-control" [disabled]="true" />
+      <small class="hint">(haché et non modifiable ici)</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="isSaving || profileForm.invalid">
+      {{ isSaving ? 'Sauvegarde...' : 'Enregistrer' }}
+    </button>
+  </form>
+</div>

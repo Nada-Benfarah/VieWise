@@ -1,0 +1,58 @@
+<div class="admin-page">
+  <div class="header">
+    <h2>Workflows</h2>
+    <div class="actions">
+      <input class="search" type="text" placeholder="Recherche..." [(ngModel)]="q" (input)="apply()" />
+    </div>
+  </div>
+
+  <div class="table-card" [class.loading]="loading">
+    <table class="modern-table">
+      <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Description</th>
+        <th>Agents</th>
+        <th >Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let row of paged">
+        <td>{{ row.workflowName }}</td>
+        <td class="muted">{{ row.description || '—' }}</td>
+        <td>{{ row.agents?.length || 0 }}</td>
+        <td >
+          <button class="icon" title="Voir les détails" (click)="viewWorkflow(row)">👁️</button>
+          <button class="icon" title="Cloner dans l'éditeur" (click)="editWorkflow(row)">✏️</button>
+          <button class="icon danger" (click)="remove(row)">🗑️</button>
+        </td>
+      </tr>
+      <tr *ngIf="!paged.length">
+        <td colspan="5" class="empty">Aucun résultat</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager" *ngIf="filtered.length > pageSize">
+    <button class="btn pager-btn" [disabled]="page === 1" (click)="page = Math.max(1, page-1)">Préc.</button>
+    <span>Page {{ page }} / {{ Math.ceil(filtered.length / pageSize) }}</span>
+    <button class="btn pager-btn" [disabled]="page === Math.ceil(filtered.length / pageSize)" (click)="page = Math.min(Math.ceil(filtered.length / pageSize), page+1)">Suiv.</button>
+  </div>
+
+  </div>
+
+  <!-- Modal d'affichage du workflow -->
+  <div class="modal-overlay" *ngIf="showWorkflowModal && selectedWorkflow">
+    <div class="modal-content large">
+      <button class="modal-close-btn" (click)="closeWorkflowModal()">✖</button>
+      <h2>{{ selectedWorkflow?.workflowName }}</h2>
+
+      <!-- Envoi complet du workflow -->
+      <app-worflow-editor
+        [readonly]="true"
+        [loadedWorkflow]="selectedWorkflow"
+      ></app-worflow-editor>
+    </div>
+  </div>
+

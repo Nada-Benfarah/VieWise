@@ -35,6 +35,7 @@ class Agent(models.Model):
     etat = models.CharField(max_length=50, choices=[('draft', 'Brouillon'), ('deployed', 'Déployé')])
     datasource = models.ForeignKey(DataSource, on_delete=models.CASCADE)
     modele = models.ForeignKey(Modele, on_delete=models.CASCADE)
+    parent_agent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='clones')
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

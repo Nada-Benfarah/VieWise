@@ -9,10 +9,15 @@ class WorkflowViewSet(viewsets.ModelViewSet):
     queryset = Workflow.objects.all()  # ✅ Ajoute cette ligne
     serializer_class = WorkflowSerializer
 
+
     def get_queryset(self):
-        if self.request.query_params.get('all') == 'true':
-                return Workflow.objects.all()
         user = self.request.user
+        # ✅ Les admins voient TOUT (donc DELETE fonctionne sans ?all=true)
+        if user.is_staff or user.is_superuser:
+            return Workflow.objects.all()
+
+        # Sinon : seulement ses workflows (créés ou partagés)
+        from django.db.models import Q
         return Workflow.objects.filter(Q(creator=user) | Q(shared_with=user)).distinct()
 #     def get_object(self):
 #         queryset = Workflow.objects.filter(
@@ -43,6 +48,17 @@ class WorkflowViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()  # Pas besoin de passer creator, il est géré dans le serializer
+    @action(detail=False, methods=['get'], url_path='clones-stats')
+    def clones_stats(self, request):
+        rows = Workflow.objects.all()
+        data = [
+            {
+                "workflowId": w.workflowId,
+                "workflowName": w.workflowName,
+                "clone_count": w.clones.count()
+            } for w in rows
+        ]
+        return Response(data)
 
 class ToolViewSet(viewsets.ModelViewSet):
     queryset = Tool.objects.all()

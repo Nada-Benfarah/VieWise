@@ -2,8 +2,12 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 
+DEBUG = True
+
 # 📌 Define base paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # 📌 Security & secret keys
 SECRET_KEY = config('SECRET_KEY')
@@ -241,3 +245,6 @@ ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "http://localhost:4200/login?activated=true"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = False
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = "http://localhost:4200/login"
+
+# 📌 URL du frontend pour les liens dans les emails (mot de passe oublié, activation, etc.)
+FRONTEND_URL = "http://localhost:4200"

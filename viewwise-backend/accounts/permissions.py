@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class IsSuperUser(permissions.BasePermission):
@@ -43,3 +44,23 @@ class IsAuthenticatedAndVerified(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.is_active)
+
+class IsSuperOrStaffReadOnly(BasePermission):
+    """
+    - SAFE_METHODS (GET, HEAD, OPTIONS): staff OU superuser
+    - autres méthodes (POST, PATCH, DELETE...): superuser uniquement
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+        if request.method in SAFE_METHODS:
+            return user.is_staff or user.is_superuser
+        return user.is_superuser
+
+class IsAdminOrStaff(BasePermission):
+    """
+    Autorise l'accès si l'utilisateur est staff ou superuser.
+    """
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))

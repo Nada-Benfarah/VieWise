@@ -1,10 +1,11 @@
-// angular import
-import { Component, OnInit, viewChild } from '@angular/core';
-
-// project import
-
-// third party
+// src/app/components/monthly-bar-chart/monthly-bar-chart.component.ts
+import { Component, OnInit, viewChild, inject } from '@angular/core';
 import { NgApexchartsModule, ChartComponent, ApexOptions } from 'ng-apexcharts';
+import { AdminAgentsService, AgentCloneStat } from 'src/app/services/adminAgent/admin-agent.service';
+import { WorkflowService, WorkflowCloneStat } from 'src/app/services/workflow/workflow.service';
+import {MarketplaceService} from "../../../../services/marketplace/marketplace.service";
+
+type ViewMode = 'agents' | 'workflows';
 
 @Component({
   selector: 'app-monthly-bar-chart',
@@ -13,107 +14,114 @@ import { NgApexchartsModule, ChartComponent, ApexOptions } from 'ng-apexcharts';
   styleUrl: './monthly-bar-chart.component.scss'
 })
 export class MonthlyBarChartComponent implements OnInit {
-  // public props
   chart = viewChild.required<ChartComponent>('chart');
   chartOptions!: Partial<ApexOptions>;
 
-  // life cycle hook
+  private agentsApi = inject(AdminAgentsService);
+  private workflowsApi = inject(WorkflowService);
+  private marketApi = inject(MarketplaceService);
+
+
+  currentView: ViewMode = 'agents';
+  agentStats: { name: string; count: number }[] = [];
+  workflowStats: { name: string; count: number }[] = [];
+  topN = 10;
+  private marketplaceAgentIds = new Set<number>();
+
   ngOnInit() {
-    document.querySelector('.chart-income.week')?.classList.add('active');
+    // toggle par défaut
+    document.querySelector('.chart-income.agents')?.classList.add('active');
+    document.querySelector('.chart-income.workflows')?.classList.remove('active');
+
+    // base du chart
     this.chartOptions = {
-      chart: {
-        height: 450,
-        type: 'area',
-        toolbar: {
-          show: false
-        },
-        background: 'transparent'
-      },
-      dataLabels: {
-        enabled: false
-      },
-      colors: ['#1677ff', '#0050b3'],
-      series: [
-        {
-          name: 'Page Views',
-          data: [0, 86, 28, 115, 48, 210, 136]
-        },
-        {
-          name: 'Sessions',
-          data: [0, 43, 14, 56, 24, 105, 68]
-        }
-      ],
-      stroke: {
-        curve: 'smooth',
-        width: 2
-      },
-      xaxis: {
-        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        labels: {
-          style: {
-            colors: [
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c',
-              '#8c8c8c'
-            ]
-          }
-        },
-        axisBorder: {
-          show: true,
-          color: '#f0f0f0'
-        }
-      },
+      chart: { height: 450, type: 'bar', toolbar: { show: false }, background: 'transparent' },
+      dataLabels: { enabled: false },
+      colors: ['rgba(145,29,220,0.76)'],
+      series: [{ name: 'Clonages', data: [] }],
+      stroke: { width: 2 },
+      xaxis: { categories: [], labels: { rotate: -45, style: { colors: '#8c8c8c' } }, axisBorder: { show: true, color: '#f0f0f0' } },
       yaxis: {
+        min: 1,
+        max: 10,
+        tickAmount: 10,
+        title: { text: 'Nombre de clones' },
         labels: {
-          style: {
-            colors: ['#8c8c8c']
-          }
+          style: { colors: ['#8c8c8c'] },
+          formatter: (val: number) => `${Math.round(val)}`
         }
-      },
-      grid: {
-        strokeDashArray: 0,
-        borderColor: '#f5f5f5'
-      },
-      theme: {
-        mode: 'light'
-      }
+      },      grid: { strokeDashArray: 0, borderColor: '#f5f5f5' },
+      theme: { mode: 'light' },
+      tooltip: { theme: 'light' }
     };
+
+    // charger stats
+    this.loadMarketplaceAgentIds().then(() => this.loadStats());
   }
 
-  // public method
-  toggleActive(value: string) {
-    this.chartOptions.series = [
-      {
-        name: 'Page Views',
-        data: value === 'month' ? [76, 85, 101, 98, 87, 105, 91, 114, 94, 86, 115, 35] : [31, 40, 28, 51, 42, 109, 100]
-      },
-      {
-        name: 'Sessions',
-        data: value === 'month' ? [110, 60, 150, 35, 60, 36, 26, 45, 65, 52, 53, 41] : [11, 32, 45, 32, 34, 52, 41]
+  private async loadMarketplaceAgentIds(): Promise<void> {
+    return new Promise((resolve) => {
+      this.marketApi.getMarketplaceAgents().subscribe({
+        next: (rows: any[]) => {
+          // rows[i].agent.agentId doit exister (voir serializer ci-dessus)
+          rows.forEach(r => {
+            const id = Number(r?.agent?.agentId);
+            if (Number.isInteger(id)) this.marketplaceAgentIds.add(id);
+          });
+          resolve();
+        },
+        error: () => resolve()
+      });
+    });
+  }
+  private loadStats() {
+    // Agents
+    this.agentsApi.getCloneStats().subscribe({
+      next: (rows: AgentCloneStat[]) => {
+        this.agentStats = rows
+          // 👇 ne garder que ceux du marketplace
+          .filter(r => this.marketplaceAgentIds.has(r.agentId))
+          .map(r => ({ id: r.agentId, name: r.agentName, count: r.clone_count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, this.topN);
+        if (this.currentView === 'agents') this.renderCurrent();
       }
-    ];
-    const xaxis = { ...this.chartOptions.xaxis };
-    xaxis.categories =
-      value === 'month'
-        ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    xaxis.tickAmount = value === 'month' ? 11 : 7;
-    this.chartOptions = { ...this.chartOptions, xaxis };
-    if (value === 'month') {
-      document.querySelector('.chart-income.month')?.classList.add('active');
-      document.querySelector('.chart-income.week')?.classList.remove('active');
+    });
+
+    // Workflows
+    this.workflowsApi.getCloneStats().subscribe({
+      next: (rows: WorkflowCloneStat[]) => {
+        this.workflowStats = rows
+          .map(r => ({ name: r.workflowName, count: r.clone_count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, this.topN);
+        if (this.currentView === 'workflows') this.renderCurrent();
+      }
+    });
+  }
+
+  toggleView(view: ViewMode) {
+    this.currentView = view;
+    this.renderCurrent();
+
+    if (view === 'agents') {
+      document.querySelector('.chart-income.agents')?.classList.add('active');
+      document.querySelector('.chart-income.workflows')?.classList.remove('active');
     } else {
-      document.querySelector('.chart-income.week')?.classList.add('active');
-      document.querySelector('.chart-income.month')?.classList.remove('active');
+      document.querySelector('.chart-income.workflows')?.classList.add('active');
+      document.querySelector('.chart-income.agents')?.classList.remove('active');
     }
+  }
+
+  private renderCurrent() {
+    const data = this.currentView === 'agents' ? this.agentStats : this.workflowStats;
+    const categories = data.map(d => d.name);
+    const seriesData = data.map(d => d.count);
+
+    this.chartOptions = {
+      ...this.chartOptions,
+      xaxis: { ...(this.chartOptions.xaxis || {}), categories },
+      series: [{ name: 'Clonages', data: seriesData }]
+    };
   }
 }

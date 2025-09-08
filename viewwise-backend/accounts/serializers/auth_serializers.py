@@ -94,6 +94,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "last_name": self.user.last_name,
             "phone_number": self.user.phone_number if self.user.phone_number else None,
             "is_superuser": self.user.is_superuser,
+            "is_staff": self.user.is_staff,                      # 👈 AJOUT
+            "is_admin": self.user.is_superuser or self.user.is_staff,  # 👈 AJOUT
         }
 
         # Include token expiration time

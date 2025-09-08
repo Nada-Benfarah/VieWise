@@ -1,0 +1,185 @@
+<div class="admin-page">
+  <div class="header">
+    <div class="actions">
+      <input class="search" type="text" placeholder="Recherche..." [(ngModel)]="q" (input)="apply()" />
+      <button class="btn primary" (click)="openCreate()">+ Nouvel utilisateur</button>
+    </div>
+  </div>
+
+  <div class="table-card" [class.loading]="loading">
+    <table class="modern-table">
+      <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Téléphone</th>
+        <th>Rôles</th>
+        <th>Actif</th>
+        <th *ngIf="isSuperuser">Staff</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let u of paged">
+        <td class="user-cell">
+          <img class="avatar" [src]="u.avatar_url || 'assets/images/user/avatar-1.jpg'" alt="">
+          <div class="meta">
+            <div class="name">{{ u.first_name || '(Sans prénom)' }}</div>
+            <div class="email">{{ u.email }}</div>
+          </div>
+        </td>
+        <td>{{ u.phone_number || '—' }}</td>
+        <td>
+          <ng-container *ngIf="u.is_superuser; else notSuperTpl">
+            <span class="chip danger">Superuser</span>
+          </ng-container>
+
+          <ng-template #notSuperTpl>
+            <ng-container *ngIf="u.is_staff; else clientTpl">
+              <span class="chip warn">Staff</span>
+            </ng-container>
+          </ng-template>
+
+          <ng-template #clientTpl>
+            <span class="chip info">Client</span>
+          </ng-template>
+        </td>
+        <td >
+          <label class="switch">
+            <input type="checkbox" [checked]="u.is_active" (change)="toggleActive(u)">
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td *ngIf="isSuperuser">
+          <label class="switch">
+            <input
+              type="checkbox"
+              [checked]="u.is_staff"
+              (change)="onToggleStaff(u, $any($event.target).checked)"
+            />
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td>
+          <button class="icon danger" (click)="remove(u)">🗑️</button>
+        </td>
+      </tr>
+      <tr *ngIf="!paged.length"><td colspan="5" class="empty">Aucun résultat</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager" *ngIf="filtered.length > pageSize">
+    <button class="btn pager-btn" [disabled]="page === 1" (click)="page = Math.max(1, page-1)">Préc.</button>
+    <span>Page {{ page }} / {{ Math.ceil(filtered.length / pageSize) }}</span>
+    <button class="btn pager-btn" [disabled]="page === Math.ceil(filtered.length / pageSize)" (click)="page = Math.min(Math.ceil(filtered.length / pageSize), page+1)">Suiv.</button>
+  </div>
+
+  <!-- admin-users.component.html (remplace la partie du modal) -->
+  <!-- APRÈS -->
+  <div class="app-modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="app-modal" *ngIf="showModal" (click)="$event.stopPropagation()">
+
+    <h3>{{ isEdit ? 'Modifier' : 'Créer' }} un utilisateur</h3>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="grid">
+
+        <!-- Email -->
+        <div>
+          <label>Email</label>
+          <input class="input" type="email" formControlName="email" placeholder="email@domaine.com" />
+          <small class="error" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+            Email invalide.
+          </small>
+        </div>
+
+        <!-- Téléphone -->
+        <div>
+          <label>Téléphone</label>
+          <input class="input" type="text" formControlName="phone_number" placeholder="+51209334" />
+          <small class="error" *ngIf="form.get('phone_number')?.invalid && form.get('phone_number')?.touched">
+            Format invalide (+51209334).
+          </small>
+        </div>
+
+        <!-- Prénom -->
+        <div>
+          <label>Prénom</label>
+          <input class="input" type="text" formControlName="first_name" placeholder="Prénom" />
+        </div>
+
+        <!-- Nom -->
+        <div>
+          <label>Nom</label>
+          <input class="input" type="text" formControlName="last_name" placeholder="Nom" />
+        </div>
+
+        <!-- Rôle -->
+        <div>
+          <label>Rôle</label>
+          <select class="select" formControlName="role">
+            <option value="client">Client</option>
+            <option value="admin" [disabled]="!isSuperuser">Admin</option>
+          </select>
+          <small class="hint" *ngIf="!isSuperuser">Seuls les superusers peuvent créer des admins.</small>
+        </div>
+
+        <!-- Actif (switch) -->
+        <div>
+          <label>Actif</label>
+          <div>
+            <label class="switch">
+              <input
+                type="checkbox"
+                [checked]="form.value.is_active"
+                (change)="form.patchValue({ is_active: $any($event.target).checked })"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Mot de passe -->
+        <div *ngIf="!isEdit">
+          <label>Mot de passe</label>
+          <div class="password-wrapper" style="display:flex; gap:8px; align-items:center;">
+            <input
+              class="input"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+            />
+            <button type="button" class="btn" (click)="togglePasswordVisibility()">
+              {{ showPassword ? 'Masquer' : 'Afficher' }}
+            </button>
+          </div>
+          <small class="hint">8 caractères minimum recommandés.</small>
+        </div>
+
+        <div *ngIf="isEdit">
+          <label>Changer le mot de passe (optionnel)</label>
+          <div class="password-wrapper" style="display:flex; gap:8px; align-items:center;">
+            <input
+              class="input"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Laisser vide pour conserver"
+            />
+            <button type="button" class="btn" (click)="togglePasswordVisibility()">
+              {{ showPassword ? 'Masquer' : 'Afficher' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn" (click)="closeModal()">Annuler</button>
+        <button class="btn primary" [disabled]="form.invalid">
+          {{ isEdit ? 'Enregistrer les modifications' : 'Créer l’utilisateur' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>

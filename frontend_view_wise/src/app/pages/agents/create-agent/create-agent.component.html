@@ -1,6 +1,19 @@
 <main class="main-container">
   <section class="left-panel">
     <form class="form" (ngSubmit)="submitAgent()">
+      <div *ngIf="showMarketplaceFields" class="form-group">
+        <label for="market-category">Catégorie (Marketplace)</label>
+        <select id="market-category" class="select" [(ngModel)]="market.category" name="marketCategory" required>
+          <option [ngValue]="''" disabled>— Catégorie —</option>
+          <option *ngFor="let c of marketCategories" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div *ngIf="showMarketplaceFields" class="form-group">
+        <label for="market-tags">Tags (séparés par des virgules)</label>
+        <input id="market-tags" type="text" class="input" [(ngModel)]="market.tags" name="marketTags"
+               placeholder="Assistant, CRM, Ventes" />
+      </div>
       <div class="form-group">
         <label for="agent-name">Nom</label>
         <input id="agent-name" type="text" class="input" placeholder="Nom de l'agent" [(ngModel)]="agent.agentName" name="agentName" required />

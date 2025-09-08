@@ -34,7 +34,7 @@ class AgentSerializer(serializers.ModelSerializer):
         model = Agent
         fields = [
             'agentId', 'agentName', 'agentRole', 'agentObjective', 'agentInstructions',
-            'creator', 'creator_email', 'etat', 'datasource', 'modele', 'files', 'links', 'role', 'owner'
+            'creator', 'creator_email', 'etat', 'datasource', 'modele', 'files', 'links', 'role', 'owner','parent_agent'
         ]
 
     def get_files(self, obj):

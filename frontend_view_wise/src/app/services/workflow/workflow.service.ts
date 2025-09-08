@@ -2,10 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+
+export interface WorkflowCloneStat {
+  workflowId: number;
+  workflowName: string;
+  clone_count: number;
+}
 @Injectable({
   providedIn: 'root'
 })
 export class WorkflowService {
+
   private baseUrl = 'http://localhost:8000/api/workflows/';
 
   constructor(private http: HttpClient) {}
@@ -24,13 +31,16 @@ export class WorkflowService {
   }
 
   deleteWorkflow(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}${id}/`);
+    return this.http.delete(`${this.baseUrl}${id}/?all=true`);
   }
   updateWorkflow(id: number, payload: any) {
     return this.http.put(`${this.baseUrl}${id}/`, payload);
   }
   getPublicWorkflow(id: number) {
     return this.http.get(`${this.baseUrl}${id}/public/`);
+  }
+  getCloneStats(): Observable<WorkflowCloneStat[]> {
+    return this.http.get<WorkflowCloneStat[]>(`${this.baseUrl}clones-stats/`);
   }
 
 }

@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { PlanService } from 'src/app/services/plan/plan.service';
+import {PlanService, UserPlan} from 'src/app/services/plan/plan.service';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { NotificationService } from '../../services/notification/notification.service';
+import {PaymeeService} from "../../services/paymee/paymee.service";
 
 interface PlanFeatures {
   name: string;
@@ -63,23 +64,22 @@ export class PricingPlansComponent implements OnInit {
       ]
     }
   ];
+  isRedirecting = false;
 
-  constructor(private planService: PlanService,  private toastService: NotificationService) {}
+  constructor(private planService: PlanService,  private toastService: NotificationService, private paymee: PaymeeService ) {}
+
 
   ngOnInit(): void {
-    this.planService.getCurrentUserPlan().subscribe({
-      next: (plan) => {
-        this.currentPlanName = plan.name?.toUpperCase();
-        // this.currentPlanName = 'TEAM';
-        // Assure majuscule
-      },
-      error: (err) => console.error('Erreur récupération plan', err)
+    // 1) S'abonner au plan courant (met à jour la vue)
+    this.planService.currentPlan$.subscribe((plan: UserPlan | null) => {
+      this.currentPlanName = plan?.name?.toUpperCase() || 'FREE';
     });
+
+    // 2) Charger la valeur initiale (si non déjà appelée ailleurs)
+    this.planService.refreshCurrentPlan().subscribe();
   }
 
-  isCurrentOrLower(planName: string): boolean {
-    return this.planRanks[planName] <= this.planRanks[this.currentPlanName];
-  }
+
 
   isCurrent(planName: string): boolean {
     return this.currentPlanName === planName;
@@ -94,15 +94,7 @@ export class PricingPlansComponent implements OnInit {
       return 'upgrade-plan';
     }
   }
-  onUpgrade(planName: string): void {
-    this.planService.upgradePlan(planName).subscribe({
-      next: (res) => {
-        console.log(res.message);
-        this.currentPlanName = planName;
-      },
-      error: (err) => console.error('Upgrade failed:', err)
-    });
-  }
+
   confirmUpgrade(planName: string): void {
     this.selectedPlanToUpgrade = planName;
     this.showConfirmationModal = true;
@@ -116,23 +108,25 @@ export class PricingPlansComponent implements OnInit {
   proceedUpgrade(): void {
     if (!this.selectedPlanToUpgrade) return;
 
-    this.planService.upgradePlan(this.selectedPlanToUpgrade).subscribe({
+    this.isRedirecting = true;
+
+    this.paymee.initCheckout(this.selectedPlanToUpgrade as any).subscribe({
       next: (res) => {
-        this.currentPlanName = this.selectedPlanToUpgrade!;
-        this.toastService.success(`Vous êtes maintenant abonné au plan ${this.currentPlanName} !`);
-
-        this.planSelected.emit(this.currentPlanName); // ✅ Émission ici
-
-        this.selectedPlanToUpgrade = null;
+        // Ferme le modal avant de quitter la page (UX)
         this.showConfirmationModal = false;
+
+        // Redirection vers le checkout Paymee
+        window.location.href = res.redirect_url;
       },
       error: (err) => {
-        console.error('Upgrade failed:', err);
-        this.toastService.error(`Erreur lors de l’abonnement`);
-        this.showConfirmationModal = false;
+        console.error('Init checkout failed:', err);
+        this.isRedirecting = false;
+        this.toastService.error(`Erreur lors de l’initialisation du paiement`);
       }
     });
   }
+
+
 
   getSelectedPlanFeatures(): string[] {
     return this.availablePlans.find((p) => p.name === this.selectedPlanToUpgrade)?.features || [];

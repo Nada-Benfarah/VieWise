@@ -5,6 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import date, timedelta
+from accounts.permissions import IsAdminOrStaff  # sinon vois note plus bas
+from django.db.models import Count
+from accounts.models import CustomUser
 
 class SubscriberViewSet(viewsets.ModelViewSet):
     queryset = Subscriber.objects.all()
@@ -78,3 +81,49 @@ class UpgradePlanView(APIView):
         )
 
         return Response({"message": f"Subscription to {plan.name} created successfully."}, status=status.HTTP_201_CREATED)
+
+class PlanUserCountsView(APIView):
+    """
+    Renvoie le nombre d'utilisateurs par plan.
+    - Comptabilise les abonnements ACTIFS (is_active=True et date dans l’intervalle).
+    - Les utilisateurs sans abonnement actif sont rangés dans 'FREE'.
+    """
+    permission_classes = [IsAdminOrStaff]  # superuser/staff
+
+    def get(self, request):
+        today = date.today()
+
+        # Plans existants (pour retourner 0 si aucun abonné)
+        plan_names = list(Plan.objects.values_list('name', flat=True))
+
+        # IDs d’utilisateurs qui ont une souscription active
+        active_qs = Subscription.objects.filter(
+            is_active=True,
+            start_date__lte=today,
+            end_date__gte=today
+        ).select_related('subscriber', 'plan', 'subscriber__user')
+
+        active_by_plan = (
+            active_qs
+            .values('plan__name')
+            .annotate(count=Count('subscriber', distinct=True))
+        )
+        counts = {row['plan__name']: row['count'] for row in active_by_plan}
+
+        # Comptage des FREE = utilisateurs sans souscription active
+        total_users = CustomUser.objects.filter(is_active=True).count()
+        active_user_ids = set(active_qs.values_list('subscriber__user_id', flat=True).distinct())
+        free_count = max(total_users - len(active_user_ids), 0)
+
+        # Si FREE n'existe pas comme Plan, on l’ajoute quand même en sortie
+        if 'FREE' not in plan_names:
+            plan_names.insert(0, 'FREE')
+
+        data = []
+        for name in plan_names:
+            if name == 'FREE':
+                data.append({'name': 'FREE', 'count': free_count})
+            else:
+                data.append({'name': name, 'count': int(counts.get(name, 0))})
+
+        return Response({'plans': data}, status=status.HTTP_200_OK)

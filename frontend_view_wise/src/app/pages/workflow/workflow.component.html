@@ -2,7 +2,7 @@
   <h2 class="page-title">Mes Workflows</h2>
 
   <!-- Bouton de création -->
-  <div *ngIf="isBusinessPlan" class="actions-bar">
+  <div *ngIf="isBusinessPlan || isAdmin" class="actions-bar">
     <button class="create-btn" (click)="goToCreateWorkflow()">
       <span class="plus-icon">＋</span> Nouveau Workflow
     </button>
@@ -17,13 +17,19 @@
   <div class="workflow-list" *ngIf="workflows.length > 0">
     <div *ngFor="let flow of workflows" class="workflow-card">
       <div class="card-actions">
-        <button class="icon-btn view-btn" title="Voir dans l'éditeur" (click)="openWorkflowEditor(flow)">
-          🔎
+        <button class="icon-btn chat-btn" title="Ouvrir en chat" (click)="openInChat(flow)" >🗨️
         </button>
-
-        <button class="icon-btn delete-btn" title="Supprimer ce workflow" (click)="deleteWorkflow(flow.workflowId)">
+        <button class="icon-btn view-btn" title="Voir les détails" (click)="viewWorkflow(flow)">
+          👁️
+        </button>
+        <button class="icon-btn view-btn" title="Voir dans l'éditeur" (click)="openWorkflowEditor(flow)">
+          ✏️
+        </button>
+        <button class="icon-btn delete-btn" title="Supprimer ce workflow" *ngIf="flow.owner || flow.role === 'Éditeur'"
+                (click)="deleteWorkflow(flow.workflowId)">
           🗑️
         </button>
+
       </div>
 
       <!-- Contenu principal -->
@@ -33,4 +39,18 @@
       </div>
     </div>
   </div>
+
 </div>
+  <!-- Modal d'affichage du workflow -->
+  <div class="modal-overlay" *ngIf="showWorkflowModal">
+    <div class="modal-content large">
+      <button class="modal-close-btn" (click)="closeWorkflowModal()">✖</button>
+      <h2>{{ selectedWorkflow?.workflowName }}</h2>
+
+      <!-- Envoi complet du workflow -->
+      <app-worflow-editor
+        [readonly]="true"
+        [loadedWorkflow]="selectedWorkflow"
+      ></app-worflow-editor>
+    </div>
+  </div>

@@ -15,6 +15,7 @@ import { IconService, IconDirective } from '@ant-design/icons-angular';
 import { FallOutline, GiftOutline, MessageOutline, RiseOutline, SettingOutline } from '@ant-design/icons-angular/icons';
 import { CardComponent } from 'src/app/theme/shared/components/card/card.component';
 import { AuthService } from 'src/app/services/auth.service';
+import { AdminUsersService, AdminUser } from 'src/app/services/admin/admin-user.service';
 
 // Add your AuthService for authentication state (if applicable)
 
@@ -23,11 +24,8 @@ import { AuthService } from 'src/app/services/auth.service';
   imports: [
     CommonModule,
     CardComponent,
-    IconDirective,
     MonthlyBarChartComponent,
-    IncomeOverviewChartComponent,
     AnalyticsChartComponent,
-    SalesReportChartComponent
   ],
   templateUrl: './default.component.html',
   styleUrls: ['./default.component.scss']
@@ -35,6 +33,7 @@ import { AuthService } from 'src/app/services/auth.service';
 export class DefaultComponent implements OnInit {
   private iconService = inject(IconService);
   private authService = inject(AuthService); // Inject AuthService
+  private adminUsersService = inject(AdminUsersService);
 
   // constructor
   constructor() {
@@ -43,12 +42,28 @@ export class DefaultComponent implements OnInit {
 
   // Initialize any required data or state
   ngOnInit() {
-    
+    this.loadingStats = true;
+    this.adminUsersService.list().subscribe({
+      next: (users) => {
+        this.users = users;
+        this.activeCount = users.filter(u => u.is_active).length;
+        this.blockedCount = users.filter(u => !u.is_active).length;
+        // Répartition par plan (si le champ existe)
+        this.planStats = {};
+        users.forEach(u => {
+          // Remplace 'plan' par le vrai nom du champ si besoin
+          const plan = (u as any).plan || 'Inconnu';
+          this.planStats[plan] = (this.planStats[plan] || 0) + 1;
+        });
+        this.loadingStats = false;
+      },
+      error: () => { this.loadingStats = false; }
+    });
   }
 
   // Example of a trackBy function for ngFor
   trackByFn(index: number, item: any): number {
-    return index; // or item.id if you have unique identifiers
+    return item.id || index;
   }
 
   recentOrder = tableData;
@@ -122,6 +137,12 @@ export class DefaultComponent implements OnInit {
       percentage: '16%'
     }
   ];
+
+  users: AdminUser[] = [];
+  activeCount = 0;
+  blockedCount = 0;
+  planStats: { [plan: string]: number } = {};
+  loadingStats = true;
 
   // Add a method to check if the user is logged in
   isLoggedIn(): boolean {

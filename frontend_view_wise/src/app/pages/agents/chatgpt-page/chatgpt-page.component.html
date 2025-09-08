@@ -1,31 +1,167 @@
-<div class="chat-container">
+<div class="gpt-app">
+  <!-- Sidebar -->
   <aside class="sidebar">
-    <button class="new-chat">
-      <i class="fas fa-plus"></i> Nouvelle discussion
-    </button>
-    <ul class="chat-list">
-      <li class="navitem" *ngFor="let item of chatItems">
-        <i class="fas fa-comments icon-spacing"></i> {{ item.label }}
-      </li>
-    </ul>
+    <div class="sidebar-top">
+      <button class="btn new-chat" (click)="newChat">
+        <i class="fas fa-plus"></i> Nouvelle discussion
+      </button>
+
+      <div class="chats">
+        <div class="chat-item"
+             *ngFor="let c of chats"
+             [class.active]="c.id === currentChatId"
+             (click)="selectChat(c)"
+             tabindex="0"
+             role="button"
+             [attr.aria-current]="c.id === currentChatId ? 'page' : null">
+          <i class="fas fa-message"></i>
+          <span class="label">{{ c.label }}</span>
+          <div class="actions">
+            <button title="Renommer" (click)="renameChat(c, $event)"><i class="fas fa-pen"></i></button>
+            <button title="Supprimer" (click)="deleteChat(c, $event)"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="sidebar-bottom">
+      <button class="quiet"><i class="fas fa-gear"></i> Paramètres</button>
+      <button class="quiet"><i class="fas fa-circle-question"></i> Aide</button>
+      <button class="quiet"><i class="fas fa-user"></i> Profil</button>
+    </div>
   </aside>
 
-  <main class="chat-main">
-    <header class="chat-header">
-      <h1>
-        <i class="fas fa-robot"></i> Nouvelle discussion
-      </h1>
+  <!-- Main -->
+  <main class="main">
+    <!-- Header minimal -->
+    <header class="topbar">
+      <div class="title">
+        <i class="fas fa-robot"></i>
+        <span>Nouvelle discussion</span>
+      </div>
     </header>
 
-    <section class="chat-messages">
-      <p>Hello! How can I assist you today?</p>
+    <!-- Welcome (quand pas de messages) -->
+    <section class="welcome" *ngIf="messages.length === 0">
+      <div class="stars"></div>
+      <div class="center">
+        <h1>Bonjour 👋</h1>
+        <p class="sub">Que puis-je faire pour vous aujourd’hui ?</p>
+
+        <div class="cards">
+          <div class="card" (click)="usePrompt('Explique-moi le concept de microservices simplement.')" tabindex="0">
+            <i class="fas fa-lightbulb"></i>
+            <div>
+              <h3>Exemples</h3>
+              <p>Explique-moi le concept de microservices simplement.</p>
+            </div>
+          </div>
+
+          <div class="card" (click)="usePrompt('Fais-moi un plan de cours Angular pour débutants.')" tabindex="0">
+            <i class="fas fa-rocket"></i>
+            <div>
+              <h3>Capacités</h3>
+              <p>Fais-moi un plan de cours Angular pour débutants.</p>
+            </div>
+          </div>
+
+          <div class="card" (click)="usePrompt('Résume ce texte en 5 points clés : ...')" tabindex="0">
+            <i class="fas fa-file-lines"></i>
+            <div>
+              <h3>Résumés</h3>
+              <p>Résume ce texte en 5 points clés : …</p>
+            </div>
+          </div>
+
+          <div class="card" (click)="usePrompt('Écris un e-mail professionnel pour relancer un devis.')" tabindex="0">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <h3>Rédaction</h3>
+              <p>Écris un e-mail professionnel pour relancer un devis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <footer class="chat-footer">
-      <input type="text" placeholder="Écrivez un message...">
-      <button>
-        <i class="fas fa-paper-plane"></i>
-      </button>
+    <!-- Messages -->
+    <section class="messages" *ngIf="messages.length > 0">
+      <div class="message" *ngFor="let m of messages" [class.user]="m.role==='user'" [class.assistant]="m.role==='assistant'">
+        <div class="avatar">
+          <i class="fas" [ngClass]="m.role==='user' ? 'fa-user' : 'fa-robot'"></i>
+        </div>
+        <div class="bubble">
+          <div class="content">{{ m.text }}</div>
+          <div class="attachments" *ngIf="m.attachments?.length">
+            <div class="chip" *ngFor="let a of m.attachments">
+              <i class="fas" [ngClass]="
+                isPdf(a.name) ? 'fa-file-pdf' :
+                isImageName(a.name) ? 'fa-image' :
+                'fa-file'
+              "></i>
+              <span class="name">{{ a.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer / Composer -->
+    <footer class="composer-wrap"
+            (drop)="onDrop($event)"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (paste)="onPaste($event)">
+
+      <div class="drag-overlay" *ngIf="isDragging">Déposez vos fichiers ici</div>
+
+      <div class="row">
+        <div class="left-tools">
+          <label class="icon-btn" title="Joindre un fichier">
+            <i class="fas fa-paperclip"></i>
+            <input type="file" hidden multiple (change)="onFilePick($event)"
+                   accept="image/*,.pdf,.txt,.csv,.json,.doc,.docx,.ppt,.pptx,.xls,.xlsx" />
+          </label>
+
+          <button class="icon-btn" [class.rec]="isRecording" title="Dictée vocale"
+                  (click)="toggleRecording()">
+            <i class="fas" [ngClass]="isRecording ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+          </button>
+
+          <span class="rec-indicator" *ngIf="isRecording">● {{ recordingSeconds }}s</span>
+        </div>
+
+        <div class="input-wrap">
+          <textarea #ta class="input" rows="1"
+                    placeholder="Écrivez un message…"
+                    [(ngModel)]="message"
+                    (input)="autoResize(ta)"
+                    (keydown)="onKeyDown($event)"></textarea>
+
+          <div class="right-tools">
+            <button class="icon-btn danger" *ngIf="isStreaming" (click)="stopStream()" title="Arrêter">
+              <i class="fas fa-stop"></i>
+            </button>
+            <button class="send-btn" [disabled]="sendDisabled" (click)="send()" title="Envoyer">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="attachments" *ngIf="files.length">
+        <div class="chip" *ngFor="let f of files; let i = index">
+          <i class="fas" [ngClass]="fileIcon(f)"></i>
+          <span class="name">{{ f.name }}</span>
+          <button class="x" (click)="removeFile(i)" aria-label="Supprimer">&times;</button>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        L’IA peut se tromper. Vérifiez les informations importantes.
+      </div>
     </footer>
   </main>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, output } from '@angular/core';
+import  { Component, OnInit, inject, output } from '@angular/core';
 import { CommonModule, Location, LocationStrategy } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -29,6 +29,7 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { PlanService } from '../../../../../services/plan/plan.service';
 import { PricingPlansComponent } from '../../../../../pages/pricing-plans/pricing-plans.component';
 import { MatDialog } from '@angular/material/dialog';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-nav-content',
@@ -56,11 +57,14 @@ export class NavContentComponent implements OnInit {
   storageLimit = 0;
   formattedStorage = '';
   showUpgradeModal = false;
-
+  isSuperuser = false;
+  currentUser: any = null;
+   isStaff: boolean;
   constructor(
     private planService: PlanService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {
     this.iconService.addIcon(
       DashboardOutline,
@@ -84,26 +88,52 @@ export class NavContentComponent implements OnInit {
     //   (document.querySelector('.coded-navbar') as HTMLDivElement).classList.add('menupos-static');
     // }
 
-    this.planService.getCurrentUserPlan().subscribe({
-      next: (data) => {
-        this.plan = data;
-        this.creditsLimit = data.credits_nbr || 0;
+      this.planService.currentPlan$.subscribe((data) => {
+        this.plan = data || null;
+        this.creditsLimit = data?.credits_nbr || 0;
 
-        const storageStr = data.data_source_size?.toUpperCase() || '0MB';
+        const storageStr = data?.data_source_size?.toUpperCase() || '0MB';
         if (storageStr.includes('GB')) {
-          this.storageLimit = parseFloat(storageStr);
+          this.storageLimit = parseFloat(storageStr) || 0;
         } else if (storageStr.includes('MB')) {
           const mb = parseFloat(storageStr) || 0;
           this.storageLimit = +(mb / 1024).toFixed(2);
+        } else {
+          this.storageLimit = 0;
         }
-
         this.formattedStorage = `${this.storageLimit} GB`;
-      },
-      error: (err) => {
-        console.error('Erreur de chargement du plan utilisateur', err);
-      }
+      });
+
+      // Valeur initiale
+      this.planService.refreshCurrentPlan().subscribe();
+
+    this.authService.getCurrentUser().subscribe((user: any) => {
+      const isAdmin = !!user?.is_admin;
+      const isStaff = !!user?.is_staff;
+      this.currentUser = user;
+      // Masquer le groupe dashboard pour admin, staff ou superuser
+      this.navigations = NavigationItems.filter(group => {
+        if (group.id === 'dashboard') {
+          return !(isAdmin || isStaff || user?.is_superuser);
+        }
+        return true;
+      }).map(group => {
+        if (group.id !== 'admin') return group;
+        const groupClone = {...group, hidden: !(isAdmin || isStaff)};
+        groupClone.children = (group.children || []).map(child => {
+          if (child.id === 'admin-staff') {
+            return {...child, hidden: (isAdmin || isStaff)};
+          }
+          if (child.id === 'admin-users') {
+            return {...child, hidden: !user?.is_superuser};
+          }
+          return {...child, hidden: !(user?.is_superuser || isStaff)};
+        });
+        return groupClone;
+      });
     });
   }
+
 
   fireOutClick(): void {
     let current_url = this.location.path();

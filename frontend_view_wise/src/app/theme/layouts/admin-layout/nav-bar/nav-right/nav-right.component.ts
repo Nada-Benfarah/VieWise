@@ -1,6 +1,6 @@
 // angular import
 import { Component, inject, input, output } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 // project import
 
@@ -38,12 +38,24 @@ import { AuthService } from 'src/app/services/auth.service';
 export class NavRightComponent {
   private iconService = inject(IconService);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   styleSelectorToggle = input<boolean>();
   Customize = output();
   windowWidth: number;
   screenFull: boolean = true;
   currentUser: any = null;
+
+  ngOnInit(): void {
+    this.authService.user.subscribe((user) => {
+      this.currentUser = user;
+    });
+
+    // 2) Optionnel : seed depuis l’API si un token existe (sans doubler l’UI)
+    this.authService.getCurrentUser().subscribe();
+  }
+
+
   constructor() {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
@@ -67,62 +79,59 @@ export class NavRightComponent {
         WalletOutline
       ]
     );
-
-    const storedUser = localStorage.getItem('current_user');
-    if (storedUser) {
-      try {
-        this.currentUser = JSON.parse(storedUser);
-      } catch (e) {
-        console.error("❌ Erreur parsing user", e);
-      }
-    }
   }
   profile = [
     {
       icon: 'edit',
       title: 'Edit Profile'
     },
-    {
-      icon: 'user',
-      title: 'View Profile'
-    },
-    {
-      icon: 'profile',
-      title: 'Social Profile'
-    },
-    {
-      icon: 'wallet',
-      title: 'Billing'
-    }
+    // {
+    //   icon: 'user',
+    //   title: 'View Profile'
+    // },
+    // {
+    //   icon: 'profile',
+    //   title: 'Social Profile'
+    // },
+    // {
+    //   icon: 'wallet',
+    //   title: 'Billing'
+    // }
   ];
 
-  setting = [
-    {
-      icon: 'question-circle',
-      title: 'Support'
-    },
-    {
-      icon: 'user',
-      title: 'Account Settings'
-    },
-    {
-      icon: 'lock',
-      title: 'Privacy Center'
-    },
-    {
-      icon: 'comment',
-      title: 'Feedback'
-    },
-    {
-      icon: 'unordered-list',
-      title: 'History'
-    }
-  ];
+  // setting = [
+  //   {
+  //     icon: 'question-circle',
+  //     title: 'Support'
+  //   },
+  //   {
+  //     icon: 'user',
+  //     title: 'Account Settings'
+  //   },
+  //   {
+  //     icon: 'lock',
+  //     title: 'Privacy Center'
+  //   },
+  //   {
+  //     icon: 'comment',
+  //     title: 'Feedback'
+  //   },
+  //   {
+  //     icon: 'unordered-list',
+  //     title: 'History'
+  //   }
+  // ];
 
   logout(event:any) {
     event.preventDefault();
     console.log('logout');
     this.authService.logout();
+  }
+
+  onProfileAction(task: any) {
+    if (task.title === 'Edit Profile') {
+      this.router.navigate(['/edit-profile']);
+    }
   }
 
 }

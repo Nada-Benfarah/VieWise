@@ -80,7 +80,7 @@ export class WelcomeComponent implements OnInit {
     this.authService.submitOnboarding(onboardingData).subscribe({
       next: () => {
         alert('Formulaire soumis avec succès !');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/marketplace']);
 
       },
       error: (error) => {

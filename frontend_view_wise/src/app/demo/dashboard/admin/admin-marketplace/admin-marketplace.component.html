@@ -1,0 +1,143 @@
+<div class="admin-page">
+  <div class="header">
+    <div class="actions">
+
+      <div class="view-switch">
+        <button [class.active]="view === 'agents'" (click)="changeView('agents')">🧠 Agents</button>
+        <button   [class.active]="view === 'workflows'" (click)="changeView('workflows')">⚙️ Workflows</button>
+        <input class="search" type="text" placeholder="Recherche..." [(ngModel)]="q" (input)="apply()" />
+        <button *ngIf="view==='agents'" class="btn primary" (click)="openCreate()">+ Ajouter au marketplace</button>
+        <!-- (Optionnel) bouton pour créer une entrée workflow si tu ajoutes la création -->
+        <button *ngIf="view==='workflows'" class="btn primary" (click)="openCreateWorkflow()">+ Ajouter un workflow</button>
+      </div>
+
+
+    </div>
+  </div>
+
+  <!-- TABLE AGENTS -->
+  <div *ngIf="view==='agents'" class="table-card" [class.loading]="loading">
+    <table class="modern-table">
+      <thead>
+      <tr>
+        <th>Agent</th>
+        <th>Catégorie</th>
+        <th>Tags</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let r of pagedAgents">
+        <td class="user-cell">
+          <div class="meta">
+            <div class="name">{{ r.agent?.agentName }}</div>
+            <div class="email">{{ r.agent?.agentObjective }}</div>
+          </div>
+        </td>
+        <td>{{ r.category }}</td>
+        <td>{{ r.tags || '—' }}</td>
+        <td>
+          <button class="icon danger" (click)="remove(r)">🗑️</button>
+        </td>
+      </tr>
+      <tr *ngIf="!pagedAgents.length"><td colspan="4" class="empty">Aucun résultat</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE WORKFLOWS 👇 -->
+  <div *ngIf="view==='workflows'" class="table-card" [class.loading]="loading">
+    <table class="modern-table">
+      <thead>
+      <tr>
+        <th>Workflow</th>
+        <th>Catégorie</th>
+        <th>Tags</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let r of pagedWorkflows">
+        <td class="user-cell">
+          <div class="meta">
+            <div class="name">{{ r.workflow?.workflowName }}</div>
+            <div class="email">{{ r.workflow?.description }}</div>
+          </div>
+        </td>
+        <td>{{ r.category }}</td>
+        <td>{{ r.tags || '—' }}</td>
+        <td>
+          <!-- 👇 Actions Voir / Cloner / Supprimer -->
+          <button class="icon danger" (click)="removeWorkflow(r)">🗑️</button>
+          <button class="icon" (click)="viewWorkflow(r)">🔎</button>
+          <button class="icon" title="Modifier dans l'éditeur" (click)="editWorkflow(r)">✏️</button>
+        </td>
+      </tr>
+      <tr *ngIf="!pagedWorkflows.length">
+        <td colspan="4" class="empty">Aucun résultat</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- Pager commun -->
+  <div class="pager" *ngIf="(view==='agents' ? filtered.length : wfFiltered.length) > pageSize">
+    <button class="btn pager-btn" [disabled]="page === 1" (click)="page = Math.max(1, page-1)">Préc.</button>
+    <span>Page {{ page }} / {{ Math.ceil((view==='agents' ? filtered.length : wfFiltered.length) / pageSize) }}</span>
+    <button class="btn pager-btn"
+            [disabled]="page === Math.ceil((view==='agents' ? filtered.length : wfFiltered.length) / pageSize)"
+            (click)="page = Math.min(Math.ceil((view==='agents' ? filtered.length : wfFiltered.length) / pageSize), page+1)">Suiv.</button>
+  </div>
+  <!-- Modal -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal" *ngIf="showModal">
+    <h3>{{ isEdit ? 'Modifier' : 'Ajouter' }} une entrée marketplace</h3>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="grid">
+        <div *ngIf="!isEdit">
+          <label>Agent</label>
+          <select formControlName="agent_id">
+            <option [ngValue]="null" disabled>— Sélectionnez un agent —</option>
+            <option *ngFor="let a of agentsAvailable" [ngValue]="a.agentId">
+              {{ a.agentName }}
+            </option>
+          </select>
+          <small *ngIf="form.get('agent_id')?.invalid && form.get('agent_id')?.touched" class="error">
+            Agent requis.
+          </small>
+        </div>
+
+        <div>
+          <label>Catégorie</label>
+          <select formControlName="category">
+            <option value="" disabled>— Catégorie —</option>
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Tags (séparés par des virgules)</label>
+          <input type="text" formControlName="tags" placeholder="Assistant, Automatisation, CRM" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn" (click)="closeModal()">Annuler</button>
+        <button class="btn primary" [disabled]="form.invalid">{{ isEdit ? 'Enregistrer' : 'Créer' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="showWorkflowModal">
+  <div class="modal-content large">
+    <button class="modal-close-btn" (click)="closeWorkflowModal()">✖</button>
+    <h2>{{ selectedWorkflow?.workflowName }}</h2>
+
+    <app-worflow-editor
+      [readonly]="true"
+      [loadedWorkflow]="selectedWorkflow">
+    </app-worflow-editor>
+  </div>
+</div>

@@ -37,7 +37,7 @@ class PasswordResetRequestView(APIView):
                 reset_link = f"{frontend_url}/reset-password?uid={uid}&token={token}"
 
                 # ✅ Render Email Template
-                email_subject = settings.PASSWORD_RESET_SUBJECT
+                email_subject = render_to_string(settings.ACCOUNT_PASSWORD_RESET_SUBJECT, {"user": user}).strip()
                 email_body = render_to_string("account/email/password_reset_message.html", {
                     "user": user,
                     "reset_link": reset_link,
@@ -45,10 +45,11 @@ class PasswordResetRequestView(APIView):
 
                 send_mail(
                     subject=email_subject,
-                    message=email_body,
+                    message="Pour voir ce message, utilisez un client email compatible HTML.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[email],
                     fail_silently=False,
+                    html_message=email_body  # Ajout du HTML ici
                 )
 
                 logger.info(f"✅ Password reset email sent to {email}")

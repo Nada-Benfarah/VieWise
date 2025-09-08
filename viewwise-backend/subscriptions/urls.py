@@ -3,6 +3,7 @@ from django.urls import path, include
 from .views import SubscriberViewSet, SubscriptionViewSet, PlanViewSet
 from .views import CurrentUserPlanView
 from .views import UpgradePlanView
+from .views import PlanUserCountsView
 
 router = DefaultRouter()
 router.register(r'subscribers', SubscriberViewSet)
@@ -13,4 +14,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('my-plan/', CurrentUserPlanView.as_view()),
     path('upgrade-plan/', UpgradePlanView.as_view()),
+    path('plan-user-counts/', PlanUserCountsView.as_view(), name='plan-user-counts'),
+
 ]

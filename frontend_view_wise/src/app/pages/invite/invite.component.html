@@ -2,6 +2,7 @@
   <section class="left-panel">
     <form class="form" (ngSubmit)="sendInvitations()">
       <div class="form-group">
+        <h3 class="section-title">💌 Envoyer des invitations</h3>
         <label for="emails">Emails (séparés par virgule)</label>
         <input
           id="emails"
@@ -112,7 +113,7 @@
           </td>
           <td class="action-buttons">
             <button class="btn-status" (click)="changeStatus(i, 'Accepté')" [disabled]="inv.status === 'Accepté'">✅</button>
-            <button class="btn-status" (click)="changeStatus(i, 'Rejeté')" [disabled]="inv.status === 'Rejeté'">❌</button>
+<!--            <button class="btn-status" (click)="changeStatus(i, 'Rejeté')" [disabled]="inv.status === 'Rejeté'">❌</button>-->
             <button class="delete-btn" (click)="deleteInvitation(i)">🗑</button>
           </td>
         </tr>

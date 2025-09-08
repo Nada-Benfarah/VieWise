@@ -1,0 +1,79 @@
+<div class="admin-page">
+  <div class="header">
+    <div class="actions">
+      <input class="search" type="text" placeholder="Recherche..." [(ngModel)]="q" (input)="apply()" />
+<!--      <button class="btn primary" (click)="openCreate()">+ Nouvel admin</button>-->
+    </div>
+  </div>
+
+  <div class="table-card" [class.loading]="loading">
+    <table class="modern-table">
+      <thead>
+      <tr>
+        <th>Admin</th>
+        <th>Téléphone</th>
+        <th>Actif</th>
+        <th>Staff</th>
+        <th >Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let u of paged">
+        <td class="user-cell">
+          <img class="avatar" [src]="u.avatar_url || 'assets/images/user/avatar-1.jpg'" alt="">
+          <div class="meta">
+            <div class="name">{{ u.first_name || '(Sans prénom)' }}</div>
+            <div class="email">{{ u.email }}</div>
+          </div>
+        </td>
+        <td>{{ u.phone_number || '—' }}</td>
+        <td>
+      <span class="chip" [class.muted]="!u.is_active">
+        {{ u.is_active ? 'Actif' : 'Inactif' }}
+      </span>
+        </td>
+        <td>
+          <label class="switch">
+            <input
+              type="checkbox"
+              [checked]="u.is_staff"
+              (change)="onToggleStaff(u, $any($event.target).checked)"
+            />
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td>
+<!--          <button class="icon" (click)="openEdit(u)">✏️</button>-->
+<!--          <button class="icon" (click)="demote(u)" title="Retirer staff">⬇️</button>-->
+          <button class="icon danger" (click)="remove(u)">🗑️</button>
+        </td>
+      </tr>
+      <tr *ngIf="!paged.length"><td colspan="4" class="empty">Aucun résultat</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager" *ngIf="filtered.length > pageSize">
+    <button class="btn pager-btn" [disabled]="page === 1" (click)="page = Math.max(1, page-1)">Préc.</button>
+    <span>Page {{ page }} / {{ Math.ceil(filtered.length / pageSize) }}</span>
+    <button class="btn pager-btn" [disabled]="page === Math.ceil(filtered.length / pageSize)" (click)="page = Math.min(Math.ceil(filtered.length / pageSize), page+1)">Suiv.</button>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal" *ngIf="showModal">
+    <h3>{{ isEdit ? 'Modifier' : 'Créer' }} un admin</h3>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="grid">
+        <div><label>Email</label><input type="email" formControlName="email" /></div>
+        <div><label>Prénom</label><input type="text" formControlName="first_name" /></div>
+        <div><label>Nom</label><input type="text" formControlName="last_name" /></div>
+        <div><label>Téléphone</label><input type="text" formControlName="phone_number" /></div>
+        <div *ngIf="!isEdit"><label>Mot de passe</label><input type="password" formControlName="password" /></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" (click)="closeModal()">Annuler</button>
+        <button class="btn primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>

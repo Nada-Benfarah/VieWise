@@ -5,6 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.generics import UpdateAPIView
 from django.db import transaction
 import json
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Agent, DataSource, Modele, AgentFile, Link
 from .serializers import AgentSerializer, DataSourceSerializer, ModeleSerializer, AgentFileSerializer, LinkSerializer
@@ -15,15 +16,25 @@ from django.db.models import Q
 from rest_framework.decorators import action
 from invitations.models import Invitation
 
+import logging
+logger = logging.getLogger(__name__)
+
 # ✅ Vue pour CRUD des agents
 class AgentViewSet(viewsets.ModelViewSet):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
-
     def get_queryset(self):
-        if self.request.query_params.get('all') == 'true':
-                        return Agent.objects.all()
         user = self.request.user
+
+        # ✅ Admin = voit tout, comme votre WorkflowViewSet
+        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False):
+            return Agent.objects.all()
+
+        # ✅ Optionnel : n'autoriser ?all=true que pour admin (sinon on l'ignore)
+        if self.request.query_params.get('all') == 'true' and user.is_authenticated and (user.is_staff or user.is_superuser):
+            return Agent.objects.all()
+
+        # 👇 Par défaut : owner ou partagé
         return Agent.objects.filter(Q(creator=user) | Q(shared_with=user)).distinct()
         
     @action(detail=False, methods=["get"])
@@ -31,6 +42,21 @@ class AgentViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(shared_with=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+    @action(detail=False, methods=["get"], url_path="clones-stats")
+    def clones_stats(self, request):
+        # Stats globales par agent (basé sur le FK parent_agent avec related_name='clones')
+        rows = Agent.objects.all()
+        data = [
+            {
+                "agentId": a.agentId,
+                "agentName": a.agentName,
+                "clone_count": a.clones.count()
+            }
+            for a in rows
+        ]
+        return Response(data)
 
 
 
@@ -61,65 +87,78 @@ class AgentFileViewSet(viewsets.ModelViewSet):
 
 class AgentCreateWithFilesView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
 
     @transaction.atomic
     def post(self, request):
         try:
-            creator_id = request.data.get('creator')
+            user = request.user
+            logger.info("AgentCreateWithFiles by user id=%s email=%s", user.id, getattr(user, 'email', None))
 
-            # Vérifie si le champ creator est fourni
-            if not creator_id:
-                return Response({"error": "Le champ 'creator' est requis."}, status=status.HTTP_400_BAD_REQUEST)
+            # ✅ Admin-like : superuser / staff / is_admin custom → pas de vérification de plan
+            is_admin_like = bool(
+                getattr(user, 'is_superuser', False)
+                or getattr(user, 'is_staff', False)
+                or getattr(user, 'is_admin', False)  # si votre CustomUser a ce champ
+            )
 
-            # 🔍 Vérifie l'abonnement actif du user
-            try:
-                subscription = Subscription.objects.get(
-                    subscriber__user__id=creator_id,
-                    is_active=True,
-                    start_date__lte=date.today(),
-                    end_date__gte=date.today()
+            # ⚠️ on ignore le creator envoyé par le client
+            creator_id = user.id
+
+            # 🔍 Vérifications de plan UNIQUEMENT pour les non-admins
+            if not is_admin_like:
+                active_sub = (
+                    Subscription.objects
+                    .filter(
+                        subscriber__user=user,
+                        is_active=True,
+                        start_date__lte=date.today(),
+                        end_date__gte=date.today()
+                    )
+                    .select_related('plan').first()
                 )
-            except Subscription.DoesNotExist:
-                return Response({"error": "Aucun abonnement actif trouvé."}, status=status.HTTP_403_FORBIDDEN)
+                if not active_sub:
+                    logger.warning("No active subscription for user id=%s", user.id)
+                    return Response({"error": "Aucun abonnement actif trouvé."}, status=status.HTTP_403_FORBIDDEN)
 
-            plan = subscription.plan
+                plan = active_sub.plan
 
-            # 🔢 Nombre max d'agents autorisés
-            try:
-                max_agents = int(plan.agent_nbr)
-            except ValueError:
-                return Response({"error": "La limite d'agents du plan est invalide."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                def parse_plan_limit(value):
+                    s = str(value).strip().lower()
+                    return None if s in {"unlimited", "illimité", "illimite", "∞", "no_limit", "nolimit"} else int(s)
 
-            # 📊 Compte les agents créés par ce user
-            existing_agents = Agent.objects.filter(creator_id=creator_id).count()
+                max_agents = parse_plan_limit(plan.agent_nbr)
+                if max_agents is not None:
+                    existing = Agent.objects.filter(creator_id=creator_id).count()
+                    if existing >= max_agents:
+                        return Response({"error": "Limite d'agents atteinte pour votre plan actuel."},
+                                        status=status.HTTP_403_FORBIDDEN)
 
-            if existing_agents >= max_agents:
-                return Response({
-                    "error": "Limite d'agents atteinte pour votre plan actuel."
-                }, status=status.HTTP_403_FORBIDDEN)
-
-            # ⚙️ Création de l'agent si tout est OK
+            # ✅ Création de l'agent (commune admin / non-admin)
             agent_data = {
                 'agentName': request.data.get('agentName'),
                 'agentRole': request.data.get('agentRole'),
                 'agentObjective': request.data.get('agentObjective'),
                 'agentInstructions': request.data.get('agentInstructions'),
-                'creator': creator_id,
+                'creator': creator_id,  # forcé côté serveur
                 'etat': request.data.get('etat'),
                 'datasource': request.data.get('datasource'),
                 'modele': request.data.get('modele'),
             }
 
-            agent_serializer = AgentSerializer(data=agent_data)
-            agent_serializer.is_valid(raise_exception=True)
-            agent = agent_serializer.save()
+            parent_agent_id = request.data.get('parent_agent')
+            if parent_agent_id not in (None, '', 'null'):
+                agent_data['parent_agent'] = parent_agent_id
 
-            # 📁 Ajout de fichiers
-            files = request.FILES.getlist('files')
-            for f in files:
+            ser = AgentSerializer(data=agent_data)
+            ser.is_valid(raise_exception=True)
+            agent = ser.save()
+
+            # 📁 Fichiers
+            for f in request.FILES.getlist('files'):
                 AgentFile.objects.create(agent=agent, file=f)
 
-            # 🌐 Ajout des liens web
+            # 🔗 Liens
             site_web = request.data.get('site_web')
             website_links = request.data.get('website_links')
             if site_web and website_links:
@@ -127,15 +166,12 @@ class AgentCreateWithFilesView(APIView):
                 for url in links:
                     Link.objects.create(agent=agent, url=url, source_name=site_web)
 
-            return Response({
-                "message": "Agent, fichiers et liens créés avec succès",
-                "agent": AgentSerializer(agent, context={"request": request}).data
-            }, status=status.HTTP_201_CREATED)
-
-
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response({"message": "Agent, fichiers et liens créés avec succès",
+                             "agent": AgentSerializer(agent, context={"request": request}).data},
+                            status=status.HTTP_201_CREATED)
+        except Exception:
+            logger.exception("Agent creation failed")
+            return Response({"error": "Erreur serveur"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AgentUpdateWithFilesView(UpdateAPIView):
     queryset = Agent.objects.all()
@@ -196,3 +232,38 @@ class FetchLinksFromWebsite(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+def find_active_subscription_for_user(user, SubscriptionModel=Subscription):
+    """
+    Retourne la souscription active (ou None) pour l'utilisateur donné,
+    entre dates et is_active=True.
+    """
+    if not user or not user.is_authenticated:
+        return None
+
+    sub = (
+        SubscriptionModel.objects
+        .filter(
+            subscriber__user=user,
+            is_active=True,
+            start_date__lte=date.today(),
+            end_date__gte=date.today()
+        )
+        .select_related('plan', 'subscriber', 'subscriber__user')
+        .first()
+    )
+    return sub
+
+
+def parse_plan_limit(value):
+    """
+    Convertit 'agent_nbr' du plan en entier (limite) ou None si illimité.
+    """
+    if value is None:
+        return 0
+    s = str(value).strip().lower()
+    if s in {'unlimited', 'illimite', 'illimité', '∞', 'no_limit', 'nolimit'}:
+        return None  # None = pas de limite
+    try:
+        return int(s)
+    except ValueError:
+        return 0

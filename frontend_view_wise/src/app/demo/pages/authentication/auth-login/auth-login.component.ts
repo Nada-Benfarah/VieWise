@@ -51,6 +51,33 @@ export class AuthLoginComponent implements OnInit {
     this.googleClient.requestAccessToken();
   }
 
+  private routeAfterLogin(user: any): void {
+    const isPrivileged = !!(user?.is_superuser || user?.is_staff || user?.is_admin);
+
+    if (isPrivileged) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
+    this.authService.checkOnboardingCompleted().subscribe({
+      next: (completed) => {
+        if (completed) {
+          this.router.navigate(['/marketplace']);
+        } else {
+          this.router.navigate(['/welcome']);
+          this.notificationService.info(
+            'Tu dois remplir ce formulaire pour passer à la page suivante !',
+            'Info'
+          );
+        }
+      },
+      error: () => {
+        // Fallback en cas d’erreur de vérification
+        this.router.navigate(['/marketplace']);
+      }
+    });
+  }
+
   handleGoogleLogin(response: any) {
     const token = response.access_token;
 
@@ -69,17 +96,18 @@ export class AuthLoginComponent implements OnInit {
         this.authService.user = {
           id: user.id,
           email: user.email,
-          username: user.first_name
+          username: user.first_name,
+          is_superuser: user.is_superuser,
+          is_staff: user.is_staff,
+          is_admin: user.is_admin
         } as User;
 
         this.storageService.setToken(access);
         localStorage.setItem('current_user', JSON.stringify(user));
 
-        this.notificationService.success('Connexion Google réussie');
 
-        this.authService.checkOnboardingCompleted().subscribe((completed) => {
-          this.router.navigate([completed ? '/' : '/welcome']);
-        });
+        this.notificationService.success('Connexion Google réussie');
+        this.routeAfterLogin(user);
       },
 
       error: (err) => {
@@ -119,24 +147,21 @@ export class AuthLoginComponent implements OnInit {
         this.authService.user = {
           id: user.id,
           email: user.email,
-          username: user.first_name
+          username: user.first_name,
+          is_superuser: !!res.user?.is_superuser,
+          is_staff: !!res.user?.is_staff,
+          is_admin: !!res.user?.is_superuser || !!res.user?.is_staff
         } as User;
 
         this.storageService.setToken(access);
+        localStorage.setItem('refresh_token', refresh);
         localStorage.setItem('current_user', JSON.stringify(user));
         this.notificationService.success('Connexion réussie !');
         console.log("👤 Utilisateur connecté :", user);
 
         // 🔍 Vérifier si l'onboarding est déjà rempli
-        this.authService.checkOnboardingCompleted().subscribe((completed) => {
-          if (completed) {
-            this.router.navigate(['/dashboard']);
-          } else {
-            this.router.navigate(['/welcome']);
-            this.notificationService.info('Tu dois remplir ce formulaire pour passer à la page suivante !', 'Info');
+        this.routeAfterLogin(user);
 
-          }
-        });
 
       },
       error: (error) => {

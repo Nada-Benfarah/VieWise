@@ -9,6 +9,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     phone_number = models.CharField(max_length=15, null=True, blank=True, verbose_name="Phone number")
+    avatar = models.ImageField(upload_to='avatars/%Y/%m/%d', null=True, blank=True)  # 👈 NEW
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)

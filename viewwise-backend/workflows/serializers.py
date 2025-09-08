@@ -28,7 +28,7 @@ class WorkflowSerializer(serializers.ModelSerializer):
         fields = [
             'workflowId', 'workflowName', 'description',
             'agents', 'trigger', 'tools', 'is_active', 'nodes', 'relations',
-            'owner', 'role'
+            'owner', 'role','parent_workflow'
         ]
 
     def create(self, validated_data):

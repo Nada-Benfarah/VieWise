@@ -7,8 +7,15 @@ import { AdminComponent } from './theme/layouts/admin-layout/admin-layout.compon
 import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.component';
 import { AuthGuard } from './guards/auth.guard';
 import { WorkflowAccessGuard } from './guards/workflow-access.guard';
+import {SuperuserGuard} from "./guards/superuser.guard";
+import { AdminGuard } from './guards/admin.guard';
 
 const routes: Routes = [
+  {
+    path: '',
+    redirectTo: '/login',
+    pathMatch: 'full'
+  },
   {
     path: '',
     component: AdminComponent,
@@ -20,7 +27,30 @@ const routes: Routes = [
         pathMatch: 'full'
       },
       {
+        path: 'admin/staff',
+        canActivate: [SuperuserGuard],
+        loadComponent: () => import('./demo/dashboard/admin/admin-staff/admin-staff.component').then(c => c.AdminStaffComponent)
+      },
+      {
+        path: 'admin/users',
+        loadComponent: () => import('./demo/dashboard/admin/admin-users/admin-users.component').then(m => m.AdminUsersComponent)
+      },
+      {
+        path: 'admin/agents',
+        loadComponent: () => import('./demo/dashboard/admin/admin-agents/admin-agents.component').then(m => m.AdminAgentsComponent)
+      },
+      {
+        path: 'admin/workflows',
+        loadComponent: () => import('./demo/dashboard/admin/admin-workflows/admin-workflows.component').then(m => m.AdminWorkflowsComponent)
+      },
+      {
+        path: 'admin/marketplace',
+        loadComponent: () => import('./demo/dashboard/admin/admin-marketplace/admin-marketplace.component')
+          .then(c => c.AdminMarketplaceComponent)
+      },
+      {
         path: 'dashboard',
+        canActivate: [AuthGuard, AdminGuard],
         loadComponent: () => import('./demo/dashboard/default/default.component').then((c) => c.DefaultComponent)
       },
       {
@@ -60,9 +90,11 @@ const routes: Routes = [
       {
         path: 'invite-management',
         loadComponent: () => import('./pages/invite/invite.component').then((c) => c.InviteComponent)
-      }
-
-
+      },
+      {
+        path: 'edit-profile',
+        loadComponent: () => import('./demo/pages/profile/edit-profile/edit-profile.component').then((c) => c.EditProfileComponent)
+      },
 
     ]
   },
@@ -78,6 +110,14 @@ const routes: Routes = [
         path: 'register',
         loadComponent: () =>
           import('./demo/pages/authentication/auth-register/auth-register.component').then((c) => c.AuthRegisterComponent)
+      },
+      {
+        path: 'forget-password',
+        loadComponent: () => import('./demo/pages/authentication/auth-forget-password/auth-forget-password.component').then((c) => c.AuthForgetPasswordComponent)
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () => import('./demo/pages/authentication/auth-reset-password/auth-reset-password.component').then((c) => c.AuthResetPasswordComponent)
       },
       {
         path: 'welcome',

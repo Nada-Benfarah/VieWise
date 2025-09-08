@@ -14,6 +14,13 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  is_superuser?: boolean;
+  is_staff?: boolean;
+  is_admin?: boolean;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  avatar_url?: string;
 }
 
 export interface UserRegisterForm {
@@ -30,25 +37,49 @@ export interface OnboardingData {
 
 
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private $user = new BehaviorSubject<User | null>(null);
   private router = inject(Router);
 
-  constructor(private http: HttpClient, private storageService:StorageService) {}
+  constructor(private http: HttpClient, private storageService: StorageService) {
+    // 🔹 Seed depuis localStorage (si présent)
+    const raw = localStorage.getItem('current_user');
+    if (raw) {
+      try {
+        const cached = JSON.parse(raw) as User;
+        // applique le cache-busting pour éviter les vieilles URLs d’avatar
+        this.$user.next(this.normalizeUser(cached));
+      } catch { /* ignore */ }
+    }
+  }
 
-  // private API_URL = 'http://localhost:8000/api/logout';
-
-
-
+  /** Flux lisible du user courant */
   get user(): Observable<User | null> {
     return this.$user.asObservable();
   }
 
-  set user(user: User | null) {
-    this.$user.next(user);
+  /** Setter centralisé : normalise + persiste + notifie */
+  set user(value: User | null) {
+    const normalized = value ? this.normalizeUser(value) : null;
+    this.$user.next(normalized);
+    if (normalized) {
+      localStorage.setItem('current_user', JSON.stringify(normalized));
+    } else {
+      localStorage.removeItem('current_user');
+    }
+  }
+
+  /** Ajoute un cache-busting sur l’avatar et normalise éventuellement d’autres champs */
+  private normalizeUser(u: User): User {
+    let avatar_url = u.avatar_url || undefined;
+    if (avatar_url) {
+      const base = avatar_url.split('?')[0]; // enlève un ancien ?v=
+      avatar_url = `${base}?v=${Date.now()}`;
+    }
+    // Exemple : s'assurer que is_admin est cohérent si vous l'utilisez
+    const is_admin = !!(u.is_admin || u.is_superuser || u.is_staff);
+    return { ...u, avatar_url, is_admin };
   }
 
   login(data: UserLoginForm) {
@@ -60,51 +91,46 @@ export class AuthService {
   }
 
   getCurrentUser() {
-    if(!this.storageService.getToken()) return of(false);
+    if (!this.storageService.getToken()) return of(false);
 
-    return this.http.get(`${environment.apiBaseUrl}/auth/user`).pipe(
+    return this.http.get<User>(`${environment.apiBaseUrl}/auth/me`).pipe(
       tap({
-        next: (user: User) => {
-          this.$user.next(user);
+        next: (user) => {
+          // ⬇️ passe par le setter pour normaliser + notifier + persister
+          this.user = user;
         }
       }),
       catchError((error) => {
-        if(error.status === 403 || error.status === 401){
+        if (error.status === 403 || error.status === 401) {
           this.storageService.removeToken();
+          this.user = null; // nettoie l’état local
         }
         return of(false);
       })
     );
   }
 
-
-
   logout() {
-    this.$user.next(null);
+    this.user = null;
     this.storageService.removeToken();
-    this.router.navigate(["/login"]);
+    this.router.navigate(['/login']);
   }
 
-
   isLoggedIn(): boolean {
-    return this.storageService.getToken() !== null; // Check if token exists
+    return this.storageService.getToken() !== null;
   }
 
   submitOnboarding(data: OnboardingData) {
     return this.http.post(`${environment.apiBaseUrl}/auth/onboarding/`, data);
   }
+
   checkOnboardingCompleted(): Observable<boolean> {
     return this.http.get(`${environment.apiBaseUrl}/auth/onboarding/`).pipe(
-      map(() => true), // Si la requête réussit, l'onboarding est complété
+      map(() => true),
       catchError((error) => {
-        if (error.status === 404) {
-          // Si l'API renvoie 404, cela signifie que l'onboarding n'est pas encore complété
-          return of(false);
-        } else {
-          // Pour toute autre erreur, on peut soit la propager, soit retourner false
-          console.error('Erreur lors de la vérification de l\'onboarding :', error);
-          return of(false);
-        }
+        if (error.status === 404) return of(false);
+        console.error("Erreur lors de la vérification de l'onboarding :", error);
+        return of(false);
       })
     );
   }
@@ -115,12 +141,46 @@ export class AuthService {
     }).pipe(
       catchError((err) => {
         console.error('Erreur Google login:', err);
-        return throwError(() => err); // ← on renvoie l'erreur d'origine
+        return throwError(() => err);
       })
     );
   }
 
+  requestPasswordReset(email: string) {
+    return this.http.post(`${environment.apiBaseUrl}/auth/password-reset/`, { email });
+  }
 
+  resetPassword(uid: string, token: string, password: string) {
+    return this.http.post(`${environment.apiBaseUrl}/auth/password-reset/confirm/`, {
+      uid, token, password
+    });
+  }
 
+  updateCurrentUser(data: Partial<User>) {
+    return this.http.patch<User>(`${environment.apiBaseUrl}/auth/me/`, data).pipe(
+      tap((user) => {
+        // ⬇️ une seule source de vérité
+        this.user = user;
+      })
+    );
+  }
 
+  uploadAvatar(file: File) {
+    const fd = new FormData();
+    fd.append('avatar', file);
+    return this.http.patch<User>(`${environment.apiBaseUrl}/auth/me/avatar/`, fd).pipe(
+      tap((user) => {
+        // ⬇️ pousse la version avec cache-busting
+        this.user = user;
+      })
+    );
+  }
+
+  deleteAvatar() {
+    return this.http.delete<User>(`${environment.apiBaseUrl}/auth/me/avatar/`).pipe(
+      tap((user) => {
+        this.user = user;
+      })
+    );
+  }
 }

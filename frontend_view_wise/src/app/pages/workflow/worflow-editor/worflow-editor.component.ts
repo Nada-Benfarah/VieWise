@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { OrchestratorModalComponent } from '../orchestrator-modal/orchestrator-modal.component';
 import { WorkflowService } from '../../../services/workflow/workflow.service';
 import { Agent, AgentService } from '../../../services/agents/agent.service';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { NotificationService } from '../../../services/notification/notification.service';
+import {MarketplaceAgent, MarketplaceService} from "../../../services/marketplace/marketplace.service";
+import {AdminMarketPlaceService} from "../../../services/admin-marketplace/admin-market-place.service";
 
 interface WorkflowNode {
   type: string;
@@ -63,23 +65,24 @@ export class WorflowEditorComponent implements OnInit{
   activeParentIndex: number | null = null;
   childCountMap: Record<number, number> = {};
   modalMode: 'orchestrator' | 'optimizer' | 'loop' | 'subflow' | 'agent' | null = null;
-  availableAgents: Agent[] = [];
+  availableAgents: any[] = [];
   workflowName: string;
   editingWorkflowId: number | null = null;
   availableSubflows: any[] = []; // à ajouter en haut
   groupBoxes: { id: string; x: number; y: number; width: number; height: number }[] = [];
   isCloned = false;
-
   @Input() readonly = false;
   @Input() loadedWorkflow: any;
 
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLDivElement>;
   @ViewChild('canvasInner') canvasInnerRef!: ElementRef<HTMLDivElement>;
+  private isAdmin: boolean;
+  parentWorkflowId: number | null = null;
 
-
-  constructor(private router: Router, private notificationService: NotificationService,private workflowService: WorkflowService, private agentService: AgentService) {
+  addToMarketplace = false;
+  constructor( private route: ActivatedRoute,private router: Router,private marketplaceService:MarketplaceService, private notificationService: NotificationService,private workflowService: WorkflowService, private agentService: AgentService,  private adminMarketplace: AdminMarketPlaceService  ) {
     const state = history.state;
-    if (state.loadedWorkflow) {
+    if (state?.loadedWorkflow) {
       const wf = state.loadedWorkflow;
       this.nodes = wf.nodes || [];
       this.relations = wf.relations || [];
@@ -88,19 +91,58 @@ export class WorflowEditorComponent implements OnInit{
 
       this.editingWorkflowId = state.isClone ? null : wf.workflowId;
       this.isCloned = !!state.isClone;
-
+      if (this.isCloned) {
+        this.parentWorkflowId = state.parentWorkflowId || state.loadedWorkflow?.workflowId || null;
+      }
 
       this.updateConnectors();
     }
 
-    this.agentService.getAllAgents().subscribe({
-      next: (agents) => this.availableAgents = agents,
-      error: () => console.error('Erreur chargement des agents')
-    });
+    // this.agentService.getAllAgents().subscribe({
+    //   next: (agents) => this.availableAgents = agents,
+    //   error: () => console.error('Erreur chargement des agents')
+    // });
     this.workflowService.getAllWorkflows().subscribe({
       next: (res) => this.availableSubflows = res,
       error: () => console.error('Erreur chargement des subflows')
     });
+  }
+
+  private detectAdmin(): void {
+    try {
+      const raw = localStorage.getItem('current_user');
+      const u = raw ? JSON.parse(raw) : null;
+      this.isAdmin = !!(u?.is_admin || u?.is_staff || u?.is_superuser);
+    } catch { this.isAdmin = false; }
+  }
+
+  private loadAgentsForEditor(): void {
+    if (this.isAdmin) {
+      console.log(this.isAdmin,'jjjjj');
+      // 👉 ADMIN : on utilise les agents Marketplace
+      this.marketplaceService.getMarketplaceAgents().subscribe({
+        next: (rows: any[]) => {
+          this.availableAgents = rows.map(r => ({
+            agentId: r.agent.agentId,
+            agentName: r.agent.agentName,
+            agentObjective: r.agent.agentObjective
+          }));
+        },
+        error: () => console.error('Erreur chargement agents marketplace')
+      });
+    } else {
+      // 👉 USER : mes agents (owner + partagés)
+      this.agentService.getMyAgents().subscribe({
+        next: (agents: any[]) => {
+          this.availableAgents = agents.map(a => ({
+            agentId: a.agentId,
+            agentName: a.agentName,
+            agentObjective: a.agentObjective
+          }));
+        },
+        error: () => console.error('Erreur chargement agents utilisateur')
+      });
+    }
   }
 
   toggleDropdown(index?: number): void {
@@ -120,6 +162,10 @@ export class WorflowEditorComponent implements OnInit{
   }
 
   ngOnInit(): void {
+    this.detectAdmin();
+    this.loadAgentsForEditor();
+    this.addToMarketplace = this.route.snapshot.queryParamMap.get('addToMarketplace') === '1';
+
     if (this.readonly && this.loadedWorkflow) {
       console.log('📦 Chargement lecture seule depuis loadedWorkflow (pas d’API)');
       // Utilise directement loadedWorkflow sans appeler getWorkflowById
@@ -626,7 +672,7 @@ export class WorflowEditorComponent implements OnInit{
       return;
     }
 
-    const payload = {
+    const payload: any = {
       workflowName: name,
       description: 'Mis à jour depuis l’éditeur',
       agents: this.extractAgentIds(),
@@ -634,22 +680,60 @@ export class WorflowEditorComponent implements OnInit{
       trigger: null,
       is_active: true,
       nodes: this.nodes,
-      relations: this.relations
+      relations: this.relations,
+      parent_workflow: this.parentWorkflowId || null
     };
 
+    if (this.isCloned && this.parentWorkflowId) {
+      payload.parent_workflow = this.parentWorkflowId;
+    }
+
+    // 🔁 Mise à jour d'un workflow existant : aucun ajout au marketplace
     if (this.editingWorkflowId) {
-      // 👇 Update existant
       this.workflowService.updateWorkflow(this.editingWorkflowId, payload).subscribe({
         next: () => this.notificationService.success('Workflow mis à jour avec succès !'),
         error: () => this.notificationService.error('Erreur lors de la mise à jour.')
       });
-    } else {
-      this.workflowService.saveWorkflow(payload).subscribe({
-        next: () => this.notificationService.success('Workflow enregistré avec succès !'),
-
-        error: () => this.notificationService.error('Erreur d’enregistrement')
-      });
+      return;
     }
+
+    // 🆕 Création d'un workflow
+    this.workflowService.saveWorkflow(payload).subscribe({
+      next: (created: any) => {
+        this.notificationService.success('Workflow enregistré avec succès !');
+
+        // ✅ Ajout au marketplace UNIQUEMENT si mode + admin
+        if (this.addToMarketplace && this.isAdmin) {
+          const wfId: number | undefined = created?.workflowId ?? created?.id;
+          if (!wfId) {
+            this.notificationService.warning(
+              'Workflow créé, mais ID introuvable : ajout au marketplace annulé.'
+            );
+            return;
+          }
+
+          const marketplacePayload = {
+            workflow_id: wfId,
+            category: 'Général',
+            tags: ''
+          };
+
+          this.adminMarketplace.createWorkflow(marketplacePayload).subscribe({
+            next: () => {
+              this.notificationService.success('Workflow ajouté au marketplace.');
+              this.router.navigate(['admin/marketplace'], { queryParams: { view: 'workflows' } });
+            },
+            error: () => {
+              this.notificationService.error('Échec d’ajout au marketplace.');
+              this.router.navigate(['admin/marketplace'], { queryParams: { view: 'workflows' } });
+            }
+          });
+        }
+
+        // ℹ️ Si non-admin ou pas en mode marketplace : rien de plus à faire
+      },
+      error: () => this.notificationService.error('Erreur d’enregistrement')
+    });
   }
 
 

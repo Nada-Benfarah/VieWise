@@ -50,7 +50,6 @@ export class InviteComponent {
 
 
     this.invitationService.getSentInvitations().subscribe(data => {
-      console.log('hhhhhh',data)
 
 
       this.invitations = data.map(inv => ({

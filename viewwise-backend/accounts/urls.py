@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from accounts.views.auth_views import (
     RegisterView,
     CustomTokenObtainPairView,
@@ -18,9 +18,16 @@ from accounts.views.social_views import (
 )
 from accounts.views.user_views import (
     UserProfileView,
-    UserListView
+    UserListView,
+    UserAvatarView
 )
 from accounts.views.onboarding_views import UserOnboardingView
+from accounts.views.user_views import AdminUserViewSet, AdminStaffViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'users', AdminUserViewSet, basename='admin-users')
+router.register(r'admins', AdminStaffViewSet, basename='admin-staff')  # 👈
 
 urlpatterns = [
     # ✅ Authentication
@@ -34,6 +41,7 @@ urlpatterns = [
     # ✅ Password Reset
     path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset"),
     path("reset-password/<uidb64>/<token>/", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+    path("password-reset/confirm/", PasswordResetConfirmView.as_view(), name="password_reset_confirm_post"),
 
     # ✅ Account Activation
     path("activate/<uidb64>/<token>/", ActivateAccountRedirectView.as_view(), name="activate_account"),
@@ -46,5 +54,9 @@ urlpatterns = [
 
     # ✅ User Management
     path("me/", UserProfileView.as_view(), name="user-profile"),
-    path("users/", UserListView.as_view(), name="user-list"),
+    path("me/avatar/", UserAvatarView.as_view(), name="user-avatar"),
+#     path("users/", UserListView.as_view(), name="user-list"),
+
+    path("", include(router.urls)),
+
 ]

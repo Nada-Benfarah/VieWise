@@ -4,7 +4,7 @@ export interface NavigationItem {
   type: 'item' | 'collapse' | 'group';
   translate?: string;
   icon?: string;
-  hidden?: boolean;
+  hidden?: boolean;         // 👈 utilisé pour masquer/afficher
   url?: string;
   classes?: string;
   groupClasses?: string;
@@ -25,15 +25,8 @@ export const NavigationItems: NavigationItem[] = [
     type: 'group',
     icon: 'icon-navigation',
     children: [
+
       {
-        id: 'default',
-        title: 'Default',
-        type: 'item',
-        classes: 'nav-item',
-        url: '/dashboard',
-        icon: 'dashboard',
-        breadcrumbs: false
-      },     {
         id: 'marketplace',
         title: 'Marketplace',
         type: 'item',
@@ -69,68 +62,73 @@ export const NavigationItems: NavigationItem[] = [
         icon: 'apartment',
         breadcrumbs: false
       }
-
     ]
   },
-  // {
-  //   id: 'utilities',
-  //   title: 'UI Components',
-  //   type: 'group',
-  //   icon: 'icon-navigation',
-  //   children: [
-  //     {
-  //       id: 'typography',
-  //       title: 'Typography',
-  //       type: 'item',
-  //       classes: 'nav-item',
-  //       url: '/typography',
-  //       icon: 'font-size'
-  //     },
-  //     {
-  //       id: 'color',
-  //       title: 'Colors',
-  //       type: 'item',
-  //       classes: 'nav-item',
-  //       url: '/color',
-  //       icon: 'bg-colors'
-  //     },
-  //     {
-  //       id: 'tabler',
-  //       title: 'Tabler',
-  //       type: 'item',
-  //       classes: 'nav-item',
-  //       url: 'https://ant.design/components/icon',
-  //       icon: 'ant-design',
-  //       target: true,
-  //       external: true
-  //     }
-  //   ]
-  // },
-  //
-  // {
-  //   id: 'other',
-  //   title: 'Other',
-  //   type: 'group',
-  //   icon: 'icon-navigation',
-  //   children: [
-  //     {
-  //       id: 'sample-page',
-  //       title: 'Sample Page',
-  //       type: 'item',
-  //       url: '/sample-page',
-  //       classes: 'nav-item',
-  //       icon: 'chrome'
-  //     },
-  //     {
-  //       id: 'document',
-  //       title: 'Document',
-  //       type: 'item',
-  //       classes: 'nav-item',
-  //       url: 'https://codedthemes.gitbook.io/mantis-angular/',
-  //       icon: 'question',
-  //       target: true,
-  //       external: true
-  //     }
-  //   ]
-  // }
+
+  // 👇 Groupe admin masqué par défaut
+  {
+    id: 'admin',
+    title: 'Administration',
+    type: 'group',
+    icon: 'icon-settings',
+    hidden: true, // 👈 on l'affichera dynamiquement dans le composant
+    children: [
+      {
+        id: 'default',
+        title: 'Default',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/dashboard',
+        icon: 'dashboard',
+        breadcrumbs: false
+      },
+      {
+        id: 'admin-users',
+        title: 'Admin — Utilisateurs',
+        type: 'item',
+        url: '/admin/users',
+        icon: 'user',
+        hidden: true,
+        classes: 'nav-item' // Ajouté pour éviter le background spécial
+      },
+      {
+        id: 'admin-staff',
+        title: 'Admin — Staff',
+        type: 'item',
+        url: '/admin/staff',
+        classes: 'nav-item',
+        icon: 'user',
+        hidden: true
+      },
+      {
+        id: 'admin-agents',
+        title: 'Gestion des agents',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/agents',
+        icon: 'open-a-i',
+        breadcrumbs: false,
+        hidden: true
+      },
+      {
+        id: 'admin-marketplace',
+        title: 'Gestion Marketplace',
+        type: 'item',
+        url: '/admin/marketplace',
+        classes: 'nav-item',
+        icon: 'heat-map',
+        hidden: true
+      },
+      {
+        id: 'admin-workflows',
+        title: 'Gestion des workflows',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/workflows',
+        icon: 'apartment',
+        breadcrumbs: false,
+        hidden: true
+      }
+    ]
+  }
 ];
