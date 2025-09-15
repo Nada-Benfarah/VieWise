@@ -46,7 +46,7 @@ export class AdminAgentsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.api.list().subscribe({
+    this.api.list({ not_in_marketplace: true, all: true }).subscribe({
       next: (rows) => {
         this.agents = rows;
         this.apply();

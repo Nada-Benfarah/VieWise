@@ -52,4 +52,12 @@ export class AdminMarketPlaceService {
   deleteWorkflow(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/workflows/${id}/`);
   }
+  checkAgentUsage(agentId: number) {
+    return this.http.get<{
+      in_use: boolean;
+      count: number;
+      workflows: { id: number; workflowId: number; workflowName: string; category: string; tags?: string }[];
+    }>(`${this.base}/workflows/agent-usage/${agentId}/`);
+  }
+
 }

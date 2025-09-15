@@ -108,24 +108,22 @@ export class PricingPlansComponent implements OnInit {
   proceedUpgrade(): void {
     if (!this.selectedPlanToUpgrade) return;
 
-    this.isRedirecting = true;
+    this.planService.upgradePlan(this.selectedPlanToUpgrade).subscribe({
+      next: (plan) => {
+        this.toastService.success(`Vous êtes maintenant abonné au plan ${plan.name} !`);
 
-    this.paymee.initCheckout(this.selectedPlanToUpgrade as any).subscribe({
-      next: (res) => {
-        // Ferme le modal avant de quitter la page (UX)
+        // Option : conserver le contrat existant avec le parent
+        this.planSelected.emit(plan.name);
+
+        this.selectedPlanToUpgrade = null;
         this.showConfirmationModal = false;
-
-        // Redirection vers le checkout Paymee
-        window.location.href = res.redirect_url;
       },
-      error: (err) => {
-        console.error('Init checkout failed:', err);
-        this.isRedirecting = false;
-        this.toastService.error(`Erreur lors de l’initialisation du paiement`);
+      error: () => {
+        this.toastService.error(`Erreur lors de l’abonnement`);
+        this.showConfirmationModal = false;
       }
     });
   }
-
 
 
   getSelectedPlanFeatures(): string[] {

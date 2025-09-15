@@ -87,7 +87,7 @@ export class CreateAgentComponent implements OnInit {
   errorLoadingLinks = '';
   parentAgentId: number | null = null;
   returnUrl: string | null = null;
-
+  marketplaceEntryId: number | null = null;
   // (optionnel) liste blanche pour éviter les open-redirects
   private readonly allowedReturnUrls = new Set([
     '/agents',
@@ -105,6 +105,15 @@ export class CreateAgentComponent implements OnInit {
 
 
     this.addToMarketplace = qp.get('addToMarketplace') === '1' || !!history.state?.addToMarketplace;
+
+    const catFromState = history.state?.market?.category ?? qp.get('category');
+    const tagsFromState = history.state?.market?.tags ?? qp.get('tags');
+    const mpId = history.state?.marketplaceId ?? qp.get('marketplaceId');
+
+    if (catFromState) this.market.category = catFromState;
+    if (tagsFromState) this.market.tags = tagsFromState;
+    this.marketplaceEntryId = mpId ? Number(mpId) : null;
+
     const state = history.state;
     this.agentId = Number(this.route.snapshot.paramMap.get('id'));
     const isCloning = !!state?.isClone;
@@ -178,7 +187,7 @@ export class CreateAgentComponent implements OnInit {
     return null;
   }
   get showMarketplaceFields(): boolean {
-    return !this.isEditMode && this.addToMarketplace && this.isAdminLike;
+    return this.addToMarketplace === true || !this.isEditMode && this.addToMarketplace && this.isAdminLike;
   }
 
   triggerFileInput(): void {

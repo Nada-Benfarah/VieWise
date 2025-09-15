@@ -233,6 +233,31 @@ export class AdminUsersComponent implements OnInit {
   closeModal() {
     this.showModal = false;
   }
+  openEdit(u: AdminUser) {
+    this.isEdit = true;
+    this.current = u;
+
+    // Rôle déduit des flags existants
+    const role: 'client' | 'admin' = u.is_staff ? 'admin' : 'client';
+
+    // Pré-remplir le formulaire (mot de passe vide => optionnel)
+    this.form.reset({
+      email: u.email || '',
+      first_name: u.first_name || '',
+      last_name: u.last_name || '',
+      phone_number: u.phone_number || '',
+      role,
+      password: '',                // ← vide en édition (optionnel)
+      is_active: !!u.is_active,
+      is_staff: !!u.is_staff,
+      is_superuser: !!u.is_superuser
+    });
+
+    this.showPassword = false;
+    this.showModal = true;
+  }
+
+
 
   protected readonly Math = Math;
 }

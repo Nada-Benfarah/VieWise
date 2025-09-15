@@ -52,6 +52,9 @@ export class AdminMarketplaceComponent implements OnInit {
   showWorkflowModal = false;
   selectedWorkflow: any = null;
   view: ViewMode = 'agents'; // 👈 toggle
+  showInUseModal = false;
+  inUseAgentName = '';
+  inUseWorkflows: { id: number; workflowId: number; workflowName: string; category: string; tags?: string }[] = [];
   constructor(
     private api: AdminMarketPlaceService,
     private agentApi: AgentService,
@@ -211,18 +214,6 @@ export class AdminMarketplaceComponent implements OnInit {
     }
   }
 
-  remove(row: AdminMarketplaceRow) {
-    if (!confirm(`Supprimer l’entrée pour "${row.agent.agentName}" ?`)) return;
-    this.api.delete(row.id).subscribe({
-      next: () => {
-        this.rows = this.rows.filter((r) => r.id !== row.id);
-        this.apply();
-        this.loadAgentsAvailable();
-        this.notify.success('Entrée supprimée.');
-      },
-      error: () => this.notify.error('Suppression impossible.')
-    });
-  }
 
   closeModal() {
     this.showModal = false;
@@ -282,11 +273,77 @@ export class AdminMarketplaceComponent implements OnInit {
     if (!row?.agent) return;
 
     this.router.navigate(['/create-agent', row.agent.agentId], {
-      queryParams: { returnUrl: '/admin/marketplace' },
-      state: { returnTo: '/admin/marketplace' }
+      queryParams: {
+        returnUrl: '/admin/marketplace',
+        addToMarketplace: 1,
+        category: row.category,
+        tags: row.tags || '',
+        marketplaceId: row.id
+      },
+      state: {
+        returnTo: '/admin/marketplace',
+        addToMarketplace: true,
+        market: { category: row.category, tags: row.tags || '' },
+        marketplaceId: row.id
+      }
     });
   }
 
+  remove(row: AdminMarketplaceRow) {
+    // 1) confirmation
+    if (!confirm(`Supprimer l’entrée pour "${row.agent.agentName}" ?`)) return;
+
+    // 2) pré-vérification d’usage
+    this.api.checkAgentUsage(row.agent.agentId).subscribe({
+      next: (usage) => {
+        if (usage.in_use) {
+          // ➜ afficher modale d’alerte
+          this.inUseAgentName = row.agent.agentName;
+          this.inUseWorkflows = usage.workflows || [];
+          this.showInUseModal = true;
+          return;
+        }
+        // 3) pas utilisé → suppression directe
+        this.confirmDeleteMarketplaceAgent(row);
+      },
+      error: () => {
+        // En cas d’erreur de vérif, on tente quand même la suppression
+        this.confirmDeleteMarketplaceAgent(row);
+      }
+    });
+  }
+
+  private confirmDeleteMarketplaceAgent(row: AdminMarketplaceRow) {
+    this.api.delete(row.id).subscribe({
+      next: () => {
+        this.rows = this.rows.filter((r) => r.id !== row.id);
+        this.apply();
+        this.loadAgentsAvailable();
+        this.notify.success('Entrée supprimée.');
+      },
+      error: (err) => {
+        if (err?.status === 409 && err?.error?.error === 'AGENT_IN_USE') {
+          // Sécurité côté serveur : retombe aussi ici si quelqu’un bypass la pré-vérif
+          this.inUseAgentName = row.agent.agentName;
+          this.inUseWorkflows = err.error.workflows || [];
+          this.showInUseModal = true;
+          return;
+        }
+        this.notify.error('Suppression impossible.');
+      }
+    });
+  }
+
+  onCloseInUseModal() {
+    this.showInUseModal = false;
+    this.inUseWorkflows = [];
+    this.inUseAgentName = '';
+  }
+
+  gotoWorkflowsTab() {
+    this.view = 'workflows';
+    this.onCloseInUseModal();
+  }
 
 
 

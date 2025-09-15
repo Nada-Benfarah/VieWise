@@ -6,7 +6,7 @@ from rest_framework.generics import UpdateAPIView
 from django.db import transaction
 import json
 from rest_framework.permissions import IsAuthenticated
-
+from django.shortcuts import get_object_or_404
 from .models import Agent, DataSource, Modele, AgentFile, Link
 from .serializers import AgentSerializer, DataSourceSerializer, ModeleSerializer, AgentFileSerializer, LinkSerializer
 from .document_loader import DocumentLoader
@@ -23,19 +23,75 @@ logger = logging.getLogger(__name__)
 class AgentViewSet(viewsets.ModelViewSet):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
+
+    @action(detail=True, methods=['post'], url_path='clone')
+    @transaction.atomic
+    def clone(self, request, pk=None):
+          user = request.user
+          source = get_object_or_404(Agent, pk=pk)
+
+          # Bypass admin-like
+          is_admin_like = bool(
+              getattr(user, 'is_superuser', False)
+              or getattr(user, 'is_staff', False)
+              or getattr(user, 'is_admin', False)
+          )
+          if not is_admin_like:
+              sub = find_active_subscription_for_user(user)
+              if not sub:
+                  return Response({"error": "Aucun abonnement actif trouvé."}, status=status.HTTP_403_FORBIDDEN)
+              limit = parse_plan_limit(getattr(sub.plan, 'agent_nbr', None))
+              if limit is not None and Agent.objects.filter(creator=user).count() >= limit:
+                  return Response({"error": "Limite d'agents atteinte pour votre plan actuel."},
+                                  status=status.HTTP_403_FORBIDDEN)
+
+          # Création du clone
+          clone = Agent.objects.create(
+              agentName=f"{source.agentName} (Copie)",
+              agentRole=source.agentRole,
+              agentObjective=source.agentObjective,
+              agentInstructions=source.agentInstructions,
+              creator=user,
+              etat='draft',
+              datasource=source.datasource,
+              modele=source.modele,
+              parent_agent=source,
+          )
+
+          # Liens
+          for link in source.links.all():
+              Link.objects.create(agent=clone, url=link.url, source_name=link.source_name)
+
+          # Fichiers (référence partagée au même fichier)
+          for f in source.files.all():
+              # Assigne le même chemin de fichier sans duppliquer physiquement
+              new_af = AgentFile(agent=clone)
+              new_af.file.name = f.file.name
+              new_af.save()
+
+          data = AgentSerializer(clone, context={"request": request}).data
+          return Response(data, status=status.HTTP_201_CREATED)
+
     def get_queryset(self):
         user = self.request.user
+        qs = Agent.objects.all()
 
-        # ✅ Admin = voit tout, comme votre WorkflowViewSet
-        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False):
-            return Agent.objects.all()
+        # Admin-like → voit tout, sinon owner/partagé
+        is_admin_like = bool(getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False))
+        if not is_admin_like:
+            qs = qs.filter(Q(creator=user) | Q(shared_with=user)).distinct()
 
-        # ✅ Optionnel : n'autoriser ?all=true que pour admin (sinon on l'ignore)
-        if self.request.query_params.get('all') == 'true' and user.is_authenticated and (user.is_staff or user.is_superuser):
-            return Agent.objects.all()
+        # helpers
+        def truthy(v):
+            return str(v).lower() in {'1', 'true', 'yes', 'y', 'on'}
 
-        # 👇 Par défaut : owner ou partagé
-        return Agent.objects.filter(Q(creator=user) | Q(shared_with=user)).distinct()
+        # filtres marketplace
+        if truthy(self.request.query_params.get('not_in_marketplace')):
+            qs = qs.filter(marketplace_entry__isnull=True)
+        elif truthy(self.request.query_params.get('in_marketplace')):
+            qs = qs.filter(marketplace_entry__isnull=False)
+
+        return qs.order_by('-agentId')
         
     @action(detail=False, methods=["get"])
     def shared(self, request):

@@ -34,13 +34,6 @@
         <textarea id="agent-instructions" class="textarea" [(ngModel)]="agent.agentInstructions" name="agentInstructions" required></textarea>
       </div>
 
-<!--      <div class="form-group">-->
-<!--        <label for="datasource">Source de données</label>-->
-<!--        <select id="datasource" class="select" [(ngModel)]="agent.datasource" name="datasource" required>-->
-<!--          <option value="" disabled selected>Choisissez une source</option>-->
-<!--          <option *ngFor="let ds of datasources" [value]="ds.id">{{ ds.name }}</option>-->
-<!--        </select>-->
-<!--      </div>-->
 
       <div class="form-group">
         <label for="datasource">Source de données</label>
@@ -49,13 +42,7 @@
         </select>
       </div>
 
-<!--      <div class="form-group">-->
-<!--        <label for="modele">Modèle IA</label>-->
-<!--        <select id="modele" class="select" [(ngModel)]="agent.modele" name="modele" required>-->
-<!--          <option value="" disabled selected>Choisissez un modèle</option>-->
-<!--          <option *ngFor="let model of modeles" [value]="model.id">{{ model.name }}</option>-->
-<!--        </select>-->
-<!--      </div>-->
+
 
       <div class="form-group">
         <label for="modele">Modèle IA</label>
@@ -64,13 +51,7 @@
         </select>
       </div>
 
-<!--      <div class="form-group">-->
-<!--        <label>Démarreurs de conversation</label>-->
-<!--        <div *ngFor="let starter of conversationStarters; let i = index" class="conversation-starter">-->
-<!--          <input type="text" class="input" placeholder="Ajouter une phrase d’exemple" [(ngModel)]="conversationStarters[i]" name="starter-{{ i }}" (input)="handleInputChange(i)" />-->
-<!--          <button type="button" class="btn-remove" [disabled]="!starter || starter.trim() === ''" (click)="removeStarter(i)">✕</button>-->
-<!--        </div>-->
-<!--      </div>-->
+
 
       <div *ngIf="!agentId" class="button">
         <button type="submit" class="btn btn-primary">Créer l'agent</button>
@@ -85,42 +66,7 @@
 
   <section class="right-panel">
     <form class="form">
-<!--      <div class="upload-area" (click)="triggerFileInput()">-->
-<!--        <ng-container *ngIf="fileNames.length === 0; else fileList">-->
-<!--          <p class="empty-text">It's empty in here... for now.</p>-->
-<!--          <div class="drag-drop-box">-->
-<!--            <p class="icon">&#128194;</p>-->
-<!--            <p class="drag-text">Drag or click to upload</p>-->
-<!--          </div>-->
-<!--          <div class="upload-options">-->
-<!--            <p>OR</p>-->
-<!--            <button type="button" class="btn-upload-connection">Create and Import from Connection</button>-->
-<!--            <p>OR</p>-->
-<!--            <button type="button" class="btn-upload-website">Import from a Website</button>-->
-<!--          </div>-->
-<!--        </ng-container>-->
 
-<!--        <ng-template #fileList>-->
-<!--          <table class="file-table">-->
-<!--            <thead>-->
-<!--            <tr>-->
-<!--              <th>Name</th>-->
-<!--              <th>Size</th>-->
-<!--              <th>Status</th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--            <tr *ngFor="let file of uploadedFiles">-->
-<!--              <td>{{ file.name }}</td>-->
-<!--              <td class="file-size">{{ formatFileSize(file.size) }}</td>-->
-<!--              <td><span class="status-icon">✔️</span></td>-->
-<!--            </tr>-->
-<!--            </tbody>-->
-<!--          </table>-->
-<!--        </ng-template>-->
-
-<!--        <input type="file" #fileInput multiple hidden (change)="onFilesSelected($event)" />-->
-<!--      </div>-->
       <div class="upload-area" (click)="triggerFileInput()">
         <p class="upload-label">Téléversez vos fichiers<br />
           <span class="hint">Glissez ou cliquez pour ajouter des fichiers</span>
@@ -202,13 +148,6 @@
 
 
 
-
-
-
-
-
-
-
       <div class="form-group tools-section">
         <div class="tools-header">
           <div class="tools-info">
@@ -237,14 +176,8 @@
           </div>
 
 
-
-
         </div>
       </div>
-
-
-
-
 
 
 

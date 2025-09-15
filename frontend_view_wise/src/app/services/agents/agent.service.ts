@@ -93,6 +93,9 @@
       return this.http.get<any[]>(`${environment.apiBaseUrl}/api/agents/shared/`);
     }
 
+    cloneAgent(agentId: number): Observable<Agent> {
+      return this.http.post<Agent>(`${environment.apiBaseUrl}/api/agents/${agentId}/clone/`, {});
+    }
 
 
 

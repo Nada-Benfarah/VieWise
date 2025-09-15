@@ -6,7 +6,7 @@
         <button [class.active]="view === 'agents'" (click)="changeView('agents')">🧠 Agents</button>
         <button   [class.active]="view === 'workflows'" (click)="changeView('workflows')">⚙️ Workflows</button>
         <input class="search" type="text" placeholder="Recherche..." [(ngModel)]="q" (input)="apply()" />
-        <button *ngIf="view==='agents'" class="btn primary" (click)="openCreate()">+ Ajouter au marketplace</button>
+        <button *ngIf="view==='agents'" class="btn primary" (click)="openCreate()">+ Ajouter un agent</button>
         <!-- (Optionnel) bouton pour créer une entrée workflow si tu ajoutes la création -->
         <button *ngIf="view==='workflows'" class="btn primary" (click)="openCreateWorkflow()">+ Ajouter un workflow</button>
       </div>
@@ -54,7 +54,7 @@
       <tr>
         <th>Workflow</th>
         <th>Catégorie</th>
-        <th>Tags</th>
+<!--        <th>Tags</th>-->
         <th>Actions</th>
       </tr>
       </thead>
@@ -67,7 +67,7 @@
           </div>
         </td>
         <td>{{ r.category }}</td>
-        <td>{{ r.tags || '—' }}</td>
+<!--        <td>{{ r.tags || '—' }}</td>-->
         <td>
           <!-- 👇 Actions Voir / Cloner / Supprimer -->
           <button class="icon danger" (click)="removeWorkflow(r)">🗑️</button>
@@ -141,5 +141,31 @@
       [readonly]="true"
       [loadedWorkflow]="selectedWorkflow">
     </app-worflow-editor>
+  </div>
+</div>
+
+<!-- 🔒 Modale: agent utilisé par des workflows du marketplace -->
+<div class="modal-overlay-2" *ngIf="showInUseModal" (click)="onCloseInUseModal()"></div>
+<div class="modal-content large" *ngIf="showInUseModal">
+  <h3>Suppression impossible</h3>
+  <p>
+    L’agent <strong>{{ inUseAgentName }}</strong> est utilisé par
+    <strong>{{ inUseWorkflows.length }}</strong> workflow(s) du marketplace.
+  </p>
+
+  <div class="list">
+    <div class="item" *ngFor="let w of inUseWorkflows">
+      <div>
+        <div class="name">⚙️ {{ w.workflowName }}</div>
+        <div class="meta">Catégorie : {{ w.category }} <span *ngIf="w.tags">• Tags : {{ w.tags }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">Supprimez d’abord ces workflows du marketplace, puis réessayez.</p>
+
+  <div class="modal-actions">
+    <button class="btn danger" (click)="onCloseInUseModal()">Fermer</button>
+    <button class="btn primary" (click)="gotoWorkflowsTab()">Voir les workflows</button>
   </div>
 </div>

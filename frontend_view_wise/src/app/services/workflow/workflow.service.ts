@@ -42,7 +42,9 @@ export class WorkflowService {
   getCloneStats(): Observable<WorkflowCloneStat[]> {
     return this.http.get<WorkflowCloneStat[]>(`${this.baseUrl}clones-stats/`);
   }
-
+  cloneWorkflow(workflowId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${workflowId}/clone/`, {});
+  }
 }
 
 
