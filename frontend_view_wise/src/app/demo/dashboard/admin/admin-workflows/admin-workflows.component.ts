@@ -6,6 +6,7 @@ import {Router} from "@angular/router";
 import {WorkflowService} from "../../../../services/workflow/workflow.service";
 import { NotificationService } from '../../../../services/notification/notification.service';
 import {WorflowEditorComponent} from "../../../../pages/workflow/worflow-editor/worflow-editor.component";
+import {ConfirmDialogService} from "../../../../services/confirm-dialog.service";
 
 @Component({
   selector: 'app-admin-workflows',
@@ -35,7 +36,7 @@ export class AdminWorkflowsComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private workflowService: WorkflowService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService, private confirm: ConfirmDialogService
   ) {
     this.form = this.fb.group({
       workflowName: ['', Validators.required],
@@ -93,8 +94,15 @@ export class AdminWorkflowsComponent implements OnInit {
     });
   }
 
-  remove(row: AdminWorkflow): void {
-    if (!confirm(`Supprimer "${row.workflowName}" ?`)) return;
+  async remove(row: AdminWorkflow) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer le workflow',
+      message: `Supprimer le workflow « ${row.workflowName} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
     this.api.delete(row.workflowId).subscribe({
       next: () => {
         this.rows = this.rows.filter((r) => r.workflowId !== row.workflowId);

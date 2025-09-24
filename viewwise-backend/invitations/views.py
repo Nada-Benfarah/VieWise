@@ -91,7 +91,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
             return Response({"error": "Aucun abonnement actif trouvé."}, status=400)
 
         plan = active_subscription.plan
-        total_limit = plan.invitation_nbr
+        total_limit = plan.invitation_nbr-1
 
         used = Invitation.objects.filter(
             sender=subscriber,

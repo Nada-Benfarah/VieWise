@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { AdminStaffService } from 'src/app/services/admin-staff/admin-staff.service';
 import {AdminUser, AdminUsersService} from 'src/app/services/admin/admin-user.service';
+import {NotificationService} from "../../../../services/notification/notification.service";
+import {ConfirmDialogService} from "../../../../services/confirm-dialog.service";
 
 
 @Component({
@@ -24,9 +26,10 @@ export class AdminStaffComponent implements OnInit {
   isEdit = false;
   current: AdminUser | null = null;
   form: FormGroup;
+  showPassword = false;
 
   constructor(
-    private api: AdminStaffService,private apiUsers: AdminUsersService,
+    private api: AdminStaffService,private apiUsers: AdminUsersService, private notificationService: NotificationService,private  confirm:ConfirmDialogService,
     fb: FormBuilder
   ) {
     this.form = fb.group({
@@ -72,25 +75,33 @@ export class AdminStaffComponent implements OnInit {
     this.page = 1;
   }
 
-  openCreate() {
-    this.isEdit = false;
-    this.current = null;
-    this.form.reset({ email: '', first_name: '', last_name: '', phone_number: '', password: '' });
-    this.showModal = true;
-  }
+
 
   openEdit(u: AdminUser) {
     this.isEdit = true;
     this.current = u;
+
+    // Rôle déduit des flags existants
+    const role: 'client' | 'admin' = u.is_staff ? 'admin' : 'client';
+
+    // Pré-remplir le formulaire (mot de passe vide => optionnel)
     this.form.reset({
-      email: u.email,
-      first_name: u.first_name,
+      email: u.email || '',
+      first_name: u.first_name || '',
       last_name: u.last_name || '',
       phone_number: u.phone_number || '',
-      password: ''
+      role,
+      password: '',                // ← vide en édition (optionnel)
+      is_active: !!u.is_active,
+      is_staff: !!u.is_staff,
+      is_superuser: !!u.is_superuser
     });
+
+    this.showPassword = false;
     this.showModal = true;
   }
+  togglePasswordVisibility() { this.showPassword = !this.showPassword; }
+
 
   save() {
     if (this.form.invalid) return;
@@ -107,7 +118,9 @@ export class AdminStaffComponent implements OnInit {
         }
       });
     } else {
-      if (!payload.password) return alert('Mot de passe requis à la création');
+      if (!payload.password) return
+      this.notificationService.error("'Mot de passe requis à la création");
+
       this.api.create(payload).subscribe({
         next: (c) => {
           this.rows.unshift(c);
@@ -118,18 +131,18 @@ export class AdminStaffComponent implements OnInit {
     }
   }
 
-  demote(u: AdminUser) {
-    if (!confirm(`Retirer les droits staff de ${u.email} ?`)) return;
-    this.apiUsers.toggleStaff(u.id, false).subscribe({
-      next: () => {
-        this.rows = this.rows.filter((x) => x.id !== u.id);
-        this.apply();
-      }
-    });
-  }
 
-  remove(u: AdminUser) {
-    if (!confirm(`Supprimer ${u.email} ?`)) return;
+
+  async remove(u: AdminUser) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer l’admin',
+      message: `Supprimer « ${u.email} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
+
     this.api.delete(u.id).subscribe({
       next: () => {
         this.rows = this.rows.filter((x) => x.id !== u.id);
@@ -140,6 +153,20 @@ export class AdminStaffComponent implements OnInit {
 
   closeModal() {
     this.showModal = false;
+  }
+
+  toggleActive(u: AdminUser) {
+    const target = !u.is_active;
+    this.apiUsers.toggleActive(u.id, target).subscribe({
+      next: (upd: AdminUser) => {
+        u.is_active = upd.is_active;
+        this.notificationService.success(`Compte ${u.email} ${u.is_active ? 'activé' : 'désactivé'} avec succès.`);
+      },
+      error: (err) => {
+        console.error(err);
+        this.notificationService.error("Impossible de changer l'état du compte.");
+      }
+    });
   }
 
   onToggleStaff(u: AdminUser, checked: boolean) {

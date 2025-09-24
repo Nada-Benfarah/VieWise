@@ -518,3 +518,62 @@
     .modal-overlay-2 + .modal-content.large .list { max-height: 260px; }
   }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content.large {
+  position: relative;
+  width: 100vw;
+  max-width: 1380px;
+  height: 82vh;
+  max-height: 92vh;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+}
+
+.modal-content.large > h2 {
+  margin: 0 0 .5rem 0;
+  flex: 0 0 auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #e53935;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.modal-content.large app-worflow-editor,
+.modal-content.large .workflow-editor-container {
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.modal-content.large .workflow-editor-container {
+  transform: none !important;
+  transform-origin: center center !important;
+  padding: 0.5rem; /* selon ton goût */
+}

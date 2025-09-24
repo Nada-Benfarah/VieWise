@@ -1,59 +1,104 @@
-<!-- src/app/pages/profile/edit-profile/edit-profile.component.html -->
 <div class="profile-container">
   <h2 class="profile-title">Mon profil</h2>
 
-  <div class="profile-photo-section">
-    <img
-      [src]="displayAvatar"
-      (error)="onImgError($event)"
-      alt="Photo de profil"
-      class="profile-photo"
-    />
-    <div class="photo-actions">
-      <label class="btn-upload">
-        Changer la photo
-        <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="isUploading" hidden />
-      </label>
+  <div class="profile-layout">
+    <!-- Colonne gauche -->
+    <div class="left-pane">
+      <div class="profile-photo-section">
+        <img
+          [src]="displayAvatar"
+          (error)="onImgError($event)"
+          alt="Photo de profil"
+          class="profile-photo"
+        />
+        <div class="photo-actions">
+          <label class="btn-upload">
+            Changer la photo
+            <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="isUploading" hidden />
+          </label>
 
-      <button class="btn-delete" *ngIf="user?.avatar_url" (click)="removePhoto()" [disabled]="isUploading">
-        <span class="icon">🗑️</span>
-        Supprimer la photo
-      </button>
+          <button class="btn-delete" *ngIf="user?.avatar_url" (click)="removePhoto()" [disabled]="isUploading">
+            <span class="icon">🗑️</span>
+            Supprimer la photo
+          </button>
+        </div>
+        <div class="uploading" *ngIf="isUploading">Téléversement en cours...</div>
+      </div>
+
+      <!-- Formulaire profil -->
+      <form [formGroup]="profileForm" class="profile-form" (ngSubmit)="saveProfile()">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" formControlName="first_name" class="form-control" />
+          <small *ngIf="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched" class="error">
+            Prénom requis (max 150 caractères)
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="text" formControlName="phone_number" class="form-control" placeholder="+51209334" />
+          <small *ngIf="profileForm.get('phone_number')?.touched && profileForm.get('phone_number')?.hasError('pattern')"
+                 class="error">
+            Format invalide. Exemple: +51209334.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" formControlName="email" class="form-control" [disabled]="true" />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving || profileForm.invalid">
+            {{ isSaving ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
     </div>
-    <div class="uploading" *ngIf="isUploading">Téléversement en cours...</div>
+
+    <!-- Colonne droite : password-block (FRÈRE de .left-pane) -->
+    <aside class="right-pane">
+      <div class="password-block">
+        <h3>Changer le mot de passe</h3>
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-form">
+          <div class="form-group">
+            <label>Ancien mot de passe</label>
+            <input [type]="showPwd.old ? 'text' : 'password'" formControlName="old_password" class="form-control" />
+            <small *ngIf="passwordForm.get('old_password')?.invalid && passwordForm.get('old_password')?.touched" class="error">
+              Champ requis
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input [type]="showPwd.n1 ? 'text' : 'password'" formControlName="new_password" class="form-control" />
+            <small *ngIf="passwordForm.get('new_password')?.hasError('minlength') && passwordForm.get('new_password')?.touched" class="error">
+              8 caractères minimum
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Confirmer le nouveau mot de passe</label>
+            <input
+              [type]="showPwd.n2 ? 'text' : 'password'"
+              formControlName="new_password2"
+              class="form-control"
+              [class.is-invalid]="passwordForm.hasError('mismatch') && passwordForm.get('new_password2')?.touched"
+            />
+            <small *ngIf="passwordForm.hasError('mismatch') && passwordForm.get('new_password2')?.touched" class="error">
+              Les mots de passe ne correspondent pas
+            </small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-secondary" [disabled]="isChangingPwd || passwordForm.invalid">
+              {{ isChangingPwd ? 'Modification...' : 'Mettre à jour le mot de passe' }}
+            </button>
+          </div>
+        </form>
+        <p class="hint">Astuce sécurité. Utiliser un mot de passe unique et robuste.</p>
+      </div>
+    </aside>
   </div>
-
-  <form [formGroup]="profileForm" class="profile-form" (ngSubmit)="saveProfile()">
-    <div class="form-group">
-      <label>Prénom</label>
-      <input type="text" formControlName="first_name" class="form-control" />
-      <small *ngIf="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched" class="error">
-        Prénom requis (max 150 caractères)
-      </small>
-    </div>
-
-    <div class="form-group">
-      <label>Téléphone</label>
-      <input type="text" formControlName="phone_number" class="form-control" placeholder="+51209334" />
-      <small *ngIf="profileForm.get('phone_number')?.touched && profileForm.get('phone_number')?.hasError('pattern')"
-             class="error">
-        Format invalide. Exemple: +51209334.
-      </small>
-    </div>
-
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" formControlName="email" class="form-control" [disabled]="true" />
-    </div>
-
-    <div class="form-group">
-      <label>Mot de passe</label>
-      <input type="password" formControlName="password" class="form-control" [disabled]="true" />
-      <small class="hint">(haché et non modifiable ici)</small>
-    </div>
-
-    <button type="submit" class="btn btn-primary" [disabled]="isSaving || profileForm.invalid">
-      {{ isSaving ? 'Sauvegarde...' : 'Enregistrer' }}
-    </button>
-  </form>
 </div>

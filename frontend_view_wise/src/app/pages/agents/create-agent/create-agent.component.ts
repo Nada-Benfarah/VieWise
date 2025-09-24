@@ -12,7 +12,9 @@ import { ActivatedRoute } from '@angular/router';
 import { NotificationService } from '../../../services/notification/notification.service';
 import {AdminMarketPlaceService} from "../../../services/admin-marketplace/admin-market-place.service";
 import { Location as NgLocation } from '@angular/common';
-
+import { StorageService } from 'src/app/services/storage.service';
+import { PlanService } from 'src/app/services/plan/plan.service';
+import {ConfirmDialogService} from "../../../services/confirm-dialog.service";
 
 @Component({
   selector: 'app-create-agent',
@@ -96,7 +98,9 @@ export class CreateAgentComponent implements OnInit {
     '/marketplace',
     '/'
   ]);
-  constructor( private location: NgLocation,private notificationService: NotificationService,private agentService: AgentService, private router: Router, private route: ActivatedRoute, private marketplaceService: AdminMarketPlaceService) {
+  storageUsedBytes = 0;
+  storageLimitBytes = 0;
+  constructor(private confirm:ConfirmDialogService,private planService: PlanService , private location: NgLocation,private notificationService: NotificationService,private agentService: AgentService, private router: Router, private route: ActivatedRoute, private marketplaceService: AdminMarketPlaceService, private storageService: StorageService) {
   }
 
   ngOnInit(): void {
@@ -172,6 +176,18 @@ export class CreateAgentComponent implements OnInit {
 
     this.agentService.getAllDatasources().subscribe(res => this.datasources = res);
     this.agentService.getAllModeles().subscribe(res => this.modeles = res);
+    this.planService.currentPlan$.subscribe((plan) => {
+      const sizeStr = plan?.data_source_size || null;
+      this.storageLimitBytes = this.parseSizeToBytes(sizeStr);
+    });
+    // valeur initiale (si nécessaire)
+    this.planService.refreshCurrentPlan().subscribe();
+
+    // Stockage utilisé (côté serveur) — bytes
+    this.storageService.used$.subscribe(u => {
+      this.storageUsedBytes = u.bytes || 0;
+    });
+    this.storageService.refresh().subscribe();
   }
 
   private resolveReturnUrl(): string | null {
@@ -197,15 +213,43 @@ export class CreateAgentComponent implements OnInit {
 
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      for (let i = 0; i < input.files.length; i++) {
-        const file = input.files.item(i);
-        if (file) {
-          this.uploadedFiles.push(file);
-        }
+    if (!input.files || input.files.length === 0) return;
+
+    // Pas de limite ? (plan unlimited)
+    const unlimited = this.storageLimitBytes === 0;
+
+    // poids déjà compté (utilisé serveur + fichiers existants de l’agent + fichiers déjà sélectionnés localement)
+    const existingBytes = (this.existingFiles || []).reduce((acc, f) => acc + (Number(f.size) || 0), 0);
+    const localSelectedBytes = this.uploadedFiles.reduce((acc, f) => acc + (f.size || 0), 0);
+
+    let currentTotal = this.storageUsedBytes + existingBytes + localSelectedBytes;
+
+    const rejected: string[] = [];
+    for (let i = 0; i < input.files.length; i++) {
+      const file = input.files.item(i)!;
+      if (!unlimited && currentTotal + file.size > this.storageLimitBytes) {
+        rejected.push(`${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`);
+        continue; // refuse ce fichier
       }
+      this.uploadedFiles.push(file);
+      currentTotal += file.size;
     }
+
+    // Feedback utilisateur
+    if (rejected.length) {
+      const maxMB = (this.storageLimitBytes / 1024 / 1024).toFixed(2);
+      this.notificationService.error(
+        `Espace insuffisant. Fichier(s) refusé(s) :\n- ${rejected.join('\n- ')}\n\n` +
+        `Limite du plan : ${maxMB} MB`
+      );
+    }
+
+    // reset input pour permettre de re-sélectionner le même fichier ensuite si besoin
+    this.fileInputRef.nativeElement.value = '';
   }
+
+
+
 
   private redirectBack(): void {
     // Si on a une URL valide → on l'utilise
@@ -271,6 +315,7 @@ export class CreateAgentComponent implements OnInit {
       this.agentService.updateAgentWithFiles(this.agentId, formData).subscribe({
         next: () => {
           this.notificationService.success('Agent mis à jour avec succès.');
+          this.storageService.refresh().subscribe();
           this.redirectBack(); // 👈 redirection contextuelle
         },
         error: err => {
@@ -291,11 +336,12 @@ export class CreateAgentComponent implements OnInit {
             this.marketplaceService.create({ agent_id: newAgentId, category, tags }).subscribe({
               next: () => {
                 this.notificationService.success('Agent créé et ajouté au marketplace.');
+                this.storageService.refresh().subscribe();
                 this.router.navigate(['/admin/marketplace']);
               },
               error: () => {
                 this.notificationService.warning("Agent créé, mais l'ajout au marketplace a échoué.");
-                this.router.navigate(['/agents']);
+                // this.router.navigate(['/agents']);
               }
             });
           } else {
@@ -330,11 +376,20 @@ export class CreateAgentComponent implements OnInit {
     this.router.navigate(['/pricing-plans']); // adapte selon ta route exacte
   }
 
-  removeExistingFile(fileId: number) {
-    if (confirm('Confirmer la suppression de ce fichier ?')) {
-      this.agentService.deleteAgentFile(fileId).subscribe({
+  async removeExistingFile(fileId: number) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer le fichier',
+      message: `Confirmer la suppression du fichier ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+
+    if (!ok) return;
+    this.agentService.deleteAgentFile(fileId).subscribe({
         next: () => {
           this.existingFiles = this.existingFiles.filter(f => f.id !== fileId);
+          this.storageService.refresh().subscribe();
           this.notificationService.success('Fichier supprimé avec succès.');
         },
         error: (err) => {
@@ -344,7 +399,7 @@ export class CreateAgentComponent implements OnInit {
       });
     }
 
-  }
+
 
   fetchWebsiteLinks(): void {
     if (!this.agent.site_web) {
@@ -366,13 +421,31 @@ export class CreateAgentComponent implements OnInit {
 
   }
 
-  removeLink(index: number): void {
+  async removeLink(index: number) {
     const linkToRemove = this.websiteLinks[index];
-    if (confirm(`Confirmer la suppression du lien : ${linkToRemove} ?`)) {
-      this.websiteLinks.splice(index, 1);
-    }
+    const ok = await this.confirm.open({
+      title: 'Supprimer le fichier',
+      message: `Confirmer la suppression du lien :  ${linkToRemove} ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    this.websiteLinks.splice(index, 1);
+
+    if (!ok) return;
   }
 
+  private parseSizeToBytes(label: string | null | undefined): number {
+    if (!label) return 0;
+    const s = String(label).trim().toLowerCase();
+    if (['unlimited','illimité','illimite','∞','no_limit','nolimit'].includes(s)) return 0; // 0 = illimité
+    const m = s.match(/^(\d+(?:\.\d+)?)\s*(gb|mb|kb|b)$/i);
+    if (!m) return 0;
+    const val = parseFloat(m[1]);
+    const unit = m[2].toLowerCase();
+    const pow = unit === 'gb' ? 3 : unit === 'mb' ? 2 : unit === 'kb' ? 1 : 0;
+    return Math.round(val * Math.pow(1024, pow));
+  }
 
 
 }

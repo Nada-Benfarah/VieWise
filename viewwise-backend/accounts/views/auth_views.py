@@ -79,17 +79,18 @@ class ActivateAccountRedirectView(APIView):
             user = User.objects.get(pk=uid)
             if default_token_generator.check_token(user, token):
                 user.is_active = True
+                user.email_verified = True
                 user.save()
 
                 try:
                     post_signup_logic(user)
                 except Exception as e:
-                    logger.warning(f"⚠️ Erreur post-signup pour {user.email}: {e}")
-                logger.info(f"✅ Compte activé pour {user.email}")
+                    logger.warning(f"Erreur post-signup pour {user.email}: {e}")
+                logger.info(f" Compte activé pour {user.email}")
                 return HttpResponseRedirect("http://localhost:4200/login?activated=true")
             else:
-                logger.warning("❌ Token invalide")
+                logger.warning(" Token invalide")
                 return HttpResponseRedirect("http://localhost:4200/login?error=invalid-token")
         except Exception as e:
-            logger.error(f"⚠️ Erreur activation : {e}")
+            logger.error(f"⚠Erreur activation : {e}")
             return HttpResponseRedirect("http://localhost:4200/login?error=activation-failed")

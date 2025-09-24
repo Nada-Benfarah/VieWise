@@ -1,13 +1,24 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { environment } from 'src/environments/environment';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 const TOKEN_KEY = 'access_token';
+
+interface StorageUsageRes {
+  bytes_used: number;
+  human: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
+  private base = `${environment.apiBaseUrl.replace(/\/+$/, '')}/api/agents`;
+  private _used$ = new BehaviorSubject<{ bytes: number; human: string }>({ bytes: 0, human: '0 B' });
 
-  constructor() {}
+  used$ = this._used$.asObservable();
+  constructor(private http: HttpClient) {}
 
   setToken(token: string) {
     try {
@@ -40,5 +51,18 @@ export class StorageService {
 
   clearStorage() {
     localStorage.clear();
+  }
+
+  refresh(): Observable<StorageUsageRes> {
+    return this.http.get<StorageUsageRes>(`${this.base}/storage-usage/`).pipe(
+      tap((res) => this._used$.next({ bytes: res.bytes_used, human: res.human }))
+    );
+  }
+
+  get human(): string {
+    return this._used$.value.human;
+  }
+  get bytes(): number {
+    return this._used$.value.bytes;
   }
 }

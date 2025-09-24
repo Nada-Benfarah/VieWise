@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import Marketplace, MarketplaceWorkflow
 from .serializers import MarketplaceSerializer, MarketplaceWorkflowSerializer
@@ -40,7 +40,13 @@ class MarketplaceViewSet(viewsets.ModelViewSet):
 
 
 class MarketplaceWorkflowViewSet(viewsets.ModelViewSet):
-    queryset = MarketplaceWorkflow.objects.select_related('workflow').all().order_by('-id')
+    queryset = (
+        MarketplaceWorkflow.objects
+        .select_related("workflow")
+        .prefetch_related("workflow__agents")   # 👈 important pour perf
+        .all()
+        .order_by("-id")
+    )
     serializer_class = MarketplaceWorkflowSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['category', 'tags', 'workflow__workflowName', 'workflow__description']

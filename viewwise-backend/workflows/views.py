@@ -87,7 +87,7 @@ class WorkflowViewSet(viewsets.ModelViewSet):
                 return Response({"error": "Fonctionnalité disponible uniquement pour le plan Business."}, status=403)
 
         # ✅ Deep copy uniquement des champs JSON (adaptez aux vôtres)
-        json_like_fields = ['nodes', 'edges', 'config', 'payload']  # ⚠️ retirez 'tools', 'agents', 'trigger'
+        json_like_fields = ['nodes', 'relations', 'config', 'payload']  # ⚠️ retirez 'tools', 'agents', 'trigger'
         base = {}
         for f in json_like_fields:
             if hasattr(source, f):

@@ -50,9 +50,11 @@
            [style.left.px]="box.x"
            [style.top.px]="box.y"
            [style.width.px]="box.width"
-           [style.height.px]="box.height">
-        <div class="group-label">{{ box.id }}</div>
-      </div>
+           [style.height.px]="box.height"
+           (mousedown)="startGroupDrag($event, box.id)">
+        <div class="group-label" (mousedown)="startGroupDrag($event, box.id)">
+          {{ box.id }}
+        </div>      </div>
 
 
 
@@ -85,6 +87,11 @@
 
         <!-- Bouton + sous chaque nœud -->
         <div *ngIf="!readonly && i !== nodes.length - 1" class="plus-node-btn" (click)="toggleDropdown(i)">+</div>
+        <div
+          *ngIf="!readonly && !node.groupId"
+          class="plus-node-btn"
+          (click)="toggleDropdown(i)"
+        >+</div>
 
         <!-- Liste déroulante liée à ce nœud -->
         <div *ngIf="dropdownVisible && dropdownIndex === i" class="dropdown dropdown-inline">

@@ -32,7 +32,7 @@ export class AuthLoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private storageService: StorageService,
-    private router: Router,private notificationService: NotificationService
+    private router: Router, private notificationService: NotificationService
   ) {
   }
 
@@ -47,6 +47,7 @@ export class AuthLoginComponent implements OnInit {
       callback: (response: any) => this.handleGoogleLogin(response)
     });
   }
+
   handleGoogleClick() {
     this.googleClient.requestAccessToken();
   }
@@ -142,7 +143,7 @@ export class AuthLoginComponent implements OnInit {
         this.isSaving = false;
         console.log('✅ Google login response:', res);
 
-        const { access, refresh, user } = res;
+        const {access, refresh, user} = res;
 
         this.authService.user = {
           id: user.id,
@@ -166,8 +167,16 @@ export class AuthLoginComponent implements OnInit {
       },
       error: (error) => {
         this.isSaving = false;
-        this.errors = error.error?.detail || 'Échec de la connexion. Veuillez réessayer.';
-        this.notificationService.error('Vous devez activer votre adresse email avant de vous connecter');
+        const code = error?.error?.code;
+        const detail = error?.error?.detail;
+
+        if (code === 'account_disabled') {
+          this.notificationService.error('Votre compte a été désactivé par un administrateur. vous pouvez vérifier votre boîte email');
+        } else if (code === 'email_not_verified') {
+          this.notificationService.error('Vous devez valider votre adresse email avant de vous connecter.');
+        } else {
+          this.notificationService.error(detail || 'Échec de la connexion. Veuillez réessayer.');
+        }
       }
     });
   }

@@ -17,7 +17,7 @@ export interface MarketplaceWorkflowEntry {
   id: number;
   category: string;
   tags?: string;
-  workflow: { workflowId: number; workflowName: string; description?: string };
+  workflow: { workflowId: number; workflowName: string; description?: string , agents?: number[]; nodes: any[]; relations: any[];  };
 }
 
 @Injectable({

@@ -30,6 +30,7 @@ import { PlanService } from '../../../../../services/plan/plan.service';
 import { PricingPlansComponent } from '../../../../../pages/pricing-plans/pricing-plans.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from 'src/app/services/auth.service';
+import {StorageService} from "../../../../../services/storage.service";
 
 @Component({
   selector: 'app-nav-content',
@@ -53,7 +54,7 @@ export class NavContentComponent implements OnInit {
   plan: any;
   creditsUsed = 0;
   creditsLimit = 0;
-  storageUsed = 0;
+  storageUsed ='0 B' ;
   storageLimit = 0;
   formattedStorage = '';
   showUpgradeModal = false;
@@ -64,7 +65,7 @@ export class NavContentComponent implements OnInit {
     private planService: PlanService,
     private router: Router,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService, private storageService: StorageService
   ) {
     this.iconService.addIcon(
       DashboardOutline,
@@ -106,6 +107,12 @@ export class NavContentComponent implements OnInit {
 
       // Valeur initiale
       this.planService.refreshCurrentPlan().subscribe();
+
+    this.storageService.used$.subscribe(u => {
+      this.storageUsed = u.human;
+    });
+    this.storageService.refresh().subscribe(); // valeur initiale
+
 
     this.authService.getCurrentUser().subscribe((user: any) => {
       const isAdmin = !!user?.is_admin;
@@ -163,7 +170,7 @@ export class NavContentComponent implements OnInit {
     this.router.navigate(['/pricing-plans']);
   }
   handleInvitation(): void {
-    if (this.plan?.name?.toLowerCase() === 'free') {
+    if (this.plan?.name?.toLowerCase() === 'free' || 'pro') {
       this.showUpgradeModal = true;
       document.body.classList.add('modal-open'); // ✅ blur activé
     } else {

@@ -16,7 +16,8 @@ export interface AdminMarketplaceWorkflowRow {
   id: number;
   category: string;
   tags?: string;
-  workflow: { workflowId: number; workflowName: string; description?: string };
+  workflow: { workflowId: number; workflowName: string; description?: string ;   agents?: number[];
+  };
 }
 
 @Injectable({ providedIn: 'root' })

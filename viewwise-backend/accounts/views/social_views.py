@@ -33,6 +33,7 @@ class GoogleLogin(SocialLoginView):
             # ✅ Activer automatiquement le compte si désactivé
             if not user.is_active:
                 user.is_active = True
+                user.email_verified=True
                 user.save()
 
             # ✅ Si un compte existe sans être lié à Google → conflit

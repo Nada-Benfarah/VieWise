@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, ValidationErrors, AbstractControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService, User } from 'src/app/services/auth.service';
 import { NotificationService } from '../../../../services/notification/notification.service';
@@ -13,10 +13,13 @@ import { NotificationService } from '../../../../services/notification/notificat
 })
 export class EditProfileComponent implements OnInit {
   profileForm: FormGroup;
+  passwordForm: FormGroup;
   user: User | null = null;
   profileImageUrl: string | null = null;
   isSaving = false;
   isUploading = false;
+  isChangingPwd = false;
+  showPwd = { old: false, n1: false, n2: false };
   defaultAvatar = 'assets/images/user/avatar-1.jpg';
 
   constructor(
@@ -24,6 +27,7 @@ export class EditProfileComponent implements OnInit {
     private authService: AuthService,
     private notificationService: NotificationService
   ) {}
+
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
@@ -33,9 +37,18 @@ export class EditProfileComponent implements OnInit {
       first_name: [{ value: '' }],
     });
 
-    // Appel direct à getCurrentUser et stockage du résultat dans this.user
+    // ✅ init du formulaire de mot de passe
+    this.passwordForm = this.fb.group(
+      {
+        old_password: ['', [Validators.required]],
+        new_password: ['', [Validators.required, Validators.minLength(8)]],
+        new_password2: ['', [Validators.required]],
+      },
+      { validators: this.passwordsMatchValidator }
+    );
+
     this.authService.getCurrentUser().subscribe((user: any) => {
-      this.user = user;
+      this.user = user || null;
       if (user) {
         this.profileForm.patchValue({
           email: user.email || '',
@@ -44,7 +57,44 @@ export class EditProfileComponent implements OnInit {
           first_name: user.first_name || '',
         });
         this.profileImageUrl = user.avatar_url || null;
+      }
+    });
+  }
 
+  // ✅ validateur de correspondance
+  private passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
+    const a = group.get('new_password')?.value;
+    const b = group.get('new_password2')?.value;
+    return a && b && a !== b ? { mismatch: true } : null;
+  }
+
+  changePassword(): void {
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      this.notificationService.error('Veuillez corriger les erreurs du formulaire.');
+      return;
+    }
+    if (this.isChangingPwd) return;
+
+    this.isChangingPwd = true;
+    const { old_password, new_password, new_password2 } = this.passwordForm.value;
+    this.authService.changePassword(old_password, new_password, new_password2).subscribe({
+      next: (res) => {
+        this.isChangingPwd = false;
+        this.passwordForm.reset();
+        this.notificationService.success(res?.message || 'Mot de passe modifié.');
+      },
+      error: (err) => {
+        this.isChangingPwd = false;
+        // mapping des messages serveur
+        const msg =
+          err?.error?.old_password?.[0] ||
+          err?.error?.new_password2?.[0] ||
+          err?.error?.new_password?.[0] ||
+          err?.error?.detail ||
+          err?.error?.error ||
+          'Échec de la modification du mot de passe.';
+        this.notificationService.error(msg);
       }
     });
   }

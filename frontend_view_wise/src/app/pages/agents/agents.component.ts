@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { NotificationService } from '../../services/notification/notification.service';
 import { AuthService } from '../../services/auth.service';
+import {StorageService} from "../../services/storage.service";
+import {ConfirmDialogService} from "../../services/confirm-dialog.service";
 
 @Component({
   selector: 'app-agents',
@@ -17,7 +19,7 @@ export class AgentsComponent implements OnInit {
   agents: Agent[] = [];
   currentUserId: number | null = null;
 
-  constructor(private authService:AuthService,private router: Router, private agentService: AgentService, private notificationService: NotificationService) {}
+  constructor(private confirm: ConfirmDialogService,private authService:AuthService,private router: Router, private agentService: AgentService, private notificationService: NotificationService, private storageService: StorageService) {}
 
   ngOnInit() {
     const storedUser = localStorage.getItem('current_user');
@@ -56,11 +58,20 @@ export class AgentsComponent implements OnInit {
     this.router.navigate(['/chatgpt-page']);
   }
 
-  deleteAgent(agent: Agent) {
-    if (confirm(`Confirmer la suppression de "${agent.agentName}" ?`)) {
-      this.agentService.deleteAgent(agent.agentId).subscribe({
+  async  deleteAgent(agent: Agent) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer l’agent',
+      message: `Confirmer la suppression de « ${agent.agentName} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+
+    if (!ok) return;
+    this.agentService.deleteAgent(agent.agentId).subscribe({
         next: () => {
           this.agents = this.agents.filter(a => a.agentId !== agent.agentId);
+          this.storageService.refresh().subscribe();
           this.notificationService.success(`Agent "${agent.agentName}" supprimé avec succès.`);
         },
         error: (err) => {
@@ -69,7 +80,7 @@ export class AgentsComponent implements OnInit {
         }
       });
     }
-  }
+
 
 
   goToCreateAgent() {

@@ -10,7 +10,7 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models import CustomUser
-from accounts.serializers.password_serializers import PasswordResetRequestSerializer
+from accounts.serializers.password_serializers import PasswordResetRequestSerializer, ChangePasswordSerializer
 import logging
 from django.conf import settings
 
@@ -86,3 +86,19 @@ class PasswordResetConfirmView(APIView):
 
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response({"error": "Invalid request"}, status=400)
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user: User = request.user
+        old_password = serializer.validated_data["old_password"]
+        if not user.check_password(old_password):
+            return Response({"old_password": ["Ancien mot de passe incorrect."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data["new_password"])
+        user.save(update_fields=["password"])
+        return Response({"message": "Mot de passe modifié avec succès."}, status=status.HTTP_200_OK)

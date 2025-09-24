@@ -8,6 +8,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import { NotificationService } from '../../../services/notification/notification.service';
 import {MarketplaceAgent, MarketplaceService} from "../../../services/marketplace/marketplace.service";
 import {AdminMarketPlaceService} from "../../../services/admin-marketplace/admin-market-place.service";
+import {ConfirmDialogService} from "../../../services/confirm-dialog.service";
 
 interface WorkflowNode {
   type: string;
@@ -78,16 +79,18 @@ export class WorflowEditorComponent implements OnInit{
   @ViewChild('canvasInner') canvasInnerRef!: ElementRef<HTMLDivElement>;
   private isAdmin: boolean;
   parentWorkflowId: number | null = null;
-
+  private draggingGroupId: string | null = null;
+  private groupDragStart = { mouseX: 0, mouseY: 0, boxX: 0, boxY: 0 };
+  private groupDragNodes: { index: number; startX: number; startY: number }[] = [];
   addToMarketplace = false;
-  constructor( private route: ActivatedRoute,private router: Router,private marketplaceService:MarketplaceService, private notificationService: NotificationService,private workflowService: WorkflowService, private agentService: AgentService,  private adminMarketplace: AdminMarketPlaceService  ) {
+  constructor(private confirm: ConfirmDialogService,private route: ActivatedRoute,private router: Router,private marketplaceService:MarketplaceService, private notificationService: NotificationService,private workflowService: WorkflowService, private agentService: AgentService,  private adminMarketplace: AdminMarketPlaceService  ) {
     const state = history.state;
     if (state?.loadedWorkflow) {
       const wf = state.loadedWorkflow;
       this.nodes = wf.nodes || [];
       this.relations = wf.relations || [];
       this.workflowName = wf.workflowName;
-      this.connectors = wf.connectors;
+
 
       this.editingWorkflowId = state.isClone ? null : wf.workflowId;
       this.isCloned = !!state.isClone;
@@ -96,16 +99,30 @@ export class WorflowEditorComponent implements OnInit{
       }
 
       this.updateConnectors();
+      this.updateGroupBoxes();
     }
 
     // this.agentService.getAllAgents().subscribe({
     //   next: (agents) => this.availableAgents = agents,
     //   error: () => console.error('Erreur chargement des agents')
     // });
-    this.workflowService.getAllWorkflows().subscribe({
-      next: (res) => this.availableSubflows = res,
-      error: () => console.error('Erreur chargement des subflows')
+    this.marketplaceService.getMarketplaceWorkflows().subscribe({
+      next: (rows: any[]) => {
+        this.availableSubflows = rows
+          .map(r => r.workflow)
+          .filter(Boolean)
+          .map(wf => ({
+            workflowId: wf.workflowId,
+            workflowName: wf.workflowName,
+            description: wf.description,
+            nodes: wf.nodes || [],
+            relations: wf.relations || [],
+          }));
+      },
+      error: () => console.error('Erreur chargement des subflows (marketplace)')
     });
+
+
   }
 
   private detectAdmin(): void {
@@ -146,6 +163,16 @@ export class WorflowEditorComponent implements OnInit{
   }
 
   toggleDropdown(index?: number): void {
+    // 🚫 Interdit depuis un nœud de subflow
+    if (index !== undefined && index !== null) {
+      const n = this.nodes[index];
+      if (n?.groupId) {
+        // Option UX : prévenir l’utilisateur
+        this.notificationService.warning('Ajout interdit depuis un subflow.');
+        return;
+      }
+    }
+
     if (index === undefined) {
       this.dropdownIndex = null;
       this.dropdownVisible = !this.dropdownVisible;
@@ -153,13 +180,13 @@ export class WorflowEditorComponent implements OnInit{
     } else if (this.dropdownIndex === index && this.dropdownVisible) {
       this.dropdownVisible = false;
       this.dropdownIndex = null;
-      // NE PAS remettre à null ici : on garde le parent actif pour plusieurs ajouts
     } else {
       this.dropdownIndex = index;
       this.dropdownVisible = true;
       this.activeParentIndex = index;
     }
   }
+
 
   ngOnInit(): void {
     this.detectAdmin();
@@ -172,7 +199,10 @@ export class WorflowEditorComponent implements OnInit{
       this.nodes = this.loadedWorkflow.nodes || [];
       this.relations = this.loadedWorkflow.relations || [];
       this.workflowName = this.loadedWorkflow.workflowName || '';
+      this.zoom = 0.8;
+
       this.updateConnectors();
+      this.updateGroupBoxes();
       return; // ✅ stop ici
     }
 
@@ -315,7 +345,6 @@ export class WorflowEditorComponent implements OnInit{
 
     if (this.readonly) return;
     const node = this.nodes[index];
-    // 🚫 Ne pas permettre le déplacement des nœuds de subflow
     if (node.groupId) return;
 
     const canvasRect = this.canvasInnerRef.nativeElement.getBoundingClientRect();
@@ -328,15 +357,47 @@ export class WorflowEditorComponent implements OnInit{
   @HostListener('window:mouseup')
   stopDrag(): void {
     this.draggingNodeIndex = null;
+
+    if (this.draggingGroupId) {
+      this.draggingGroupId = null;
+      this.groupDragNodes = [];
+      // Recalcule proprement les boxes (au cas où)
+      this.updateGroupBoxes();
+    }
   }
 
   @HostListener('window:mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
+
+    if (this.draggingGroupId) {
+      const scale = this.zoom || 1;
+      const dx = (event.clientX - this.groupDragStart.mouseX) / scale;
+      const dy = (event.clientY - this.groupDragStart.mouseY) / scale;
+
+      for (const item of this.groupDragNodes) {
+        const node = this.nodes[item.index];
+        node.x = item.startX + dx;
+        node.y = item.startY + dy;
+      }
+
+      const box = this.groupBoxes.find(b => b.id === this.draggingGroupId);
+      if (box) {
+        box.x = this.groupDragStart.boxX + dx;
+        box.y = this.groupDragStart.boxY + dy;
+      }
+
+      this.updateConnectors();
+      return;
+    }
+
+
+
     if (this.draggingNodeIndex !== null) {
+      const scale = this.zoom || 1;
       const canvasBounds = this.canvasInnerRef.nativeElement.getBoundingClientRect();
       const node = this.nodes[this.draggingNodeIndex];
-      const newX = event.clientX - canvasBounds.left - this.dragOffsetX;
-      const newY = event.clientY - canvasBounds.top - this.dragOffsetY;
+      const newX = (event.clientX - canvasBounds.left - this.dragOffsetX) / scale;
+      const newY = (event.clientY - canvasBounds.top - this.dragOffsetY) / scale;
 
       let boundedX = newX;
       let boundedY = newY;
@@ -357,6 +418,8 @@ export class WorflowEditorComponent implements OnInit{
 
       this.updateConnectors();
       this.updateGroupBoxes(); // si tu veux les recalculer en live
+      return;
+
     }
 
   }
@@ -398,10 +461,15 @@ export class WorflowEditorComponent implements OnInit{
   }
 
 
-  removeRelation(index: number): void {
-    const confirmed = confirm('Supprimer cette liaison entre les deux nœuds ?');
-    if (!confirmed) return;
-
+  async removeRelation(index: number) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer le noeud',
+      message: `'Supprimer cette liaison entre les deux nœuds ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
     this.relations.splice(index, 1);
     this.updateConnectors();
   }
@@ -665,8 +733,23 @@ export class WorflowEditorComponent implements OnInit{
     this.orchestratorModalVisible = true;
   }
 
-  saveWorkflowToBackend(): void {
-    const name = prompt('Entrez le nom du workflow :', this.workflowName || '');
+  async saveWorkflowToBackend() {
+    const confirmed = await this.confirm.open({
+      title: 'Nom du workflow',
+      message: 'Veuillez entrer le nom du wo' +
+        'rkflow',
+      confirmText: 'Enregistrer',
+      cancelText: 'Annuler',
+      inputPlaceholder: 'Nom du workflow',
+      inputValue: this.workflowName || '',
+      danger: true
+    });
+
+    const name = this.confirm.getInputValue();
+    if (!confirmed || !name.trim()) {
+      this.notificationService.warning('Nom requis !');
+      return;
+    }
     if (!name) {
       this.notificationService.warning('Nom requis !');
       return;
@@ -721,11 +804,11 @@ export class WorflowEditorComponent implements OnInit{
           this.adminMarketplace.createWorkflow(marketplacePayload).subscribe({
             next: () => {
               this.notificationService.success('Workflow ajouté au marketplace.');
-              this.router.navigate(['admin/marketplace'], { queryParams: { view: 'workflows' } });
+              this.router.navigate(['admin/marketplace'], {queryParams: {view: 'workflows'}});
             },
             error: () => {
               this.notificationService.error('Échec d’ajout au marketplace.');
-              this.router.navigate(['admin/marketplace'], { queryParams: { view: 'workflows' } });
+              this.router.navigate(['admin/marketplace'], {queryParams: {view: 'workflows'}});
             }
           });
         }
@@ -789,5 +872,26 @@ export class WorflowEditorComponent implements OnInit{
       };
     });
   }
+
+  startGroupDrag(event: MouseEvent, groupId: string): void {
+    if (this.readonly) return;
+    const box = this.groupBoxes.find(b => b.id === groupId);
+    if (!box) return;
+
+    event.preventDefault();
+    event.stopPropagation(); // 👈
+
+    this.draggingGroupId = groupId;
+    this.groupDragStart.mouseX = event.clientX;
+    this.groupDragStart.mouseY = event.clientY;
+    this.groupDragStart.boxX = box.x;
+    this.groupDragStart.boxY = box.y;
+
+    this.groupDragNodes = this.nodes
+      .map((n, idx) => ({ n, idx }))
+      .filter(({ n }) => n.groupId === groupId)
+      .map(({ n, idx }) => ({ index: idx, startX: n.x, startY: n.y }));
+  }
+
 
 }

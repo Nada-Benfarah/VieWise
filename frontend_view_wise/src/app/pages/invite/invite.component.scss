@@ -157,15 +157,16 @@
       }
 
       .action-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
+
 
         .btn-status,
         .delete-btn {
+          display: flex;
+          justify-content: center;
+          gap: 8px;
           background: none;
           border: none;
-          font-size: 1.1rem;
+          font-size: 1.5rem;
           cursor: pointer;
           padding: 4px;
           transition: transform 0.2s;
@@ -182,6 +183,24 @@
             color: #c62828;
           }
         }
+        .file-table th:last-child {
+          text-align: center;
+        }
+
+        .file-table td.action-buttons {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 12px 14px;
+        }
+
+        .file-table .action-buttons .delete-btn {
+          margin: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+
       }
     }
   }
@@ -223,4 +242,73 @@
   color: red;
   font-weight: bold;
   margin-top: 10px;
+}
+
+.invitation-container {
+  .left-panel {
+    .form {
+      .button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+
+        .btn.btn-primary {
+          height: 42px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(127, 0, 255, 0.2);
+          transition: transform .15s ease, box-shadow .2s ease;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(127, 0, 255, 0.3);
+          }
+        }
+
+        .invitation-stats {
+          display: inline-flex;
+          align-items: center;
+          height: 42px;
+          padding: 0 12px;
+          border-radius: 999px;
+          background: #f5f3ff;
+          color: #5b21b6;
+          border: 1px solid #e9d5ff;
+          font-weight: 600;
+          line-height: 1;
+          white-space: nowrap;
+
+          p {
+            margin: 0;
+            font-size: 0.95rem;
+          }
+        }
+
+        + .warning {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .invitation-container .left-panel .form .button {
+    flex-direction: column;
+    align-items: stretch;
+
+    .btn.btn-primary {
+      width: 100%;
+    }
+    .invitation-stats {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 }

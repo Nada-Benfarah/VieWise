@@ -13,6 +13,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {WorflowEditorComponent} from "../../../../pages/workflow/worflow-editor/worflow-editor.component";
 import {WorkflowService} from "../../../../services/workflow/workflow.service";
 import {AdminAgent} from "../../../../services/adminAgent/admin-agent.service";
+import {ConfirmDialogService} from "../../../../services/confirm-dialog.service";
 
 interface AgentMini {
   agentId: number;
@@ -61,7 +62,7 @@ export class AdminMarketplaceComponent implements OnInit {
     private fb: FormBuilder,
     private notify: NotificationService,
     private router: Router,
-    private route: ActivatedRoute,private workflowService: WorkflowService
+    private route: ActivatedRoute,private workflowService: WorkflowService, private confirm:ConfirmDialogService
 ) {
     this.form = this.fb.group({
       agent_id: [null, [Validators.required]], // utilisé seulement en création
@@ -163,8 +164,15 @@ export class AdminMarketplaceComponent implements OnInit {
   }
 
   // actions delete pour workflows
-  removeWorkflow(row: AdminMarketplaceWorkflowRow) {
-    if (!confirm(`Supprimer l’entrée pour "${row.workflow.workflowName}" ?`)) return;
+  async removeWorkflow(row: AdminMarketplaceWorkflowRow) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer le workflow',
+      message: `Supprimer l’entrée pour « ${row.workflow.workflowName} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
     this.api.deleteWorkflow(row.id).subscribe({
       next: () => {
         this.wfRows = this.wfRows.filter((r) => r.id !== row.id);
@@ -289,9 +297,16 @@ export class AdminMarketplaceComponent implements OnInit {
     });
   }
 
-  remove(row: AdminMarketplaceRow) {
+  async remove(row: AdminMarketplaceRow) {
     // 1) confirmation
-    if (!confirm(`Supprimer l’entrée pour "${row.agent.agentName}" ?`)) return;
+    const ok = await this.confirm.open({
+      title: 'Supprimer l’agent',
+      message: `Supprimer l’entrée pour « ${row.agent.agentName} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
 
     // 2) pré-vérification d’usage
     this.api.checkAgentUsage(row.agent.agentId).subscribe({

@@ -156,6 +156,13 @@ export class AuthService {
     });
   }
 
+  changePassword(old_password: string, new_password: string, new_password2: string) {
+    return this.http.post<{message: string}>(
+      `${environment.apiBaseUrl}/auth/me/password/`,
+      { old_password, new_password, new_password2 }
+    );
+  }
+
   updateCurrentUser(data: Partial<User>) {
     return this.http.patch<User>(`${environment.apiBaseUrl}/auth/me/`, data).pipe(
       tap((user) => {

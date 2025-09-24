@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService, OnboardingData } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import {NotificationService} from "../../services/notification/notification.service";
 
 @Component({
   selector: 'app-welcome',
@@ -19,7 +20,7 @@ export class WelcomeComponent implements OnInit {
   selectedGoal: string | null = null;
   selectedCompany: string | null = null;
 
-  constructor(private authService: AuthService,private router: Router
+  constructor(private authService: AuthService,private router: Router, private notificationService: NotificationService
   ) {
   }
 
@@ -79,13 +80,14 @@ export class WelcomeComponent implements OnInit {
 
     this.authService.submitOnboarding(onboardingData).subscribe({
       next: () => {
-        alert('Formulaire soumis avec succès !');
+        this.notificationService.success('Formulaire soumis avec succès !');
         this.router.navigate(['/marketplace']);
 
       },
       error: (error) => {
         console.error('Erreur lors de la soumission :', error);
-        alert('Une erreur est survenue lors de la soumission.');
+        this.notificationService.error('Une erreur est survenue lors de la soumission.');
+
 
       }
     });

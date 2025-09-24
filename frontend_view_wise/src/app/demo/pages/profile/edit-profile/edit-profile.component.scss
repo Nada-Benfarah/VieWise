@@ -1,10 +1,10 @@
 .profile-container {
-  max-width: 500px;
-  margin: 40px auto;
+  max-width: 1120px;
+  margin: 24px auto;
+  padding: 0 16px;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-  padding: 2.5rem 2rem;
   font-family: 'Oswald', 'Roboto', Arial, sans-serif;
 }
 .profile-title {
@@ -113,4 +113,319 @@
   gap: 1rem;
   justify-content: center;
   margin-top: 0.5rem;
+}
+
+/* ===== Bloc changement de mot de passe ===== */
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Colonne droite collée en haut au scroll pour une bonne UX */
+.right-pane {
+  position: sticky;
+  top: 16px;
+}
+
+/* Harmonisation visuelle des cartes */
+.left-pane .profile-photo-section,
+.left-pane .profile-form,
+.password-block {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+}
+
+/* Espacements internes cohérents */
+.left-pane .profile-photo-section { padding: 1rem 1rem 1.25rem; margin-bottom: 1rem; }
+.left-pane .profile-form { padding: 1.25rem 1rem; }
+.password-block { padding: 1.75rem 1.5rem; }
+
+/* Titre de carte violet, cohérent avec vos boutons */
+.password-block h3 {
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: #7F00FF;
+}
+
+/* Rappel styles champ et erreurs déjà fournis pour password-form */
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .form-group { display: flex; flex-direction: column; }
+
+  label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-family: 'Oswald', 'Roboto', Arial, sans-serif;
+  }
+
+  /* label Confirmer légèrement plus haut */
+  .form-group:nth-of-type(3) label { margin-bottom: 0.35rem; }
+
+  .form-control {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    font-size: 1rem;
+    font-family: 'Roboto', 'Oswald', Arial, sans-serif;
+    transition: border-color .2s, box-shadow .2s;
+
+    &::placeholder { color: #999; }
+
+    &:focus {
+      outline: none;
+      border-color: #7F00FF;
+      box-shadow: 0 0 0 2px rgba(127, 0, 255, 0.15);
+    }
+  }
+
+  /* état invalide en rouge si mismatch/minLength etc. */
+  .form-control.is-invalid,
+  .ng-invalid.ng-touched.form-control {
+    border-color: #e53935;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.15);
+  }
+
+  .error,
+  .invalid-feedback {
+    color: #e53935;
+    font-size: 0.95rem;
+    margin-top: 0.35rem;
+  }
+
+  /* Bouton secondaire harmonisé */
+  .btn-secondary {
+    background: linear-gradient(135deg, #7F00FF 0%, #EACCFF 100%);
+    border: none;
+    color: #fff;
+    font-family: 'Oswald', 'Roboto', Arial, sans-serif;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.85rem;
+    font-size: 1.05rem;
+    letter-spacing: .5px;
+    box-shadow: 0 2px 8px rgba(127,0,255,0.08);
+    transition: background .2s, box-shadow .2s;
+    margin-top: 0.75rem;
+
+    &:disabled { opacity: .7; cursor: not-allowed; }
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #5e00c0 0%, #cba2ff 100%);
+      box-shadow: 0 4px 16px rgba(94,0,192,0.13);
+    }
+  }
+}
+
+.password-block .hint {
+  margin-top: 1rem;
+  font-size: .92rem;
+  color: #666;
+}
+
+/* Amélioration légère du bouton primaire existant */
+.btn.btn-primary {
+  background: linear-gradient(135deg, #7F00FF 0%, #EACCFF 100%);
+  border: none;
+  color: #fff;
+  font-family: 'Oswald', 'Roboto', Arial, sans-serif;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-size: 1.05rem;
+  letter-spacing: .5px;
+  box-shadow: 0 2px 8px rgba(127,0,255,0.08);
+  transition: background .2s, box-shadow .2s;
+
+  &:disabled { opacity: .7; cursor: not-allowed; }
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5e00c0 0%, #cba2ff 100%);
+    box-shadow: 0 4px 16px rgba(94,0,192,0.13);
+  }
+}
+
+/* Responsive empilé en dessous de 900px */
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .right-pane {
+    position: static;
+    top: auto;
+  }
+  .password-block { margin-top: .5rem; }
+}
+/* Barre d’actions commune aux deux formulaires */
+.form-actions {
+  display: flex;
+  justify-content: flex-end; /* aligne à droite */
+  margin-top: 0.75rem;
+}
+
+/* Même taille et look pour les deux boutons */
+.form-actions .btn {
+  min-width: 220px;      /* largeur uniforme */
+  height: 44px;          /* hauteur uniforme */
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  padding: 0 1rem;
+}
+
+/* Conserve vos styles existants, on harmonise juste le ressenti */
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+  box-shadow: 0 2px 8px rgba(127,0,255,0.08);
+  transition: background .2s, box-shadow .2s, opacity .2s;
+}
+
+.form-actions .btn-primary:disabled,
+.form-actions .btn-secondary:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+/* Option : même largeur visuelle sur mobile (plein large) */
+@media (max-width: 900px) {
+  .form-actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+/* 1) Étire les deux colonnes à la même hauteur (hauteur = plus grande des deux) */
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: 2rem;
+  align-items: stretch; /* clé : les items de la ligne prennent la hauteur de la plus haute colonne */
+}
+
+/* 2) Chaque colonne devient un conteneur flex en colonne, sur toute la hauteur de la ligne */
+.left-pane,
+.right-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* 3) Colonne droite : la carte password remplit la hauteur et son bouton est poussé en bas */
+.password-block {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.password-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;   /* prend l'espace disponible */
+}
+.password-form .btn-secondary {
+  margin-top: auto; /* ancre le bouton en bas de la carte à droite */
+}
+
+/* 4) Colonne gauche : on fait en sorte que le bouton “Enregistrer” soit poussé en bas */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;       /* la carte formulaire occupe sa hauteur disponible */
+  padding: 1.25rem 1rem; /* garder votre padding existant si déjà défini ailleurs */
+}
+.profile-form .btn.btn-primary {
+  margin-top: auto;   /* ancre le bouton en bas de la carte à gauche */
+}
+
+/* Optionnel : si .profile-photo-section est une carte séparée au-dessus,
+   on libère de l'espace pour que .profile-form puisse respirer sans remonter le bouton */
+.left-pane .profile-photo-section {
+  flex: 0 0 auto;     /* garde sa hauteur naturelle */
+  margin-bottom: 1rem;
+}
+
+/* Responsive inchangé */
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .right-pane { position: static; top: auto; }
+}
+/* 1) Grille : deux colonnes, même hauteur de ligne */
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  gap: 2rem;
+  align-items: stretch; /* les 2 colonnes ont la même hauteur de ligne */
+}
+
+.left-pane {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.profile-form .form-actions {
+  margin-top: auto;
+}
+
+
+.right-pane {
+  align-self: stretch;
+  position: static;
+  top: auto;
+  display: flex;
+  min-height: 100%;
+}
+
+.password-block {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.password-form .form-actions {
+  margin-top: auto;
+}
+
+
+/* 6) Option: remettre le sticky en mobile si tu y tiens */
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .right-pane {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.left-pane .profile-form .form-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.left-pane .profile-form .form-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
 }

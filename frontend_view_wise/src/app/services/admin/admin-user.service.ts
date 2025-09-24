@@ -10,6 +10,7 @@ export interface AdminUser {
   first_name: string;
   last_name?: string;
   phone_number?: string | null;
+  email_verified?:boolean,
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
@@ -54,7 +55,7 @@ export class AdminUsersService {
   }
 
   toggleActive(id: number, is_active: boolean) {
-    const toggleUrl = this.url(`${id}/toggle-active`);
+    const toggleUrl = this.url(`${id}/toggle-active/`);
     return this.http.patch<AdminUser>(toggleUrl, { is_active }).pipe(
       catchError(err => {
         if (err.status === 404) {

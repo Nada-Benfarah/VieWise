@@ -360,3 +360,48 @@ line.show {
   margin-left: 12px;
   font-weight: 600;
 }
+.modal-input {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.group-box {
+  position: absolute;
+  border: 2px dashed #9aa5b1;
+  border-radius: 10px;
+  background: rgba(158, 173, 195, 0.08);
+  /* en dessous des nodes par défaut */
+  z-index: 1;
+}
+
+/* Handle visible et cliquable au-dessus des nodes */
+.group-label {
+  position: absolute;
+  top: -28px;
+  left: 0;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #475569;
+  cursor: move;
+  user-select: none;
+  z-index: 5; /* > .workflow-node (mets .workflow-node à z-index:2 si besoin) */
+}
+
+/* Assure que les nodes sont en dessous du handle, mais au-dessus de la box */
+.workflow-node { position: absolute; z-index: 2; }
+.group-box {
+  pointer-events: auto; /* ✅ au lieu de none */
+  z-index: 1;
+}
+.group-label {
+  z-index: 5;           /* doit être > .workflow-node */
+  cursor: move;
+}
+.workflow-node { z-index: 2; }

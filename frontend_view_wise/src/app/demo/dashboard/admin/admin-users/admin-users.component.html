@@ -12,9 +12,9 @@
       <tr>
         <th>Utilisateur</th>
         <th>Téléphone</th>
-        <th>Rôles</th>
+<!--        <th>Rôles</th>-->
         <th>Actif</th>
-        <th *ngIf="isSuperuser">Staff</th>
+<!--        <th *ngIf="isSuperuser">Staff</th>-->
         <th>Actions</th>
       </tr>
       </thead>
@@ -28,37 +28,37 @@
           </div>
         </td>
         <td>{{ u.phone_number || '—' }}</td>
-        <td>
-          <ng-container *ngIf="u.is_superuser; else notSuperTpl">
-            <span class="chip danger">Superuser</span>
-          </ng-container>
+<!--        <td>-->
+<!--          <ng-container *ngIf="u.is_superuser; else notSuperTpl">-->
+<!--            <span class="chip danger">Superuser</span>-->
+<!--          </ng-container>-->
 
-          <ng-template #notSuperTpl>
-            <ng-container *ngIf="u.is_staff; else clientTpl">
-              <span class="chip warn">Staff</span>
-            </ng-container>
-          </ng-template>
+<!--          <ng-template #notSuperTpl>-->
+<!--            <ng-container *ngIf="u.is_staff; else clientTpl">-->
+<!--              <span class="chip warn">Staff</span>-->
+<!--            </ng-container>-->
+<!--          </ng-template>-->
 
-          <ng-template #clientTpl>
-            <span class="chip info">Client</span>
-          </ng-template>
-        </td>
+<!--          <ng-template #clientTpl>-->
+<!--            <span class="chip info">Client</span>-->
+<!--          </ng-template>-->
+<!--        </td>-->
         <td >
           <label class="switch">
             <input type="checkbox" [checked]="u.is_active" (change)="toggleActive(u)">
             <span class="slider"></span>
           </label>
         </td>
-        <td *ngIf="isSuperuser">
-          <label class="switch">
-            <input
-              type="checkbox"
-              [checked]="u.is_staff"
-              (change)="onToggleStaff(u, $any($event.target).checked)"
-            />
-            <span class="slider"></span>
-          </label>
-        </td>
+<!--        <td *ngIf="isSuperuser">-->
+<!--          <label class="switch">-->
+<!--            <input-->
+<!--              type="checkbox"-->
+<!--              [checked]="u.is_staff"-->
+<!--              (change)="onToggleStaff(u, $any($event.target).checked)"-->
+<!--            />-->
+<!--            <span class="slider"></span>-->
+<!--          </label>-->
+<!--        </td>-->
         <td>
           <button class="icon" title="Éditer" (click)="openEdit(u)">✏️</button>
           <button class="icon danger" (click)="remove(u)">🗑️</button>

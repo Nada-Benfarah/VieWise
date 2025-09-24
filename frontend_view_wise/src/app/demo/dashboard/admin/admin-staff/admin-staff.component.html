@@ -13,7 +13,7 @@
         <th>Admin</th>
         <th>Téléphone</th>
         <th>Actif</th>
-        <th>Staff</th>
+<!--        <th>Staff</th>-->
         <th >Actions</th>
       </tr>
       </thead>
@@ -28,22 +28,23 @@
         </td>
         <td>{{ u.phone_number || '—' }}</td>
         <td>
-      <span class="chip" [class.muted]="!u.is_active">
-        {{ u.is_active ? 'Actif' : 'Inactif' }}
-      </span>
-        </td>
-        <td>
           <label class="switch">
-            <input
-              type="checkbox"
-              [checked]="u.is_staff"
-              (change)="onToggleStaff(u, $any($event.target).checked)"
-            />
+            <input type="checkbox" [checked]="u.is_active" (change)="toggleActive(u)">
             <span class="slider"></span>
           </label>
         </td>
+<!--        <td>-->
+<!--          <label class="switch">-->
+<!--            <input-->
+<!--              type="checkbox"-->
+<!--              [checked]="u.is_staff"-->
+<!--              (change)="onToggleStaff(u, $any($event.target).checked)"-->
+<!--            />-->
+<!--            <span class="slider"></span>-->
+<!--          </label>-->
+<!--        </td>-->
         <td>
-<!--          <button class="icon" (click)="openEdit(u)">✏️</button>-->
+          <button class="icon" (click)="openEdit(u)">✏️</button>
 <!--          <button class="icon" (click)="demote(u)" title="Retirer staff">⬇️</button>-->
           <button class="icon danger" (click)="remove(u)">🗑️</button>
         </td>
@@ -59,21 +60,105 @@
     <button class="btn pager-btn" [disabled]="page === Math.ceil(filtered.length / pageSize)" (click)="page = Math.min(Math.ceil(filtered.length / pageSize), page+1)">Suiv.</button>
   </div>
 
-  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
-  <div class="modal" *ngIf="showModal">
-    <h3>{{ isEdit ? 'Modifier' : 'Créer' }} un admin</h3>
-    <form [formGroup]="form" (ngSubmit)="save()">
-      <div class="grid">
-        <div><label>Email</label><input type="email" formControlName="email" /></div>
-        <div><label>Prénom</label><input type="text" formControlName="first_name" /></div>
-        <div><label>Nom</label><input type="text" formControlName="last_name" /></div>
-        <div><label>Téléphone</label><input type="text" formControlName="phone_number" /></div>
-        <div *ngIf="!isEdit"><label>Mot de passe</label><input type="password" formControlName="password" /></div>
+
+
+<div class="app-modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="app-modal" *ngIf="showModal" (click)="$event.stopPropagation()">
+
+  <h3>{{ isEdit ? 'Modifier' : 'Créer' }} un admin</h3>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="grid">
+
+      <!-- Email -->
+      <div>
+        <label>Email</label>
+        <input class="input" type="email" formControlName="email" placeholder="email@domaine.com" />
+        <small class="error" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+          Email invalide.
+        </small>
       </div>
-      <div class="modal-actions">
-        <button type="button" class="btn" (click)="closeModal()">Annuler</button>
-        <button class="btn primary">Enregistrer</button>
+
+      <!-- Téléphone -->
+      <div>
+        <label>Téléphone</label>
+        <input class="input" type="text" formControlName="phone_number" placeholder="+51209334" />
+        <small class="error" *ngIf="form.get('phone_number')?.invalid && form.get('phone_number')?.touched">
+          Format invalide (+51209334).
+        </small>
       </div>
-    </form>
-  </div>
+
+      <!-- Prénom -->
+      <div>
+        <label>Prénom</label>
+        <input class="input" type="text" formControlName="first_name" placeholder="Prénom" />
+      </div>
+
+      <!-- Nom -->
+      <div>
+        <label>Nom</label>
+        <input class="input" type="text" formControlName="last_name" placeholder="Nom" />
+      </div>
+
+      <!-- Rôle -->
+
+
+      <!-- Actif (switch) -->
+      <div>
+        <label>Actif</label>
+        <div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              [checked]="form.value.is_active"
+              (change)="form.patchValue({ is_active: $any($event.target).checked })"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Mot de passe -->
+      <div *ngIf="!isEdit">
+        <label>Mot de passe</label>
+        <div class="password-wrapper" style="display:flex; gap:8px; align-items:center;">
+          <input
+            class="input"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          <button type="button" class="btn" (click)="togglePasswordVisibility()">
+            {{ showPassword ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+        <small class="hint">8 caractères minimum recommandés.</small>
+      </div>
+
+      <div *ngIf="isEdit">
+        <label>Changer le mot de passe (optionnel)</label>
+        <div class="password-wrapper" style="display:flex; gap:8px; align-items:center;">
+          <input
+            class="input"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Laisser vide pour conserver"
+          />
+          <button type="button" class="btn" (click)="togglePasswordVisibility()">
+            {{ showPassword ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn" (click)="closeModal()">Annuler</button>
+      <button class="btn primary" [disabled]="form.invalid">
+         Enregistrer les modifications
+      </button>
+    </div>
+  </form>
+</div>
+
 </div>

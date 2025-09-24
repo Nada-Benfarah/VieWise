@@ -6,8 +6,8 @@ class UserSerializer(serializers.ModelSerializer):
     """Serializer for displaying user information."""
     class Meta:
         model = CustomUser
-        fields = ["id", "email", "phone_number", "first_name", "last_name", "is_active", "is_staff"]
-        read_only_fields = ["id", "email", "is_active", "is_staff"]
+        fields = ["id", "email", "phone_number", "first_name", "last_name", "is_active", "is_staff","email_verified"]
+        read_only_fields = ["id", "email", "is_active", "is_staff","email_verified"]
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -64,7 +64,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = [
             "id", "email", "first_name", "last_name", "phone_number",
             "is_active", "is_staff", "is_superuser", "date_joined",
-            "password", "avatar_url",
+            "password", "avatar_url","email_verified",
         ]
         read_only_fields = ["id", "date_joined"]
 

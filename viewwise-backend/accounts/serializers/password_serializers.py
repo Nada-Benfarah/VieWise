@@ -1,6 +1,7 @@
 # password_serializers.py
 from rest_framework import serializers
 from ..models import CustomUser
+from django.contrib.auth.password_validation import validate_password
 # ✅ Password Reset Request Serializer
 class PasswordResetRequestSerializer(serializers.Serializer):
     """Serializer for requesting password reset"""
@@ -24,4 +25,16 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         """Ensure passwords match."""
         if data["new_password"] != data["new_password2"]:
             raise serializers.ValidationError({"new_password2": "Passwords do not match."})
+        return data
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True, min_length=8)
+    new_password2 = serializers.CharField(write_only=True, required=True, min_length=8)
+
+    def validate(self, data):
+        if data["new_password"] != data["new_password2"]:
+            raise serializers.ValidationError({"new_password2": "Les mots de passe ne correspondent pas."})
+        # vérifie la robustesse du nouveau mot de passe
+        validate_password(data["new_password"])
         return data

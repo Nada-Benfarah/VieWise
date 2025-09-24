@@ -15,6 +15,7 @@ from datetime import date
 from django.db.models import Q
 from rest_framework.decorators import action
 from invitations.models import Invitation
+from django.db.models import Sum
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,6 +24,30 @@ logger = logging.getLogger(__name__)
 class AgentViewSet(viewsets.ModelViewSet):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
+
+
+    @action(detail=False, methods=['get'], url_path='storage-usage', permission_classes=[IsAuthenticated])
+    def storage_usage(self, request):
+        user = request.user
+        total = (
+            AgentFile.objects
+            .filter(agent__creator=user)   # 👈 règle de calcul : fichiers des agents créés par l'utilisateur
+            .aggregate(total=Sum('size'))
+            .get('total') or 0
+        )
+
+        def humanize(n: int) -> str:
+            units = ['B', 'KB', 'MB', 'GB', 'TB']
+            size = float(n)
+            for u in units:
+                if size < 1024 or u == 'TB':
+                    return f"{int(size)} {u}" if u == 'B' else f"{size:.2f} {u}"
+                size /= 1024.0
+
+        return Response({
+            "bytes_used": int(total),
+            "human": humanize(total)
+        })
 
     @action(detail=True, methods=['post'], url_path='clone')
     @transaction.atomic
@@ -65,7 +90,7 @@ class AgentViewSet(viewsets.ModelViewSet):
           # Fichiers (référence partagée au même fichier)
           for f in source.files.all():
               # Assigne le même chemin de fichier sans duppliquer physiquement
-              new_af = AgentFile(agent=clone)
+              new_af = AgentFile(agent=clone,  size=f.size)
               new_af.file.name = f.file.name
               new_af.save()
 
@@ -212,7 +237,7 @@ class AgentCreateWithFilesView(APIView):
 
             # 📁 Fichiers
             for f in request.FILES.getlist('files'):
-                AgentFile.objects.create(agent=agent, file=f)
+                AgentFile.objects.create(agent=agent, file=f, size=f.size)
 
             # 🔗 Liens
             site_web = request.data.get('site_web')
@@ -256,7 +281,7 @@ class AgentUpdateWithFilesView(UpdateAPIView):
         # 📁 Ajout de fichiers supplémentaires
         files = request.FILES.getlist('files')
         for f in files:
-            AgentFile.objects.create(agent=agent, file=f)
+            AgentFile.objects.create(agent=agent, file=f, size=f.size)
 
         # 🔁 Mise à jour des liens (remplace les anciens)
         site_web = request.data.get('site_web')

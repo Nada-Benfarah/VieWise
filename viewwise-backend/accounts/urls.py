@@ -8,7 +8,7 @@ from accounts.views.auth_views import (
 )
 from accounts.views.password_views import (
     PasswordResetRequestView,
-    PasswordResetConfirmView
+    PasswordResetConfirmView,  ChangePasswordView,
 )
 from accounts.views.social_views import (
     GoogleLogin,
@@ -55,6 +55,7 @@ urlpatterns = [
     # ✅ User Management
     path("me/", UserProfileView.as_view(), name="user-profile"),
     path("me/avatar/", UserAvatarView.as_view(), name="user-avatar"),
+    path("me/password/", ChangePasswordView.as_view(), name="change_password"),
 #     path("users/", UserListView.as_view(), name="user-list"),
 
     path("", include(router.urls)),

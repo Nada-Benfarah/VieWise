@@ -14,9 +14,24 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from accounts.serializers.user_serializers import AdminUserSerializer
 from accounts.permissions import IsSuperUser, IsAdminOrStaff
 import logging
+from rest_framework.decorators import action
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.conf import settings
 
-User = get_user_model()
+from django.contrib.auth import get_user_model
+from rest_framework import viewsets, permissions, decorators, response, status
+from rest_framework.filters import SearchFilter, OrderingFilter
+from accounts.serializers.user_serializers import AdminUserSerializer
+
+
 logger = logging.getLogger(__name__)
+User = get_user_model()
+
+class IsSuperUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
+
 
 def profile_payload(user, request):
     def abs_url(file_field):
@@ -32,6 +47,7 @@ def profile_payload(user, request):
         "phone_number": user.phone_number,
         "is_superuser": user.is_superuser,
         "is_staff": user.is_staff,
+        "email_verified": user.email_verified,
         "is_admin": user.is_superuser or user.is_staff,
         "avatar_url": abs_url(user.avatar) if getattr(user, "avatar", None) else None,
     }
@@ -94,21 +110,9 @@ class UserAvatarView(APIView):
 
 
 
-from django.contrib.auth import get_user_model
-from rest_framework import viewsets, permissions, decorators, response, status
-from rest_framework.filters import SearchFilter, OrderingFilter
-from accounts.serializers.user_serializers import AdminUserSerializer
-
-User = get_user_model()
-
-class IsSuperUser(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
-
 class AdminUserViewSet(viewsets.ModelViewSet):
     """
-    /auth/users/ : CRUD complet sur tous les utilisateurs
-    - Si le caller est superuser : la liste exclut son propre compte.
+    /auth/users/ : CRUD complet sur tous les utilisateurs (hors superusers)
     """
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdminOrStaff]
@@ -117,39 +121,62 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     ordering_fields = ["date_joined", "email", "first_name"]
 
     def get_queryset(self):
-        # Exclure tous les superusers de la liste
-        qs = User.objects.filter(is_superuser=False).order_by("-date_joined")
-        return qs
+        # Exclure les superusers
+        return User.objects.filter(is_superuser=False).order_by("-date_joined")
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
         ctx["request"] = self.request
         return ctx
 
-    @decorators.action(detail=True, methods=["patch"], url_path="toggle-active")
+    @action(detail=True, methods=['patch'], url_path='toggle-active')
     def toggle_active(self, request, pk=None):
-        u = self.get_object()
-        is_active = request.data.get("is_active", None)
-        if isinstance(is_active, bool):
-            u.is_active = is_active
-            u.save(update_fields=["is_active"])
-            # ✅ renvoyer un JSON (pas 204/texte)
-            return response.Response(self.get_serializer(u).data, status=status.HTTP_200_OK)
-        return response.Response({"detail": "is_active (bool) requis"}, status=status.HTTP_400_BAD_REQUEST)
+        user = self.get_object()
+        is_active = bool(request.data.get('is_active'))
+        user.is_active = is_active
+        user.save(update_fields=['is_active'])
 
+        subject  = "Votre compte a été activé" if is_active else "Votre compte a été désactivé"
+        template = 'account/email/account_activated.html' if is_active else 'account/email/account_deactivated.html'
 
-    @decorators.action(detail=True, methods=["patch"], url_path="toggle-staff")
+        # rendu HTML + fallback texte
+        try:
+            html_body = render_to_string(template, {"user": user})
+            text_body = ""
+        except Exception:
+            html_body = None
+            text_body = (
+                f"Bonjour {user.first_name},\n\n"
+                f"Votre compte ViewWise a été {'activé' if is_active else 'désactivé'}.\n"
+                f"Cordialement,\nL’équipe ViewWise"
+            )
+
+        try:
+            send_mail(
+                subject=subject,
+                message=text_body or " ",
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=[user.email],
+                fail_silently=False,
+                html_message=html_body if html_body else None,
+            )
+        except Exception as e:
+            logger.exception("Echec envoi email toggle_active: %s", e)
+
+        data = self.get_serializer(user, context=self.get_serializer_context()).data
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'], url_path='toggle-staff')
     def toggle_staff(self, request, pk=None):
-        # ⚠️ idem : seuls superusers
         u = self.get_object()
-        is_staff = request.data.get("is_staff", None)
-        if isinstance(is_staff, bool):
-            u.is_staff = is_staff
-            if not is_staff:
+        val = request.data.get("is_staff", None)
+        if isinstance(val, bool):
+            u.is_staff = val
+            if not val:
                 u.is_superuser = False  # sécurité
             u.save(update_fields=["is_staff", "is_superuser"])
-            return response.Response(self.get_serializer(u).data)
-        return response.Response({"detail": "is_staff (bool) requis"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(self.get_serializer(u).data, status=status.HTTP_200_OK)
+        return Response({"detail": "is_staff (bool) requis"}, status=status.HTTP_400_BAD_REQUEST)
 
 class AdminStaffViewSet(viewsets.ModelViewSet):
     """
@@ -172,7 +199,7 @@ class AdminStaffViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # force admin non-superuser
-        obj = serializer.save(is_staff=True, is_superuser=False, is_active=True)
+        obj = serializer.save(is_staff=True, is_superuser=False, is_active=True, email_verified=True)
         return obj
 
     def perform_update(self, serializer):

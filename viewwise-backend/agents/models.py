@@ -57,6 +57,7 @@ class AgentFile(models.Model):
     agent = models.ForeignKey(Agent, related_name='files', on_delete=models.CASCADE)
     file = models.FileField(upload_to='agent_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    size = models.BigIntegerField(default=0)
 
     def __str__(self):
         return self.file.name

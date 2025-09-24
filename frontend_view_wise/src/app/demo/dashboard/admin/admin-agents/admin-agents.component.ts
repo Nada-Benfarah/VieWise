@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AdminAgent, AdminAgentsService} from "../../../../services/adminAgent/admin-agent.service";
 import {Router} from "@angular/router";
+import {ConfirmDialogService} from "../../../../services/confirm-dialog.service";
 
 @Component({
   selector: 'app-admin-agents',
@@ -26,7 +27,7 @@ export class AdminAgentsComponent implements OnInit {
 
   constructor(
     private api: AdminAgentsService,
-    private fb: FormBuilder, private router: Router
+    private fb: FormBuilder, private router: Router, private confirm:ConfirmDialogService
   ) {
     this.form = this.fb.group({
       agentName: ['', Validators.required],
@@ -79,8 +80,15 @@ export class AdminAgentsComponent implements OnInit {
   }
 
 
-  remove(row: AdminAgent): void {
-    if (!confirm(`Supprimer "${row.agentName}" ?`)) return;
+  async remove(row: AdminAgent) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer l’agent',
+      message: `Confirmer la suppression de « ${row.agentName} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
     this.api.delete(row.agentId).subscribe({
       next: () => {
         this.agents = this.agents.filter((a) => a.agentId !== row.agentId);

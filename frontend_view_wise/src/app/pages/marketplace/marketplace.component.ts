@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { WorflowEditorComponent } from '../workflow/worflow-editor/worflow-editor.component';
 import { PlanService } from 'src/app/services/plan/plan.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
+import {StorageService} from "../../services/storage.service";
 
 @Component({
   selector: 'app-marketplace',
@@ -35,7 +36,7 @@ export class MarketplaceComponent implements OnInit {
   constructor(
     private router: Router,
     private marketplaceService: MarketplaceService,
-    private workflowService: WorkflowService,  private planService: PlanService, private notificationService: NotificationService,  private agentService: AgentService
+    private workflowService: WorkflowService,  private planService: PlanService, private notificationService: NotificationService,  private agentService: AgentService, private storageService: StorageService
   ) {
   }
 
@@ -122,18 +123,6 @@ export class MarketplaceComponent implements OnInit {
     this.selectedAgent = null;
   }
 
-  // cloneAgent(item: MarketplaceAgent): void {
-  //   const agent = item.agent;
-  //   const agentId = item.agent.agentId;
-  //
-  //   if (agentId) {
-  //     this.router.navigate(['/create-agent', agentId], {
-  //       state: { isClone: true, parentAgentId: agentId }
-  //     });
-  //   } else {
-  //     console.warn('❌ Impossible de cloner : agentId manquant');
-  //   }
-  // }
 
 
   viewWorkflow(wf: any): void {
@@ -160,36 +149,6 @@ export class MarketplaceComponent implements OnInit {
   }
 
 
-//
-// cloneWorkflow(wf: any): void {
-//   if (!this.isBusinessPlan) { this.openUpgradeModal(); return; }
-//
-// this.workflowService.getPublicWorkflow(wf.workflowId).subscribe({
-//   next: (full:any) => {
-//     // Pas de normalize ni de valeurs par défaut : on clone tel quel
-//     const base = this.deepClone(full);
-//
-//     const cloned = {
-//       ...base,
-//       workflowId: null, // l’éditeur / la création côté backend attribuera un nouvel ID
-//       workflowName: `${base.workflowName} (Copie)`
-//     };
-//
-//     this.router.navigate(['/workflow/editor'], {
-//       state: {
-//         loadedWorkflow: cloned,
-//         isClone: true,
-//         // garder trace de l’original si vous souhaitez remplir parent_workflow à l’enregistrement
-//         parentWorkflowId: base.workflowId
-//       }
-//     });
-//   },
-//   error: () => {
-//     this.notificationService?.error?.('Impossible de charger le workflow complet pour le clonage.');
-//     console.error('❌ getPublicWorkflow a échoué pour', wf?.workflowId);
-//   }
-// });
-// }
 
   openUpgradeModal() {
     this.showUpgradeModal = true;
@@ -213,6 +172,7 @@ export class MarketplaceComponent implements OnInit {
     this.agentService.cloneAgent(agentId).subscribe({
       next: (clone: any) => {
         this.notificationService.success(`Agent cloné : ${clone?.agentName || 'Copie'}`);
+        this.storageService.refresh().subscribe();
         this.router.navigate(['/agents']); // “Mes agents”
       },
       error: (err) => {

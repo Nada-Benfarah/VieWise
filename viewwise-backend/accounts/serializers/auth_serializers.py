@@ -7,7 +7,7 @@ from django.conf import settings
 from datetime import timedelta
 import re
 from ..models import CustomUser
-
+from rest_framework.exceptions import AuthenticationFailed
 
 # ✅ Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -84,6 +84,27 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token serializer that includes user details and token expiration."""
 
     def validate(self, attrs):
+        # pré-contrôle pour personnaliser les erreurs
+        email = (attrs.get("email") or "").strip().lower()
+        password = attrs.get("password")
+
+        user = CustomUser.objects.filter(email=email).first()
+        if user:
+            # mot de passe OK ?
+            if user.check_password(password):
+                if not user.is_active:
+                    if not user.email_verified:
+                        raise AuthenticationFailed(
+                            detail="Votre adresse email n’est pas encore validée.",
+                            code="email_not_verified"
+                        )
+                    else:
+                        raise AuthenticationFailed(
+                            detail="Votre compte a été désactivé par un administrateur.",
+                            code="account_disabled"
+                        )
+            # sinon on laisse simplejwt gérer l’erreur standard
+
         data = super().validate(attrs)
 
         # Include user details in response

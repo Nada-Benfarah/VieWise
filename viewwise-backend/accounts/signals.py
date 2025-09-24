@@ -22,6 +22,8 @@ def activate_user_after_confirmation(request, email_address, **kwargs):
         user = email_address.user
         if user and not user.is_active:
             user.is_active = True
+            user.email_verified = True
+
             user.save()
             logger.info(f"✅ User {user.email} activated after email confirmation.")
         else:
@@ -51,6 +53,6 @@ def assign_default_plan(sender, instance, created, **kwargs):
                 end_date=date.today() + timedelta(days=14),
                 is_active=True
             )
-            logger.info(f"✅ Abonnement FREE assigné à {instance.email}")
+            logger.info("Abonnement FREE assigné à %s", instance.email)
         except Exception as e:
             logger.error(f"❌ Erreur lors de l'assignation du plan FREE : {e}")

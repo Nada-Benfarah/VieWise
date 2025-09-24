@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { AdminUser, AdminUsersService } from 'src/app/services/admin/admin-user.service';
 import { NotificationService } from 'src/app/services/notification/notification.service';
 import {AuthService} from "../../../../services/auth.service";
+import {ConfirmDialogService} from "../../../../services/confirm-dialog.service";
 
 @Component({
   selector: 'app-admin-users',
@@ -28,12 +29,12 @@ export class AdminUsersComponent implements OnInit {
   showPassword = false;
   constructor(
     private api: AdminUsersService,
-    private notificationService: NotificationService,private auth: AuthService,fb: FormBuilder
+    private notificationService: NotificationService,private auth: AuthService,fb: FormBuilder, private confirm: ConfirmDialogService
   ) {
     this.form = fb.group({
       email: ['', [Validators.required, Validators.email]],
       first_name: ['', [Validators.required, Validators.maxLength(150)]],
-      last_name: [''],
+      last_name: ['', [Validators.required, Validators.maxLength(150)]],
       phone_number: ['', [Validators.pattern(/^\+?[0-9]\d{6,14}$/)]],
       role: ['client', [Validators.required]],                         // 👈 nouveau
       password: [''],                                                  // requis en création
@@ -157,7 +158,7 @@ export class AdminUsersComponent implements OnInit {
         this.notificationService.warning('Le mot de passe est requis pour créer un utilisateur.');
         return;
       }
-      const payload = { ...basePayload, password: raw.password };
+      const payload = { ...basePayload, password: raw.password, email_verified: true };
 
       this.api.create(payload).subscribe({
         next: (created) => {
@@ -215,8 +216,15 @@ export class AdminUsersComponent implements OnInit {
 
 
 
-  remove(u: AdminUser) {
-    if (!confirm(`Supprimer ${u.email} ?`)) return;
+  async remove(u: AdminUser) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer l’utilisateur',
+      message: `Supprimer « ${u.email} » ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
+    if (!ok) return;
     this.api.delete(u.id).subscribe({
       next: () => {
         this.rows = this.rows.filter((x) => x.id !== u.id);

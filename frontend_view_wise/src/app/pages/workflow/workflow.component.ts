@@ -6,6 +6,7 @@ import { WorkflowService } from '../../services/workflow/workflow.service';
 import { NotificationService } from '../../services/notification/notification.service';
 import { PlanService } from '../../services/plan/plan.service';
 import {WorflowEditorComponent} from "./worflow-editor/worflow-editor.component";
+import {ConfirmDialogService} from "../../services/confirm-dialog.service";
 
 @Component({
   selector: 'app-workflow',
@@ -28,7 +29,9 @@ export class WorkflowComponent implements OnInit {
     private planService: PlanService,
     private notificationService: NotificationService,
     private router: Router,
-    private workflowService: WorkflowService
+    private workflowService: WorkflowService,
+    private confirm: ConfirmDialogService
+
   ) {}
 
   private loadCurrentUser(): void {
@@ -117,10 +120,16 @@ export class WorkflowComponent implements OnInit {
     });
   }
 
-  deleteWorkflow(workflowId: number): void {
-    const confirmed = confirm('Êtes-vous sûr de vouloir supprimer ce workflow ?');
-    if (!confirmed) return;
+  async deleteWorkflow(workflowId: number) {
+    const ok = await this.confirm.open({
+      title: 'Supprimer le workflow',
+      message: `Êtes-vous sûr de vouloir supprimer ce workflow ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      danger: false
+    });
 
+    if (!ok) return;
     this.workflowService.deleteWorkflow(workflowId).subscribe({
       next: () => {
         this.workflows = this.workflows.filter((wf) => wf.workflowId !== workflowId);
@@ -162,7 +171,7 @@ export class WorkflowComponent implements OnInit {
 
     this.workflowService.getWorkflowById(workflow.workflowId).subscribe({
       next: (res) => {
-        this.selectedWorkflow = res;
+        this.selectedWorkflow = { ...res, __forceZoom: 0.8 };
         this.showWorkflowModal = true;
       },
       error: () => {
