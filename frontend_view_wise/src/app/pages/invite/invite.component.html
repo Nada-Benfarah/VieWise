@@ -12,7 +12,21 @@
           [(ngModel)]="emailInput"
           name="emails"
           required
+          appEmailsList
+          #emailsCtrl="ngModel"
         />
+        <div class="error" *ngIf="emailsCtrl.invalid && (emailsCtrl.dirty || emailsCtrl.touched)">
+  <span *ngIf="emailsCtrl.errors?.['required']">
+    Veuillez saisir au moins un email.
+  </span>
+
+          <ng-container *ngIf="emailsCtrl.errors?.['emailsList'] as err">
+    <span>
+      Certains emails sont invalides
+      <span *ngIf="err.invalid?.length"> : {{ err.invalid.join(', ') }}</span>.
+    </span>
+          </ng-container>
+        </div>
       </div>
 
       <div class="form-group">
@@ -64,16 +78,17 @@
         <button
           type="submit"
           class="btn btn-primary"
-          [disabled]="remainingInvitations <= 0"
+          [disabled]="isSubmitDisabled || emailsCtrl.invalid"
         >
           Envoyer les invitations
         </button>
         <div *ngIf="userPlanName !== 'BUSINESS'" class="invitation-stats">
-          <p>Invitations utilisées : {{ usedInvitations }} / {{ totalInvitations }}</p>
+          <p>Invitations utilisées : {{ usedInvitations }} / {{ displayTotalInvitations }}</p>
         </div>
         <p *ngIf="remainingInvitations <= 0" class="warning">
           Vous avez atteint la limite maximale d’invitations.
         </p>
+
       </div>
     </form>
   </section>

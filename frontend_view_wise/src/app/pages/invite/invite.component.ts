@@ -3,6 +3,8 @@ import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InvitationService } from '../../services/invitation/invitation.service';
 import { PlanService } from '../../services/plan/plan.service';
+import {NotificationService} from "../../services/notification/notification.service";
+import {EmailsListValidatorDirective} from "../../services/emails-list.validator";
 
 interface Invitation {
   email: string;
@@ -15,7 +17,7 @@ interface Invitation {
   selector: 'app-invite',
   templateUrl: './invite.component.html',
   styleUrls: ['./invite.component.scss'],
-  imports: [NgClass, NgForOf, FormsModule, NgIf],
+  imports: [NgClass, NgForOf, FormsModule, NgIf,EmailsListValidatorDirective],
   standalone: true
 })
 export class InviteComponent {
@@ -28,7 +30,8 @@ export class InviteComponent {
   totalInvitations = 0;
   usedInvitations = 0;
   userPlanName: string | undefined;
-  constructor(private invitationService: InvitationService,private planService: PlanService) {}
+   emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+  constructor(private invitationService: InvitationService,private planService: PlanService,private toastService: NotificationService) {}
 
   ngOnInit() {
     this.planService.getCurrentUserPlan().subscribe({
@@ -68,10 +71,16 @@ export class InviteComponent {
 
 
   sendInvitations() {
-    if (this.remainingInvitations <= 0) {
-      alert("Vous avez atteint la limite d'invitations autorisées.");
+    if (!this.isEmailListValid(this.emailInput)) {
+      this.toastService.error('Veuillez saisir des emails valides séparés par des virgules');
       return;
     }
+
+    if (this.remainingInvitations <= 0) {
+      this.toastService.error('Vous avez atteint la limite d\'invitations autorisées.');
+      return;
+    }
+
 
     const emails = this.emailInput.split(',').map(e => e.trim()).filter(e => e);
     const expiration = new Date();
@@ -135,16 +144,35 @@ export class InviteComponent {
 
 
 
-  changeStatus(index: number, status: 'Accepté' | 'Rejeté') {
-    const invitationId = this.invitations[index].id;
-    this.invitationService.updateStatus(invitationId, status).subscribe(() => {
-      this.invitations[index].status = status;
-
-      this.invitationService.getRemainingInvitations().subscribe(data => {
-        this.remainingInvitations = data.remaining;
-      });
-    });
+  get hasEmails(): boolean {
+    return this.parseEmails(this.emailInput).length > 0;
   }
+
+  get hasProjects(): boolean {
+    return this.selectedProjects.length > 0;
+  }
+
+  get hasRole(): boolean {
+    return !!this.selectedRole;
+  }
+
+  get hasQuota(): boolean {
+    return this.remainingInvitations > 0;
+  }
+
+  get isSubmitDisabled(): boolean {
+    return !(this.hasEmails && this.hasProjects && this.hasRole && this.hasQuota);
+  }
+
+  private parseEmails(raw: string): string[] {
+    return (raw || '').split(',').map(e => e.trim()).filter(Boolean);
+  }
+
+  private isEmailListValid(raw: string): boolean {
+    const emails = this.parseEmails(raw);
+    return emails.length > 0 && emails.every(e => this.emailRegex.test(e));
+  }
+
 
   toggleProjectSelection(projectId: number): void {
     const index = this.selectedProjects.indexOf(projectId);
@@ -179,5 +207,11 @@ export class InviteComponent {
       }
     });
   }
+  get displayTotalInvitations(): number {
+    const derived = this.usedInvitations + this.remainingInvitations;
+    if (this.totalInvitations <= 0) return derived;
+    return Math.max(this.totalInvitations, derived);
+  }
+
 
 }

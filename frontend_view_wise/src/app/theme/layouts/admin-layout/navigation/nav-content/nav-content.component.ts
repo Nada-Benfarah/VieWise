@@ -170,7 +170,7 @@ export class NavContentComponent implements OnInit {
     this.router.navigate(['/pricing-plans']);
   }
   handleInvitation(): void {
-    if (this.plan?.name?.toLowerCase() === 'free' || 'pro') {
+    if (this.plan?.name?.toLowerCase() === 'free' ) {
       this.showUpgradeModal = true;
       document.body.classList.add('modal-open'); // ✅ blur activé
     } else {
