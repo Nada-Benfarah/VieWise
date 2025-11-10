@@ -1,5 +1,4 @@
 import { enableProdMode, importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
-
 import { environment } from './environments/environment';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { AppRoutingModule } from './app/app-routing.module';

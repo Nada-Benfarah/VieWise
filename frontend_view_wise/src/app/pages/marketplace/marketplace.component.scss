@@ -26,6 +26,7 @@
   gap: 10px;
 }
 
+
 .filter-button {
   background-color: #f3f3f3;
   border: 1px solid #ccc;
@@ -443,7 +444,7 @@
   background: #e0e3ea;
   color: #111;
 }
-.modern-confirm {
+.tabs  .modern-confirm {
   background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
   color: #fff;
   border: none;
@@ -453,7 +454,303 @@
   box-shadow: 0 2px 8px rgba(99,102,241,0.08);
   transition: background 0.2s, box-shadow 0.2s;
 }
-.modern-confirm:hover {
+
+.tabs .modern-confirm {
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.tabs .modern-confirm:hover {
+  background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+}
+
+
+.modal-content {
+  max-width: 560px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.field label { font-weight: 600; }
+.field .input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.example {
+  background: #f9fafb;
+  border: 1px dashed #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 12px;
+}
+
+
+.card-grid .agent-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+}
+
+.card-grid .agent-card .agent-title {
+  margin-bottom: .5rem;
+}
+
+.card-grid .agent-card .agent-description {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: .75rem;
+}
+
+.card-grid .agent-card .card-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.workflow-market-grid .workflow-market-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+}
+
+.workflow-market-grid .workflow-market-card .workflow-title {
+  margin-bottom: .5rem;
+}
+
+.workflow-market-grid .workflow-market-card .workflow-desc {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: .75rem;
+}
+
+.workflow-market-grid .workflow-market-card .card-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.card-grid .agent-card,
+.workflow-market-grid .workflow-market-card {
+  min-height: 260px;
+}
+
+
+
+.tabs {
+  display: flex; gap: 8px; margin: .5rem 0 1rem;
+}
+.tabs button {
+  border: 1px solid #e5e7eb; background: #fff; padding: 6px 12px;
+  border-radius: 8px; font-weight: 600; cursor: pointer;
+}
+.tabs button.active {
+  background: #4a196a;
+  color: #FFFFFF;
+  border-color: #dbcff5;
+}
+
+
+.chip-btn {
+  border: 1px solid #e5e7eb; background: #fff; padding: 6px 12px;
+  border-radius: 999px; cursor: pointer; font-weight: 600;
+}
+.chip-btn:hover { background: #f9fafb; }
+
+.instructions-panel {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  line-height: 1.5;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 14px;
+  max-height: 260px;
+  overflow: hidden;
+  position: relative;
+}
+.instructions-panel.expanded {
+  max-height: none;
+}
+
+.instructions-fade {
+  position: relative; height: 36px; margin-top: -36px;
+  background: linear-gradient(to bottom, rgba(250,250,250,0), rgba(250,250,250,1));
+  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
+}
+
+.guide-title { margin: .25rem 0 1rem; font-size: 18px; color: #8a2be2; }
+.guide-steps { display: flex; flex-direction: column; gap: 10px; }
+.guide-step {
+  display: grid; grid-template-columns: 36px 1fr; gap: 8px;
+  padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; background: #fcfcff;
+}
+.step-index {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #f4f0fb; color: #8a2be2; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; margin-top: 2px;
+}
+.step-body { white-space: pre-wrap; word-wrap: break-word; }
+.guide-notes { margin-top: 12px; font-size: 14px; color: #555; }
+
+/* Overlay centré (unique) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;   /* centrage vertical */
+  justify-content: center; /* centrage horizontal */
+  z-index: 1000;
+}
+
+/* Modal par défaut – plus compact */
+.modal-content {
+  position: relative;
+  background: #fff;
+  padding: 1.25rem;
+  border-radius: 12px;
+  width: 56vw;
+  max-width: 720px;
+  max-height: 78vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+  animation: fadeInUp .3s ease;
+  margin: 0 auto;
+}
+
+/* Variante large – plus petite qu’avant mais conservant l’éditeur */
+.modal-content.large {
+  width: 64vw;
+  max-width: 920px;
+  height: 68vh;
+  max-height: 80vh;
+  padding: 1rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  overflow: hidden;
+}
+
+.modal-content.large > h2 {
+  margin: 0 0 .5rem 0;
+  flex: 0 0 auto;
+}
+.modal-content.large app-worflow-editor,
+.modal-content.large .workflow-editor-container {
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+
+
+.instruction-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.instruction-toolbar.centered {
+  justify-content: center;
+}
+
+
+.modern-confirm:active {
+  transform: translateY(1px);
+}
+
+.instructions-panel {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  line-height: 1.5;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 14px;
+  max-height: 260px;
+  overflow: hidden;
+  position: relative;
+}
+.instructions-panel.expanded { max-height: none; }
+.instructions-fade {
+  position: relative; height: 36px; margin-top: -36px;
+  background: linear-gradient(to bottom, rgba(250,250,250,0), rgba(250,250,250,1));
+  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
+}
+
+
+@media (max-width: 768px) {
+  .modal-content { width: 92vw; max-width: 92vw; max-height: 84vh; }
+  .modal-content.large { width: 94vw; max-width: 94vw; height: 76vh; }
+}
+
+
+
+.instruction-toolbar .modern-confirm {
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  transition: background 0.2s, box-shadow 0.2s, transform .05s ease-in-out;
+  cursor: pointer;
+}
+.instruction-toolbar .modern-confirm:hover {
+  background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+}
+.instruction-toolbar .modern-confirm:active {
+  transform: translateY(1px);
+}
+
+
+.modern-actions .modern-confirm {
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.modern-actions .modern-confirm {
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.modern-actions .modern-confirm:hover {
   background: linear-gradient(90deg, #4f46e5 0%, #2563eb 100%);
   box-shadow: 0 4px 16px rgba(99,102,241,0.15);
 }

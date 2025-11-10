@@ -38,7 +38,6 @@ import { FormsModule } from '@angular/forms';
       </ng-template>
 
       <div class="modal-actions">
-        <!-- Inversion des classes selon la présence de l'input -->
         <button
           [ngClass]="{ btn: true, primary: !showInput, danger: showInput }"
           (click)="svc.cancel()"
@@ -58,7 +57,6 @@ import { FormsModule } from '@angular/forms';
   `,
   styles: [
     `
-      /* Overlay et container */
       .modal-overlay-2 {
         position: fixed;
         inset: 0;
@@ -93,7 +91,6 @@ import { FormsModule } from '@angular/forms';
         }
       }
 
-      /* Actions */
       .modal-actions {
         display: flex;
         justify-content: flex-end;
@@ -101,7 +98,6 @@ import { FormsModule } from '@angular/forms';
         margin-top: 12px;
       }
 
-      /* Boutons */
       .btn {
         border-radius: 10px;
         padding: 8px 12px;
@@ -128,7 +124,6 @@ import { FormsModule } from '@angular/forms';
         border: 1px solid #e5e7eb;
       }
 
-      /* Input amélioré */
       .modal-input {
         width: 100%;
         margin-top: 10px;

@@ -7,18 +7,34 @@ from django.db import transaction
 import json
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.generics import UpdateAPIView
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+
+from django.db import transaction
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404
+from django.db.models import Q, Sum
+
+import json, os, logging
+from datetime import date
+
 from .models import Agent, DataSource, Modele, AgentFile, Link
 from .serializers import AgentSerializer, DataSourceSerializer, ModeleSerializer, AgentFileSerializer, LinkSerializer
 from .document_loader import DocumentLoader
-from subscriptions.models import Subscription  # ajuste l'import selon ton app
-from datetime import date
-from django.db.models import Q
-from rest_framework.decorators import action
+from subscriptions.models import Subscription
 from invitations.models import Invitation
-from django.db.models import Sum
+import requests                       # ← manquait
+from urllib.parse import urlparse     # ← manquait
 
-import logging
 logger = logging.getLogger(__name__)
+ALLOWED_WEBHOOK_HOSTS = {"nadabenfarah1.app.n8n.cloud"}
+
+
 
 # ✅ Vue pour CRUD des agents
 class AgentViewSet(viewsets.ModelViewSet):
@@ -26,7 +42,100 @@ class AgentViewSet(viewsets.ModelViewSet):
     serializer_class = AgentSerializer
 
 
-    @action(detail=False, methods=['get'], url_path='storage-usage', permission_classes=[IsAuthenticated])
+
+    @action(detail=True, methods=['post'], url_path='run-webhook', permission_classes=[IsAuthenticated])
+    def run_webhook(self, request, pk=None):
+       agent = self.get_object()
+
+       # 1) récupérer le lien webhook
+       link = agent.links.filter(source_name='webhook').first()
+       if not link or not isinstance(link.url, dict):
+           return Response({"error": "Aucun webhook configuré pour cet agent."},
+                           status=status.HTTP_400_BAD_REQUEST)
+
+       payload = link.url
+       endpoint = payload.get('endpoint')
+       method = (payload.get('method') or 'POST').upper()
+       headers = payload.get('headers') or {"Content-Type": "application/json"}
+       inputs = payload.get('inputs') or []
+       saved_values = payload.get('values') or {}
+
+       # 2) sécurité minimale domaine/schéma
+       try:
+           u = urlparse(endpoint or '')
+       except Exception:
+           return Response({"error": "URL webhook invalide."}, status=status.HTTP_400_BAD_REQUEST)
+       if u.scheme != 'https':
+           return Response({"error": "Webhook non sécurisé. HTTPS requis."}, status=status.HTTP_400_BAD_REQUEST)
+       if not (u.netloc.endswith(".n8n.cloud") or u.netloc.endswith(".app.n8n.cloud")):
+           return Response({"error": "Domaine webhook non autorisé."}, status=status.HTTP_400_BAD_REQUEST)
+
+       # 3) fusion valeurs sauvegardées et overrides ponctuels (facultatif)
+       body_values = {**saved_values, **(request.data.get('overrides') or {})}
+
+       # 4) valider les champs requis
+       missing = [i['name'] for i in inputs if i.get('required') and not body_values.get(i['name'])]
+       if missing:
+           return Response({"error": "Champs requis manquants", "fields": missing},
+                           status=status.HTTP_400_BAD_REQUEST)
+
+       # 5) appel serveur-à-serveur
+       try:
+           timeout = (5, 20)  # connect, read
+           if method in ('GET', 'DELETE'):
+               r = requests.request(method, endpoint, params=body_values, headers=headers, timeout=timeout)
+           else:
+               # on envoie en JSON
+               r = requests.request(method, endpoint, json=body_values, headers=headers, timeout=timeout)
+       except requests.RequestException as e:
+           return Response({"error": "Appel webhook indisponible", "detail": str(e)}, status=502)
+
+       ok = 200 <= r.status_code < 300
+       ui = (payload.get('ui') or {})
+       msg = ui.get('success_toast') or "Exécution lancée" if ok else "Échec de l’exécution"
+       return Response({
+           "ok": ok,
+           "status": r.status_code,
+           "message": msg,
+           "remote_preview": r.text[:800]  # debug court
+      }, status=(status.HTTP_200_OK if ok else status.HTTP_502_BAD_GATEWAY))
+
+    @action(detail=True, methods=['patch'], url_path='links', permission_classes=[IsAuthenticated])
+    @transaction.atomic
+    def patch_links(self, request, pk=None):
+        agent = self.get_object()
+
+        # Autorisation minimale: créateur ou partagé
+        if getattr(agent, "creator", None) != request.user and \
+           not getattr(agent, "shared_with", None).filter(pk=request.user.pk).exists():
+            return Response({"error": "Non autorisé"}, status=status.HTTP_403_FORBIDDEN)
+
+        incoming = request.data.get("links")
+        if not isinstance(incoming, list):
+            return Response({"error": "Payload invalide, attendu links:[]"}, status=400)
+
+        # upsert simple par source_name
+        existing = {l.source_name: l for l in agent.links.all()}
+        for it in incoming:
+            src = it.get("source_name")
+            url = it.get("url")
+            if not src:
+                continue
+            if src in existing:
+                # fusion légère pour préserver endpoint, method, headers
+                if isinstance(url, dict) and isinstance(existing[src].url, dict):
+                    merged = {**existing[src].url, **url}
+                    existing[src].url = merged
+                else:
+                    existing[src].url = url
+                existing[src].save(update_fields=["url"])
+            else:
+                Link.objects.create(agent=agent, source_name=src, url=url)
+
+        ser = AgentSerializer(agent, context={"request": request})
+        return Response(ser.data, status=200)
+
+    @action(detail=False, methods=['get'], url_path='storage-usage')
     def storage_usage(self, request):
         user = request.user
         total = (
@@ -48,6 +157,23 @@ class AgentViewSet(viewsets.ModelViewSet):
             "bytes_used": int(total),
             "human": humanize(total)
         })
+
+
+    @action(detail=True, methods=['get'], url_path='download-template', permission_classes=[IsAuthenticated])
+    def download_template(self, request, pk=None):
+         agent = self.get_object()
+         # priorise un .json, sinon premier fichier
+         af = agent.files.filter(file__iendswith='.json').first() or agent.files.first()
+         if not af or not af.file:
+             raise Http404("Aucun template disponible.")
+
+         filename = os.path.basename(af.file.name)
+         return FileResponse(
+             af.file.open('rb'),
+             as_attachment=True,
+             filename=filename,
+             content_type='application/json'
+         )
 
     @action(detail=True, methods=['post'], url_path='clone')
     @transaction.atomic

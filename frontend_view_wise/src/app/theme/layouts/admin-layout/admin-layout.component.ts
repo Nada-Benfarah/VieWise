@@ -1,10 +1,6 @@
-// Angular import
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
-// Project import
-
 import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { ConfigurationComponent } from './configuration/configuration.component';
@@ -17,11 +13,8 @@ import { BreadcrumbComponent } from 'src/app/theme/shared/components/breadcrumb/
   styleUrls: ['./admin-layout.component.scss']
 })
 export class AdminComponent {
-  // public props
   navCollapsed: boolean;
   navCollapsedMob: boolean;
-
-  // public method
   navMobClick() {
     if (this.navCollapsedMob && !document.querySelector('app-navigation.pc-sidebar')?.classList.contains('mob-open')) {
       this.navCollapsedMob = !this.navCollapsedMob;

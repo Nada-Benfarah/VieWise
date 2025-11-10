@@ -1,41 +1,211 @@
-
 <div class="agents-container">
-  <!-- En-tête de la page -->
   <div class="agents-header">
     <h1>Mes Agents</h1>
-    <button mat-raised-button color="primary" (click)="goToCreateAgent()" >
-      + Créer un nouvel agent
-    </button>
+    <button mat-raised-button color="primary" (click)="goToCreateAgent()">+ Créer un nouvel agent</button>
   </div>
 
   <div class="cards">
     <div class="cards__inner">
-      <div *ngFor="let agent of agents; let i = index" class="card-container position-relative">
 
-        <!-- Carte principale -->
+      <div *ngFor="let agent of agents; let i = index;"
+           class="card-container position-relative">
         <div class="card">
           <p class="card__heading">{{ agent.agentName }}</p>
+
           <ul class="card_bullets flow" role="list">
             <li>{{ agent.agentObjective }}</li>
           </ul>
-          <a class="card__cta cta" href="#">Essayer</a>
 
-        <button class="menu-btn"
-                type="button"
-                id="dropdownMenu{{ i }}"
-                data-bs-toggle="dropdown"
-                aria-expanded="false">
-          <i class="fas fa-ellipsis-v"></i>
-        </button>
+          <!-- Bloc d’actions principal -->
+          <div class="cta-row">
+            <button
+              *ngIf="hasTemplate(agent)"
+              class="card__cta cta"
+              type="button"
+              (click)="download(agent)">
+              Télécharger le template
+            </button>
 
-        <ul class="dropdown-menu menu-floating"
-            [attr.aria-labelledby]="'dropdownMenu' + i">
-          <li *ngIf="agent.owner || agent.role === 'Éditeur'"><button class="dropdown-item"  (click)="editAgent(agent)"><i class="fas fa-pen"></i> Modifier</button></li>
-          <li><button class="dropdown-item" (click)="chatAgent(agent)"><i class="fas fa-comments"></i> Chat</button></li>
-          <li  *ngIf="agent.owner || agent.role === 'Éditeur'"><button class="dropdown-item text-danger" (click)="deleteAgent(agent)"><i class="fas fa-trash"></i> Supprimer</button></li>
-        </ul>
+            <button class="btn-ghost" type="button" (click)="openGuide(agent)">
+              Voir le guide
+            </button>
+
+<!--            <button *ngIf="getWebhookLink(agent)" class="btn-ghost" type="button" (click)="openEditValues(agent)">-->
+<!--              Paramètres-->
+<!--            </button>-->
+
+            <button *ngIf="hasWebhook(agent)"
+                    class="card__cta cta"
+                    type="button"
+                    [disabled]="!canRun(agent)"
+                    [title]="!canRun(agent) ? ('Paramètres manquants: ' + missingRequired(agent).join(', ')) : ''"
+                    (click)="runAgent(agent)">
+              {{ getRunLabel(agent) }}
+            </button>
+
+
+          </div>
+
+          <!-- Menu existant -->
+          <button class="menu-btn" type="button" id="dropdownMenu{{ i }}" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <ul class="dropdown-menu menu-floating" [attr.aria-labelledby]="'dropdownMenu' + i">
+            <li *ngIf="agent.owner || agent.role === 'Éditeur'">
+              <button class="dropdown-item" (click)="editAgent(agent)"><i class="fas fa-pen"></i> Modifier</button>
+            </li>
+            <li><button class="dropdown-item" (click)="chatAgent(agent)"><i class="fas fa-comments"></i> Chat</button></li>
+            <li *ngIf="agent.owner || agent.role === 'Éditeur'">
+              <button class="dropdown-item text-danger" (click)="deleteAgent(agent)"><i class="fas fa-trash"></i> Supprimer</button>
+            </li>
+            <li *ngIf="getWebhookLink(agent)">
+              <button class="dropdown-item text-danger" (click)="openEditValues(agent)"><i class="fas fa-eye"></i> Paramètres</button>
+            </li>
+            <!--            <button *ngIf="getWebhookLink(agent)" class="btn-ghost" type="button" (click)="openEditValues(agent)">-->
+            <!--              Paramètres-->
+            <!--            </button>-->
+          </ul>
+
+
+
+        </div>
       </div>
+
     </div>
   </div>
 </div>
+
+
+<!-- Modale édition valeurs (Mes agents) -->
+<div class="modal-overlay" *ngIf="editModal.open">
+  <div class="modal-shell" role="dialog" aria-modal="true" aria-labelledby="agentParamsTitle" aria-describedby="agentParamsDesc">
+    <header class="modal-header">
+      <div>
+        <h2 id="agentParamsTitle">Paramètres de l’agent</h2>
+        <p id="agentParamsDesc" class="modal-subtitle">
+          {{ editModal.agent?.agentName }}
+        </p>
+      </div>
+      <button type="button" class="icon-btn close" (click)="editModal.open=false" aria-label="Fermer">✕</button>
+    </header>
+
+    <form #f="ngForm" (ngSubmit)="saveValuesOnAgent()" novalidate>
+      <section class="form-grid">
+        <div class="field" *ngFor="let input of editModal.payload?.inputs">
+          <label class="field-label" [attr.for]="input.name">
+            {{ input.label }}
+            <span *ngIf="input.required" class="req-badge" aria-hidden="true">obligatoire</span>
+          </label>
+
+          <input *ngIf="input.type !== 'textarea'"
+                 class="field-input"
+                 [class.invalid]="f.submitted && input.required && !editModal.form[input.name]"
+                 [attr.id]="input.name"
+                 [attr.inputmode]="input.type === 'number' ? 'decimal' : null"
+                 [attr.autocomplete]="input.type === 'email' ? 'email' : 'off'"
+                 [attr.type]="input.type === 'email' ? 'email' : (input.type === 'number' ? 'text' : (input.type === 'url' ? 'url' : 'text'))"
+                 [(ngModel)]="editModal.form[input.name]"
+                 [name]="input.name"
+                 [required]="input.required" />
+
+          <textarea *ngIf="input.type === 'textarea'"
+                    class="field-input textarea"
+                    [class.invalid]="f.submitted && input.required && !editModal.form[input.name]"
+                    [attr.id]="input.name"
+                    rows="4"
+                    [(ngModel)]="editModal.form[input.name]"
+                    [name]="input.name"
+                    [required]="input.required"></textarea>
+
+          <div class="field-hint" *ngIf="input.type === 'email'">Utilise une adresse valide pour recevoir la notification.</div>
+          <div class="field-hint" *ngIf="input.name === 'stock_name'">Exemples : TSLA, AAPL, NVDA…</div>
+
+          <div class="field-error" *ngIf="f.submitted && input.required && !editModal.form[input.name]">
+            Ce champ est requis.
+          </div>
+        </div>
+      </section>
+
+      <details *ngIf="editModal.payload?.example_curl" class="curl-block">
+        <summary>Exemple cURL</summary>
+        <pre class="curl-pre">{{ editModal.payload.example_curl }}</pre>
+      </details>
+
+      <footer class="modal-actions">
+        <button type="button" class="btn outline" (click)="editModal.open=false">Annuler</button>
+        <button type="submit" class="btn primary" [disabled]="editModal.saving">
+          {{ editModal.saving ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </footer>
+    </form>
+  </div>
 </div>
+
+
+<div class="gm-overlay" *ngIf="guideModal.open" (click)="closeGuide()" aria-hidden="false">
+  <div class="gm-shell" role="dialog" aria-modal="true" aria-labelledby="gmTitle" (click)="$event.stopPropagation()">
+    <header class="gm-header">
+      <div class="gm-titles">
+        <h2 id="gmTitle">Guide et ressources</h2>
+        <p class="gm-subtitle">{{ guideModal.agent?.agentName }}</p>
+      </div>
+      <button type="button" class="gm-icon-btn" (click)="closeGuide()" aria-label="Fermer">✕</button>
+    </header>
+
+    <section class="gm-body" *ngIf="guideModal.agent as ag">
+      <ng-container *ngIf="getGuide(ag) as g; else noGuide">
+        <div class="gm-toolbar">
+          <input type="text" class="gm-search" placeholder="Rechercher dans le guide" [(ngModel)]="guideModal.q" />
+          <div class="gm-toolbar-actions">
+            <button type="button" class="gm-btn gm-outline" (click)="toggleGuideCollapse()">
+              {{ guideModal.collapsed ? 'Tout afficher' : 'Réduire' }}
+            </button>
+            <button type="button" class="gm-btn gm-outline" (click)="downloadGuide(g)">Télécharger .txt</button>
+          </div>
+        </div>
+
+        <h3 class="gm-section">Guide</h3>
+        <h4 class="gm-details-title">{{ g.url?.title || 'Guide' }}</h4>
+
+        <div class="gm-steps-grid" [class.collapsed]="guideModal.collapsed">
+          <div class="gm-step" *ngFor="let s of normalizeGuideSteps(g.url?.steps); let i = index">
+            <div class="gm-step-index">{{ i + 1 }}</div>
+            <div class="gm-step-body">{{ s }}</div>
+          </div>
+        </div>
+        <div class="gm-fade" *ngIf="guideModal.collapsed"></div>
+
+        <aside class="gm-callout" *ngIf="g.url?.notes">{{ g.url.notes }}</aside>
+
+        <details class="gm-long" *ngIf="g.url?.long_instructions">
+          <summary>Instructions détaillées</summary>
+          <pre class="gm-pre">{{ g.url.long_instructions }}</pre>
+        </details>
+
+        <hr />
+      </ng-container>
+
+      <ng-template #noGuide>
+        <p class="gm-empty">Aucun guide disponible</p>
+        <hr />
+      </ng-template>
+
+      <ng-container *ngIf="hasTemplate(ag); else noTpl">
+        <h3 class="gm-section">Templates disponibles</h3>
+        <ul class="gm-files">
+          <li *ngFor="let f of ag.files">
+            <a [href]="toMediaUrl(f.url)" [attr.download]="f.name">{{ f.name }}</a>
+            <span class="gm-file-size">• {{ f.size | number }} o</span>
+          </li>
+        </ul>
+      </ng-container>
+      <ng-template #noTpl><p class="gm-empty">Aucune ressource attachée</p></ng-template>
+    </section>
+
+    <footer class="gm-actions">
+      <button type="button" class="gm-btn gm-outline" (click)="closeGuide()">Fermer</button>
+      <button *ngIf="getWebhookLink(guideModal.agent!)" type="button" class="gm-btn gm-primary" (click)="openParamsFromGuide()">Paramètres</button>
+    </footer>
+  </div>
+</div>
+

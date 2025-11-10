@@ -5,9 +5,18 @@
 
   export interface Link {
     id?: number;
-    url: string;
+    url: any;
     description?: string;
+    source_name: string;
   }
+
+  export interface AgentFileDto {
+    id: number;
+    name: string;
+    url: string;
+    size: number;
+  }
+
 
   export interface Agent {
     links: any;
@@ -21,7 +30,7 @@
     etat: string;
     datasource: number;
     modele: number;
-    files?: File[];
+    files?: AgentFileDto[];
     site_web?: string;
     owner?: boolean;   // true si l'utilisateur est le créateur
     role?: 'Éditeur' | 'Visiteur' | string;
@@ -61,9 +70,12 @@
       return this.http.post(`${environment.apiBaseUrl}/api/agents/create-with-files/`, formData);
     }
 
-    updateAgent(id: number, agent: Agent) {
-      return this.http.put<Agent>(`${this.apiUrl}${id}/`, agent);
+    updateAgent(id: number, agent: Partial<Agent>) {
+      return this.http.patch<Agent>(`${this.apiUrl}${id}/`, agent);
     }
+
+
+
 
     updateAgentWithFiles(agentId: number, formData: FormData) {
       return this.http.put(`${this.apiUrl}${agentId}/update-with-files/`, formData);
@@ -97,6 +109,26 @@
       return this.http.post<Agent>(`${environment.apiBaseUrl}/api/agents/${agentId}/clone/`, {});
     }
 
+    toMediaUrl(u?: string): string {
+      if (!u) return '';
+      return u.startsWith('/media/') ? `${environment.apiBaseUrl}${u}` : u;
+    }
+
+    downloadTemplate(agentId: number) {
+      const url = `${environment.apiBaseUrl}/api/agents/${agentId}/download-template/`;
+      return this.http.get(url, { responseType: 'blob' as const, observe: 'response' });
+    }
+
+    updateLinks(agentId: number, links: any[]) {
+      return this.http.patch<Agent>(`${this.apiUrl}${agentId}/links/`, { links });
+    }
+
+    runWebhook(agentId: number, overrides?: Record<string, any>) {
+      return this.http.post<{ ok:boolean; message:string; status:number; remote_preview?:string }>(
+        `${this.apiUrl}${agentId}/run-webhook/`,
+        overrides ? { overrides } : {}
+      );
+    }
 
 
 

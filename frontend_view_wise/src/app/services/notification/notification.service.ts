@@ -1,12 +1,10 @@
-// src/app/services/notification.service.ts
 import { Injectable } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 
 @Injectable({
-  providedIn: 'root' // disponible globalement
+  providedIn: 'root'
 })
 export class NotificationService {
-
   constructor(private toastr: ToastrService) {}
 
   success(message: string, title: string = 'Succès') {

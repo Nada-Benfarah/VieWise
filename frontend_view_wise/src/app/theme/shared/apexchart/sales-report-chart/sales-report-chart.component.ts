@@ -1,9 +1,4 @@
-// angular import
 import { Component, viewChild } from '@angular/core';
-
-// project import
-
-// third party
 import { NgApexchartsModule, ChartComponent, ApexOptions } from 'ng-apexcharts';
 
 @Component({
@@ -15,7 +10,6 @@ import { NgApexchartsModule, ChartComponent, ApexOptions } from 'ng-apexcharts';
 export class SalesReportChartComponent {
   chart = viewChild.required<ChartComponent>('chart');
   chartOptions!: Partial<ApexOptions>;
-
   constructor() {
     this.chartOptions = {
       chart: {

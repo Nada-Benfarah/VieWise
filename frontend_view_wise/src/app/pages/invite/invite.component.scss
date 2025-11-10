@@ -3,8 +3,7 @@
   gap: 1rem;
   padding: 2rem;
   background-color: #fafafa;
-  height: calc(100vh - 60px); // adapte à ton header si nécessaire
-
+  height: calc(100vh - 60px);
 
   .left-panel {
     flex: 1;
@@ -88,7 +87,7 @@
   }
 
   .right-panel {
-    flex: 1.2; // légèrement plus large que le panneau gauche
+    flex: 1.2;
     max-width: 60%;
     background-color: #fff;
     padding: 2rem 2.5rem;
@@ -157,8 +156,6 @@
       }
 
       .action-buttons {
-
-
         .btn-status,
         .delete-btn {
           display: flex;
@@ -200,12 +197,11 @@
           align-items: center;
           justify-content: center;
         }
-
       }
     }
   }
-
 }
+
 .custom-multiselect {
   background-color: #fdfdfd;
   padding: 1rem;
@@ -313,29 +309,28 @@
   }
 }
 
-
 .invitation-container {
   .left-panel {
     .form {
       .form-group {
         .input.ng-invalid.ng-touched,
         .input.ng-invalid.ng-dirty {
-          border-color: #ef4444; // red-500
+          border-color: #ef4444;
           box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
         }
 
         .input.ng-valid.ng-touched,
         .input.ng-valid.ng-dirty {
-          border-color: #22c55e; // green-500
+          border-color: #22c55e;
           box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.12);
         }
 
         .error {
           margin-top: 6px;
           padding: 8px 12px;
-          border: 1px solid #fecaca;   // red-200
-          background: #fff5f5;         // red-50
-          color: #b91c1c;              // red-700
+          border: 1px solid #fecaca;
+          background: #fff5f5;
+          color: #b91c1c;
           border-radius: 8px;
           font-size: 0.85rem;
           line-height: 1.35;

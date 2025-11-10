@@ -35,31 +35,25 @@ export interface OnboardingData {
   company_size: string;
 }
 
-
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private $user = new BehaviorSubject<User | null>(null);
   private router = inject(Router);
 
   constructor(private http: HttpClient, private storageService: StorageService) {
-    // 🔹 Seed depuis localStorage (si présent)
     const raw = localStorage.getItem('current_user');
     if (raw) {
       try {
         const cached = JSON.parse(raw) as User;
-        // applique le cache-busting pour éviter les vieilles URLs d’avatar
         this.$user.next(this.normalizeUser(cached));
-      } catch { /* ignore */ }
+      } catch { }
     }
   }
 
-  /** Flux lisible du user courant */
   get user(): Observable<User | null> {
     return this.$user.asObservable();
   }
 
-  /** Setter centralisé : normalise + persiste + notifie */
   set user(value: User | null) {
     const normalized = value ? this.normalizeUser(value) : null;
     this.$user.next(normalized);
@@ -70,14 +64,12 @@ export class AuthService {
     }
   }
 
-  /** Ajoute un cache-busting sur l’avatar et normalise éventuellement d’autres champs */
   private normalizeUser(u: User): User {
     let avatar_url = u.avatar_url || undefined;
     if (avatar_url) {
-      const base = avatar_url.split('?')[0]; // enlève un ancien ?v=
+      const base = avatar_url.split('?')[0];
       avatar_url = `${base}?v=${Date.now()}`;
     }
-    // Exemple : s'assurer que is_admin est cohérent si vous l'utilisez
     const is_admin = !!(u.is_admin || u.is_superuser || u.is_staff);
     return { ...u, avatar_url, is_admin };
   }
@@ -96,14 +88,13 @@ export class AuthService {
     return this.http.get<User>(`${environment.apiBaseUrl}/auth/me`).pipe(
       tap({
         next: (user) => {
-          // ⬇️ passe par le setter pour normaliser + notifier + persister
           this.user = user;
         }
       }),
       catchError((error) => {
         if (error.status === 403 || error.status === 401) {
           this.storageService.removeToken();
-          this.user = null; // nettoie l’état local
+          this.user = null;
         }
         return of(false);
       })
@@ -157,7 +148,7 @@ export class AuthService {
   }
 
   changePassword(old_password: string, new_password: string, new_password2: string) {
-    return this.http.post<{message: string}>(
+    return this.http.post<{ message: string }>(
       `${environment.apiBaseUrl}/auth/me/password/`,
       { old_password, new_password, new_password2 }
     );
@@ -166,7 +157,6 @@ export class AuthService {
   updateCurrentUser(data: Partial<User>) {
     return this.http.patch<User>(`${environment.apiBaseUrl}/auth/me/`, data).pipe(
       tap((user) => {
-        // ⬇️ une seule source de vérité
         this.user = user;
       })
     );
@@ -177,7 +167,6 @@ export class AuthService {
     fd.append('avatar', file);
     return this.http.patch<User>(`${environment.apiBaseUrl}/auth/me/avatar/`, fd).pipe(
       tap((user) => {
-        // ⬇️ pousse la version avec cache-busting
         this.user = user;
       })
     );

@@ -1,4 +1,3 @@
-// angular import
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SpinnerComponent } from './theme/shared/components/spinner/spinner.component';
@@ -11,6 +10,5 @@ import {ConfirmDialogComponent} from "./theme/shared/confirm-dialog.component";
   imports: [RouterOutlet, SpinnerComponent, ConfirmDialogComponent]
 })
 export class AppComponent {
-  // public props
   title = 'View-Wise';
 }

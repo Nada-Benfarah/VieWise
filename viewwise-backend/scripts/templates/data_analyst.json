@@ -1,0 +1,292 @@
+{
+  "name": "Data Analyst",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        240
+      ],
+      "id": "2faec542-9fa5-4249-a65b-4218ac7cef04",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "C9j787hRROqo4PCE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        240
+      ],
+      "id": "37c8789c-6daa-40ba-b389-5392cb19ede5",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1UuX7gTFgGqJEKwHl70v7i_Sm_ljzc6i7I3DckMgAk-8",
+          "mode": "list",
+          "cachedResultName": "Financial Sample",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UuX7gTFgGqJEKwHl70v7i_Sm_ljzc6i7I3DckMgAk-8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 537113731,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UuX7gTFgGqJEKwHl70v7i_Sm_ljzc6i7I3DckMgAk-8/edit#gid=537113731"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        480,
+        240
+      ],
+      "id": "aeecd91a-2806-4b4e-85b0-583c93d7d20b",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iacHt7VTD7NUroxS",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nadabenfarah9@gmail.com",
+        "subject": "Data Analysis",
+        "message": "=<div style=\"font-family: Arial, sans-serif; color: #333;\">\n\n  <h2>📊 Data Analysis Summary</h2>\n\n  <div style=\"background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; font-size: 0.95em; line-height: 1.5;\">\n    {{ $json.message.content }}\n  </div>\n\n  <table cellspacing=\"10\" cellpadding=\"0\" border=\"0\" style=\"width: 100%;\">\n    <tr>\n      <td align=\"center\" valign=\"top\" style=\"width: 33%;\">\n        <h3>📈 Line Chart</h3>\n        <img src=\"{{ $json.chartLineUrl }}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\">\n      </td>\n      <td align=\"center\" valign=\"top\" style=\"width: 33%;\">\n        <h3>📊 Bar Chart</h3>\n        <img src=\"{{ $json.chartBarUrl }}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\">\n      </td>\n      <td align=\"center\" valign=\"top\" style=\"width: 33%;\">\n        <h3>🧩 Pie Chart</h3>\n        <img src=\"{{ $json.chartPieUrl }}\" style=\"max-width: 100%; border: 1px solid #ddd; border-radius: 4px;\">\n      </td>\n    </tr>\n  </table>\n\n  <p style=\"font-size: 0.9em; color: #888;\">Generated automatically by your AI analysis assistant 🚀</p>\n\n</div>\n\n\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "579b9b6e-72a6-44ff-a50e-09adead358da",
+      "name": "Send a message",
+      "webhookId": "03d6f4d7-9ade-4ec8-bfb3-64112a36c179",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YJduRL58d9Bx64KN",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a data visualization assistant.\n\nThe user will give a request like:\n- \"Show revenue per month as a line chart for 2024\"\n- \"Show number of sold units per product\"\n- \"Give me the sales for region North\"\n\nYour task:\n1. Select the right data filters (like year, product, region) based on the user’s request.\n2. Prepare two arrays: one for labels and one for numeric values.\n3. Always return **only** a valid JSON object (no markdown, no explanations, no code block).\n\nYou must return valid JSON only, without any markdown, prefix, backticks, or extra text.\nExample output:\n{\"labels\": [\"...\"], \"values\": [123, 456]}\n\nDo not include any explanations or formatting.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "8638df6e-b29d-4fa6-8a1c-7a993ca4f699",
+      "name": "Data Analyst"
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawOutput = items[0].json.output;\n\n\nrawOutput = rawOutput.replace(/```json\\s*|\\s*```/g, '');  \nrawOutput = rawOutput.replace(/^json\\s*/, '');           \n\n\nlet parsed = {};\ntry {\n  const firstParse = JSON.parse(rawOutput);\n  if (typeof firstParse === 'string') {\n    parsed = JSON.parse(firstParse);\n  } else {\n    parsed = firstParse;\n  }\n} catch (err) {\n  throw new Error('Failed to parse AI Agent output as JSON: ' + err.message);\n}\n\n\nreturn [\n  {\n    json: {\n      labels: parsed.labels ?? [],\n      values: parsed.values ?? []\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "9ac63791-79af-4be0-9147-b4c0abddaf92",
+      "name": "Clean Data"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('When chat message received').item.json.chatInput }}\n{{ $('Data Analyst').item.json.output }}"
+            },
+            {
+              "content": "=You are a professional data analyst assistant.\n\nYou will receive two arrays:\n1️⃣ An array of item labels (e.g. product names)\n2️⃣ An array of numeric values (e.g. sales or profit figures for those products).\n\nYour task is to analyze this dataset and generate a clear, natural-language summary suitable for inclusion in a professional email.\n\nYour summary must:\n- Begin with a general overview of how many items were analyzed and the total and average value\n- Identify and name the highest-performing item and its value\n- Identify and name the lowest-performing item and its value\n- Comment briefly on any noticeable spread, disparity, or distribution in performance\n- Optionally suggest that further review might be needed if there’s a large gap between top and bottom performers\n\nStyle:\n- Professional, polished English\n- 3-5 concise sentences\n- No formatting, markdown, or bullet points — plain text only\n\nExample style:\n\"The dataset includes 4 products, generating a total profit of €33,343.50 and an average of €8,335.88 per item. Widget D delivered the highest profit at €13,362.26, while Widget C contributed the least at €4,303.67. There is a significant performance gap between these products, suggesting that Widget D is a key driver of profitability while Widget C may require closer analysis.\"\n\nDo NOT output JSON or any technical data structures — plain English narrative only.\n",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        832,
+        0
+      ],
+      "id": "fca6e7b9-436f-458b-8cb8-62d155e896ea",
+      "name": "Write Report",
+      "credentials": {
+        "openAiApi": {
+          "id": "C9j787hRROqo4PCE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const labels = $('Clean Data').first().json.labels;\nconst values = $('Clean Data').first().json.values;\n\n// Ensure arrays are valid\nconst cleanedLabels = labels.map(l => String(l));\nconst cleanedValues = values.map(v => Number(v));\n\n// Configs:\nconst configLine = {\n  type: 'line',\n  data: {\n    labels: cleanedLabels,\n    datasets: [{\n      label: 'Amount',\n      data: cleanedValues,\n      borderWidth: 3,\n      pointStyle: 'circle'\n    }]\n  },\n  options: {\n    scales: {\n      y: { beginAtZero: true }\n    }\n  }\n};\n\nconst configBar = {\n  type: 'bar',\n  data: {\n    labels: cleanedLabels,\n    datasets: [{\n      label: 'Amount',\n      data: cleanedValues,\n      borderWidth: 3\n    }]\n  },\n  options: {\n    scales: {\n      y: { beginAtZero: true }\n    }\n  }\n};\n\nconst configPie = {\n  type: 'pie',\n  data: {\n    labels: cleanedLabels,\n    datasets: [{\n      label: 'Amount',\n      data: cleanedValues\n    }]\n  }\n};\n\n// Encode URLs\nconst chartLineUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(configLine))}`;\nconst chartBarUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(configBar))}`;\nconst chartPieUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(configPie))}`;\n\n// Return result\nreturn [{\n  json: {\n    ...items[0].json,\n    chartLineUrl,\n    chartBarUrl,\n    chartPieUrl\n  }\n}];\n\n\n\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "93867f41-081d-46f6-9920-22eb7af87c89",
+      "name": "Write HTML"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d100cf5e-8dc8-47ac-8eae-846f9610ecd3",
+      "name": "When chat message received",
+      "webhookId": "85c290ce-bc5d-4ee9-9d7e-ed12c09359d3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Data Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Data Analyst",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Data Analyst",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Analyst": {
+      "main": [
+        [
+          {
+            "node": "Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Data": {
+      "main": [
+        [
+          {
+            "node": "Write Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Report": {
+      "main": [
+        [
+          {
+            "node": "Write HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write HTML": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Data Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cee802b7-5b4d-4890-9cad-a13133e0735e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "57cc40b780373975e0843718e567372dcdf7ca6269f2151bf09173c62fd543ea"
+  },
+  "id": "vXNxU6ZvSQxSDVNV",
+  "tags": []
+}

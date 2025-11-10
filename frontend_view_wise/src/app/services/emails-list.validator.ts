@@ -1,4 +1,3 @@
-// emails-list.validator.ts
 import { Directive } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
 
@@ -11,19 +10,12 @@ import { AbstractControl, NG_VALIDATORS, ValidationErrors, Validator } from '@an
 export class EmailsListValidatorDirective implements Validator {
   validate(control: AbstractControl): ValidationErrors | null {
     const value = (control.value ?? '') as string;
-
-    // Laisser "required" gérer le vide
     if (!value.trim()) return null;
-
     const emails = value.split(',').map(e => e.trim()).filter(Boolean);
-
     if (emails.length === 0) {
       return { emailsList: { reason: 'noEmails' } };
     }
-
-    // Regex simple et robuste pour email générique
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
     const invalids = emails.filter(e => !emailRegex.test(e));
     return invalids.length ? { emailsList: { invalid: invalids } } : null;
   }

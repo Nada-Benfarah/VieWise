@@ -66,17 +66,64 @@
 
 </div>
 <!-- Modal d’agent -->
+<!-- Modal d’agent -->
 <div class="modal-overlay" *ngIf="showAgentModal">
-  <div class="modal-content">
-    <h2>Détails de l'Agent</h2>
-    <p><strong>Nom :</strong> {{ selectedAgent?.agentName }}</p>
-    <p><strong>Objectif :</strong> {{ selectedAgent?.agentObjective }}</p>
-    <p><strong>Rôle :</strong> {{ selectedAgent?.agentRole }}</p>
-    <p><strong>Instructions :</strong> {{ selectedAgent?.agentInstructions }}</p>
-    <button (click)="closeAgentModal()">Fermer</button>
+  <div class="modal-content large">
+    <button class="modal-close-btn" (click)="closeAgentModal()">✖</button>
+
+    <h2>{{ selectedAgent?.agentName }}</h2>
+
+    <!-- Onglets -->
+    <nav class="tabs">
+      <button class="modern-confirm"  [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">Aperçu</button>
+      <button class="modern-confirm" [class.active]="activeTab === 'instructions'" (click)="activeTab = 'instructions'">Instructions</button>
+      <button class="modern-confirm" *ngIf="selectedAgentGuide" [class.active]="activeTab === 'guide'" (click)="activeTab = 'guide'">Guide</button>
+    </nav>
+
+    <!-- Aperçu -->
+    <section *ngIf="activeTab === 'overview'">
+      <p><strong>Objectif</strong> {{ selectedAgent?.agentObjective }}</p>
+      <p><strong>Rôle</strong> {{ selectedAgent?.agentRole }}</p>
+    </section>
+
+    <!-- Instructions (long texte) -->
+    <section *ngIf="activeTab === 'instructions'">
+      <div class="instruction-toolbar centered">
+        <button class="modern-confirm" (click)="toggleInstructions()">
+          {{ instructionsExpanded ? 'Réduire' : 'Tout afficher' }}
+        </button>
+        <button class="modern-confirm" (click)="copyInstructions()">Copier</button>
+        <button class="modern-confirm" (click)="downloadInstructions()">Télécharger .txt</button>
+      </div>
+
+      <pre class="instructions-panel" [class.expanded]="instructionsExpanded">
+{{ selectedAgent?.agentInstructions }}
+  </pre>
+
+      <div class="instructions-fade" *ngIf="!instructionsExpanded"></div>
+    </section>
+
+    <!-- Guide (JSON stocké dans Link.url) -->
+    <section *ngIf="activeTab === 'guide'">
+      <h3 class="guide-title">{{ selectedAgentGuide?.title }}</h3>
+
+      <!-- Steps peut être string ou tableau -->
+      <div class="guide-steps">
+        <ng-container *ngFor="let s of normalizeGuideSteps(selectedAgentGuide?.steps); let i = index">
+          <div class="guide-step">
+            <div class="step-index">{{ i + 1 }}</div>
+            <div class="step-body" [innerHTML]="asHtml(s)"></div>
+          </div>
+        </ng-container>
+      </div>
+
+      <p class="guide-notes" *ngIf="selectedAgentGuide?.notes">{{ selectedAgentGuide?.notes }}</p>
+    </section>
   </div>
 </div>
-<!-- Modal d'affichage du workflow -->
+
+
+
 <!-- Modal d'affichage du workflow -->
 <div class="modal-overlay" *ngIf="showWorkflowModal">
   <div class="modal-content large">
@@ -100,5 +147,47 @@
       <button class="modern-cancel" (click)="closeUpgradeModal()">Annuler</button>
       <button class="modern-confirm" (click)="goToPricingPlans()">Voir les plans</button>
     </div>
+  </div>
+</div>
+
+
+<!-- Modale SAISIE Webhook (Marketplace) -->
+<div class="modal-overlay" *ngIf="webhookInputModal.open">
+  <div class="modal-content">
+    <h2>Paramètres de l’agent</h2>
+    <p><strong>Agent</strong> {{ webhookInputModal.agent?.agentName }}</p>
+
+    <form (ngSubmit)="saveWebhookInputs()" novalidate>
+      <div class="field" *ngFor="let input of webhookInputModal.payload?.inputs">
+        <label [attr.for]="input.name">
+          {{ input.label }} <span *ngIf="input.required">*</span>
+        </label>
+        <input *ngIf="input.type !== 'textarea'"
+               class="input"
+               [attr.id]="input.name"
+               [attr.type]="input.type === 'email' ? 'email' : (input.type === 'number' ? 'number' : 'text')"
+               [(ngModel)]="webhookInputModal.form[input.name]"
+               [name]="input.name"
+               [required]="input.required" />
+        <textarea *ngIf="input.type === 'textarea'"
+                  class="input"
+                  [attr.id]="input.name"
+                  [(ngModel)]="webhookInputModal.form[input.name]"
+                  [name]="input.name"
+                  [required]="input.required"></textarea>
+      </div>
+
+      <div class="modal-actions modern-actions">
+        <button type="button" class="modern-cancel" (click)="closeWebhookInputs()">Annuler</button>
+        <button type="submit" class="modern-confirm" [disabled]="!canSaveInputs() || webhookInputModal.saving">
+          Enregistrer
+        </button>
+      </div>
+
+      <div class="example" *ngIf="webhookInputModal.payload?.example_curl">
+        <small>Exemple cURL</small>
+        <pre>{{ webhookInputModal.payload.example_curl }}</pre>
+      </div>
+    </form>
   </div>
 </div>

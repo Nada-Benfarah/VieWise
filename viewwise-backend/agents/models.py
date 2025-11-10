@@ -28,7 +28,7 @@ class Modele(models.Model):
 class Agent(models.Model):
     agentId = models.AutoField(primary_key=True)
     agentName = models.CharField(max_length=255)
-    agentRole = models.CharField(max_length=100)
+    agentRole = models.CharField(max_length=255)
     agentObjective = models.TextField()
     agentInstructions = models.TextField()
     creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)

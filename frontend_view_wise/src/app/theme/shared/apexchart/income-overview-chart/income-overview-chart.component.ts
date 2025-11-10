@@ -1,4 +1,3 @@
-// income-overview-chart.component.ts
 import { Component, OnInit, viewChild, inject } from '@angular/core';
 import { NgApexchartsModule, ChartComponent, ApexOptions } from 'ng-apexcharts';
 import { CardComponent } from 'src/app/theme/shared/components/card/card.component';
@@ -16,14 +15,10 @@ export class IncomeOverviewChartComponent implements OnInit {
   private plansApi = inject(PlanService);
 
   ngOnInit() {
-
-    // charge les données réelles
     this.plansApi.getPlanUserCounts().subscribe({
       next: (res) => {
-        // Option : fixer l’ordre FREE, PRO, TEAM, BUSINESS si présents
         const order = ['FREE', 'PRO', 'TEAM', 'BUSINESS'];
         const sorted = [...res.plans].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
-
         this.chartOptions = {
           ...this.chartOptions,
           xaxis: { ...(this.chartOptions.xaxis || {}), categories: sorted.map(p => p.name) },
@@ -43,7 +38,6 @@ export class IncomeOverviewChartComponent implements OnInit {
         axisTicks: { show: false },
         labels: { style: { colors: ['#8c8c8c'] } }
       },
-      // 👇 valeurs entières seulement sur l’axe Y
       yaxis: {
         show: true,
         min: 0,
@@ -59,10 +53,8 @@ export class IncomeOverviewChartComponent implements OnInit {
       tooltip: { theme: 'light', y: { formatter: (v: number) => `${Math.round(v)}` } }
     };
 
-    // charge les données réelles
     this.plansApi.getPlanUserCounts().subscribe({
       next: (res) => {
-        // Option : fixer l’ordre FREE, PRO, TEAM, BUSINESS si présents
         const order = ['FREE', 'PRO', 'TEAM', 'BUSINESS'];
         const sorted = [...res.plans].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 

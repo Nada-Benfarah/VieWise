@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-// invitation.service.ts
 @Injectable({ providedIn: 'root' })
 export class InvitationService {
   private apiUrl = `${environment.apiBaseUrl}/api/invitations/`;
@@ -29,5 +28,4 @@ export class InvitationService {
   deleteInvitation(id: number) {
     return this.http.delete(`${environment.apiBaseUrl}/api/invitations/${id}/`);
   }
-
 }
